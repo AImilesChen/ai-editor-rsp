@@ -25,6 +25,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "double-exposure-travel-rishikesh",
+    before_image: "/images/effects/double-exposure-travel-comparison.webp",
+    after_image: "/images/effects/double-exposure-travel-comparison.webp",
     description: "Portrait fused with cityscape for cinematic travel vibes. Blend a portrait photo with iconic landmarks to create a dreamy double exposure effect.",
     tutorial_steps: [
       "Choose a clear portrait photo with good lighting",
@@ -44,6 +46,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "horror-girlfriend-ai-photo",
+    before_image: "/images/effects/horror-portrait-comparison.webp",
+    after_image: "/images/effects/horror-portrait-comparison.webp",
     description: "Ordinary photo turned into a haunting horror scene. Transform any portrait into a dark, eerie image with cinematic horror lighting.",
     tutorial_steps: [
       "Start with a regular portrait photo",
@@ -63,6 +67,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "diwali-light-portrait",
+    before_image: "/images/effects/diwali-glow-comparison.webp",
+    after_image: "/images/effects/diwali-glow-comparison.webp",
     description: "Add warm festive lights and golden bokeh to any portrait. Perfect for Diwali, Christmas, or any celebration with lights.",
     tutorial_steps: [
       "Choose a portrait with space around the subject",
@@ -82,6 +88,8 @@ export const effects: Effect[] = [
     platform: ["CapCut"],
     type: "template",
     template_id: "babuaan-song-capcut-template-2026",
+    before_image: "/images/effects/babuaan-song-effect-comparison.webp",
+    after_image: "/images/effects/babuaan-song-effect-comparison.webp",
     description: "Trending Bhojpuri song template with beat-sync transitions. Create viral videos with automatic beat matching.",
     tutorial_steps: [
       "Open CapCut and search for 'Babuaan' template",
@@ -101,6 +109,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "3d-cartoon-selfie",
+    before_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+    after_image: "/images/effects/3d-cartoon-effect-comparison.webp",
     description: "Turn any photo into a Pixar-style 3D cartoon character. Great for profile pictures and social media avatars.",
     tutorial_steps: [
       "Upload a clear front-facing portrait",
@@ -120,6 +130,8 @@ export const effects: Effect[] = [
     platform: ["CapCut"],
     type: "template",
     template_id: "bengali-folk-song-template",
+    before_image: "/images/effects/bengali-folk-effect-comparison.webp",
+    after_image: "/images/effects/bengali-folk-effect-comparison.webp",
     description: "Soft Bengali folk song template with lyrical overlays. Perfect for emotional and cultural content.",
     tutorial_steps: [
       "Open CapCut and search for Bengali folk templates",

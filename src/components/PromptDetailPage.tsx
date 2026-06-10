@@ -27,8 +27,8 @@ export default function PromptDetailPage({ prompt }: { prompt: Prompt }) {
             <div>
               <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-md">
                 <BeforeAfter
-                  beforeGradient="linear-gradient(135deg,#e2e8f0,#cbd5e1)"
-                  afterGradient="linear-gradient(135deg,#bfdbfe,#93c5fd)"
+                  image={prompt.after_image || prompt.before_image}
+                  alt={`${prompt.title} generated result preview`}
                 />
               </div>
               <p className="text-xs text-neutral-500 mt-3">

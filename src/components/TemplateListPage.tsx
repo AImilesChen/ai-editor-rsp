@@ -53,13 +53,11 @@ export default function TemplateListPage() {
                   className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:shadow-glow hover:-translate-y-0.5"
                 >
                   <div
-                    className="aspect-[4/3] flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg,#fef3c7,#fde68a)" }}
-                  >
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#92400e" strokeWidth="1.5">
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                  </div>
+                    role="img"
+                    aria-label={`${template.title} template preview`}
+                    className="aspect-[4/3] bg-cover bg-center"
+                    style={{ backgroundImage: `url(${template.preview_image})` }}
+                  />
                   <div className="p-5">
                     <div className="flex gap-2 flex-wrap mb-3">
                       <span className="bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-sm text-xs font-medium">

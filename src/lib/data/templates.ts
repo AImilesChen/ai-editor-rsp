@@ -58,6 +58,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/ankhon-ankhon-ka-masla",
+    preview_image: "/images/templates/ankhon-ankhon-ka-masla-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -82,6 +83,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/ekdin-tomay-ghire",
+    preview_image: "/images/templates/ekdin-tomay-ghire-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -106,6 +108,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/bengali-folk",
+    preview_image: "/images/templates/bengali-folk-song-template-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -130,6 +133,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/bollywood-trending",
+    preview_image: "/images/templates/bollywood-trending-template-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -154,6 +158,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/hindi-romantic",
+    preview_image: "/images/templates/hindi-romantic-template-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -178,6 +183,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/english-pop-trending",
+    preview_image: "/images/templates/english-pop-trending-template-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -202,6 +208,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/english-edm",
+    preview_image: "/images/templates/english-edm-template-thumbnail.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",

@@ -55,8 +55,8 @@ export default function PromptListPage() {
                 >
                   <div className="aspect-[4/3] relative overflow-hidden">
                     <BeforeAfter
-                      beforeGradient="linear-gradient(135deg,#e2e8f0,#cbd5e1)"
-                      afterGradient="linear-gradient(135deg,#bfdbfe,#93c5fd)"
+                      image={prompt.before_image}
+                      alt={`${prompt.title} visual preview`}
                     />
                   </div>
                   <div className="p-5">

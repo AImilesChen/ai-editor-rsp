@@ -39,8 +39,8 @@ export default function EffectDetailPage({ effect }: { effect: Effect }) {
             <div>
               <div className="aspect-video rounded-lg overflow-hidden shadow-md">
                 <BeforeAfter
-                  beforeGradient="linear-gradient(135deg,#334155,#475569)"
-                  afterGradient="linear-gradient(135deg,#1e3a5f,#2563eb)"
+                  image={effect.before_image}
+                  alt={`${effect.title} before and after comparison`}
                 />
               </div>
               <p className="text-xs text-neutral-500 mt-3">

@@ -54,8 +54,8 @@ export default function EffectListPage() {
                 >
                   <div className="aspect-[4/3] relative overflow-hidden">
                     <BeforeAfter
-                      beforeGradient="linear-gradient(135deg,#334155,#475569)"
-                      afterGradient="linear-gradient(135deg,#1e3a5f,#2563eb)"
+                      image={effect.before_image}
+                      alt={`${effect.title} before and after comparison`}
                     />
                   </div>
                   <div className="p-5">

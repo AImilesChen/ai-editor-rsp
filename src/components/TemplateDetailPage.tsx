@@ -25,13 +25,13 @@ export default function TemplateDetailPage({ template }: { template: Template })
             {/* Left: Visual */}
             <div>
               <div
-                className="aspect-[9/16] max-h-[540px] rounded-lg overflow-hidden shadow-md flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg,#fef3c7,#fde68a)" }}
-              >
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#92400e" strokeWidth="1.5">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-              </div>
+                role="img"
+                aria-label={`${template.title} vertical template preview`}
+                className="aspect-[9/16] max-h-[540px] rounded-lg overflow-hidden shadow-md bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(/images/templates/${template.slug}-detail.webp)`,
+                }}
+              />
               <p className="text-xs text-neutral-500 mt-3">
                 Simulated preview. Actual template appearance may vary in CapCut.
               </p>
