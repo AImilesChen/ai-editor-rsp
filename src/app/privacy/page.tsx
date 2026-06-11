@@ -90,8 +90,10 @@ export default function PrivacyPage() {
               Contact Us
             </h2>
             <p className="mb-4">
-              If you have any questions about this Privacy Policy, please
-              contact us at: privacy@aieditorrspediting.org
+              If you have any questions about this Privacy Policy, please contact us at:{" "}
+              <a className="text-brand-500 underline" href="mailto:privacy@aieditorrspediting.org">
+                privacy@aieditorrspediting.org
+              </a>
             </p>
           </div>
         </div>

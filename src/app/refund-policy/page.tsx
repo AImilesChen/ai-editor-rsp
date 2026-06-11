@@ -69,7 +69,9 @@ export default function RefundPolicyPage() {
             </h2>
             <p className="mb-4">
               If you have any questions about this Refund Policy, contact us at:
-              support@aieditorrspediting.org
+              <a className="text-brand-500 underline" href="mailto:support@aieditorrspediting.org">
+                support@aieditorrspediting.org
+              </a>
             </p>
           </div>
         </div>

@@ -89,7 +89,9 @@ export default function CookiePolicyPage() {
             </h2>
             <p className="mb-4">
               If you have questions about our Cookie Policy, contact us at:
-              privacy@aieditorrspediting.org
+              <a className="text-brand-500 underline" href="mailto:privacy@aieditorrspediting.org">
+                privacy@aieditorrspediting.org
+              </a>
             </p>
           </div>
         </div>

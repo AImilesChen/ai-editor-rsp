@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import Analytics from "@/components/Analytics";
 import "./globals.css";
+
+const SITE_URL = "https://aieditorrspediting.org";
+const SITE_NAME = "RSP Hub";
+const SITE_DESCRIPTION =
+  "Discover trending RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -23,33 +29,72 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const verificationOther: Record<string, string> = {};
+
+if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION) {
+  verificationOther["msvalidate.01"] = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
+}
+
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: `${SITE_URL}/`,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      inLanguage: "en",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: `${SITE_URL}/`,
+      logo: `${SITE_URL}/apple-touch-icon.png`,
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          email: "support@aieditorrspediting.org",
+          contactType: "customer support",
+          availableLanguage: ["en"],
+        },
+      ],
+      sameAs: [],
+    },
+  ],
+};
+
 export const metadata: Metadata = {
   title: "RSP Editing Prompts & CapCut Templates — Copy & Create",
-  description:
-    "Discover trending RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.",
-  metadataBase: new URL("https://aieditorrspediting.org"),
+  description: SITE_DESCRIPTION,
+  metadataBase: new URL(SITE_URL),
   alternates: {
-    canonical: "https://aieditorrspediting.org",
+    canonical: SITE_URL,
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    other: verificationOther,
+  },
   openGraph: {
     title: "RSP Editing Prompts & CapCut Templates — Copy & Create",
-    description:
-      "Discover trending RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.",
-    url: "https://aieditorrspediting.org",
-    siteName: "RSP Hub",
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     type: "website",
-    images: ["https://aieditorrspediting.org/og-image.png"],
+    images: [`${SITE_URL}/og-image.png`],
   },
   twitter: {
     card: "summary_large_image",
     title: "RSP Editing Prompts & CapCut Templates — Copy & Create",
-    description:
-      "Discover trending RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.",
-    images: ["https://aieditorrspediting.org/og-image.png"],
+    description: SITE_DESCRIPTION,
+    images: [`${SITE_URL}/og-image.png`],
   },
   icons: {
     icon: [
+      { url: "/favicon.ico" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-180x180.png", sizes: "180x180", type: "image/png" },
     ],
@@ -68,6 +113,11 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-body antialiased bg-neutral-50 text-neutral-900">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+        />
+        <Analytics />
         {children}
       </body>
     </html>

@@ -108,7 +108,9 @@ export default function DisclaimerPage() {
             </h2>
             <p className="mb-4">
               For questions about this disclaimer, contact us at:
-              legal@aieditorrspediting.org
+              <a className="text-brand-500 underline" href="mailto:legal@aieditorrspediting.org">
+                legal@aieditorrspediting.org
+              </a>
             </p>
           </div>
         </div>
