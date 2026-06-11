@@ -29,7 +29,12 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const verificationOther: Record<string, string> = {};
+const AHREFS_SITE_VERIFICATION = "ANjbNIeHZbKYGz6prY1k3w";
+
+const verificationOther: Record<string, string> = {
+  "ahrefs-site-verification":
+    process.env.NEXT_PUBLIC_AHREFS_SITE_VERIFICATION || AHREFS_SITE_VERIFICATION,
+};
 
 if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION) {
   verificationOther["msvalidate.01"] = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
