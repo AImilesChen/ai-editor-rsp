@@ -27,7 +27,7 @@ export default function HomePage() {
           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
         }}
       >
-        <div className="max-w-[720px] mx-auto text-center">
+        <div className="max-w-[1080px] mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white/[0.08] border border-white/10 px-4 py-2.5 rounded-full text-sm text-neutral-300 mb-8">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -40,7 +40,7 @@ export default function HomePage() {
           <p className="text-lg text-neutral-300 mb-8 max-w-[560px] mx-auto">
             Copy trending prompts, discover templates, and try creator-style effects faster. No signup needed.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
               href="/prompts"
               className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400 hover:-translate-y-0.5"
@@ -53,6 +53,45 @@ export default function HomePage() {
             >
               Browse Templates
             </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.06] shadow-2xl">
+              <div
+                role="img"
+                aria-label="Double exposure travel prompt preview"
+                className="aspect-[4/3] bg-cover bg-center"
+                style={{ backgroundImage: "url(/images/prompts/double-exposure-travel-rishikesh-card.webp)" }}
+              />
+              <div className="p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Prompt result</p>
+                <p className="text-sm text-white/90">Travel portrait style users can preview before copying.</p>
+              </div>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.06] shadow-2xl md:translate-y-6">
+              <div
+                role="img"
+                aria-label="CapCut template phone mockup preview"
+                className="aspect-[4/3] bg-cover bg-center"
+                style={{ backgroundImage: "url(/images/templates/bollywood-trending-template-thumbnail.webp)" }}
+              />
+              <div className="p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Template cover</p>
+                <p className="text-sm text-white/90">Phone-first preview for Reels and CapCut users.</p>
+              </div>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.06] shadow-2xl">
+              <div
+                role="img"
+                aria-label="Before and after effect comparison preview"
+                className="aspect-[4/3] bg-cover bg-center"
+                style={{ backgroundImage: "url(/images/effects/diwali-glow-comparison.webp)" }}
+              />
+              <div className="p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Before / After</p>
+                <p className="text-sm text-white/90">Clear effect examples so users know what they will get.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
