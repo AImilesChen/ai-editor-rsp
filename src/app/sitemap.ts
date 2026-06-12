@@ -18,6 +18,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/waitlist`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/about-rsp-editing`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/faq`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
+    { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${BASE_URL}/cookie-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${BASE_URL}/refund-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${BASE_URL}/disclaimer`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
   ];
 
   const promptRoutes = prompts.map((p) => ({

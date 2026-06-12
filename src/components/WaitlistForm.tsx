@@ -95,13 +95,29 @@ export default function WaitlistForm() {
         </p>
         <div className="grid gap-2 rounded-xl bg-success-bg/60 p-3 text-xs text-neutral-700">
           <span>State coverage: default, focus, loading, success, invalid email, already joined, failed/network error, disabled.</span>
-          <button
-            type="button"
-            className="w-fit rounded-full border border-neutral-300 px-3 py-2 text-xs font-semibold text-neutral-700"
-            onClick={() => setState("failed")}
-          >
-            Preview failed state
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="min-h-[44px] w-fit rounded-full border border-neutral-300 px-3 py-2 text-xs font-semibold text-neutral-700"
+              onClick={() => setState("failed")}
+            >
+              Preview failed state
+            </button>
+            <button
+              type="button"
+              className="min-h-[44px] w-fit rounded-full border border-neutral-300 px-3 py-2 text-xs font-semibold text-neutral-700"
+              onClick={() => setState("disabled")}
+            >
+              Preview disabled state
+            </button>
+            <button
+              type="button"
+              className="min-h-[44px] w-fit rounded-full border border-neutral-300 px-3 py-2 text-xs font-semibold text-neutral-700"
+              onClick={() => setState("default")}
+            >
+              Reset state
+            </button>
+          </div>
         </div>
       </form>
     </div>

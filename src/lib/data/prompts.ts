@@ -330,8 +330,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
-  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  before_image: "/images/prompts/p1-double-exposure-travel-rishikesh-14-card.webp",
+  after_image: "/images/prompts/p1-double-exposure-travel-rishikesh-14-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -369,8 +369,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
-  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  before_image: "/images/prompts/p1-horror-girlfriend-ai-photo-15-card.webp",
+  after_image: "/images/prompts/p1-horror-girlfriend-ai-photo-15-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -408,8 +408,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
-  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  before_image: "/images/prompts/p1-lofi-girl-vibes-16-card.webp",
+  after_image: "/images/prompts/p1-lofi-girl-vibes-16-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -447,8 +447,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
-  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  before_image: "/images/prompts/p1-3d-cartoon-selfie-17-card.webp",
+  after_image: "/images/prompts/p1-3d-cartoon-selfie-17-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -486,8 +486,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/diwali-light-portrait-card.webp",
-  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  before_image: "/images/prompts/p1-diwali-light-portrait-18-card.webp",
+  after_image: "/images/prompts/p1-diwali-light-portrait-18-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -525,8 +525,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
-  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  before_image: "/images/prompts/p1-cinematic-movie-poster-19-card.webp",
+  after_image: "/images/prompts/p1-cinematic-movie-poster-19-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -564,8 +564,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
-  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  before_image: "/images/prompts/p1-neon-cyberpunk-portrait-20-card.webp",
+  after_image: "/images/prompts/p1-neon-cyberpunk-portrait-20-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -603,8 +603,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/vintage-film-look-card.webp",
-  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  before_image: "/images/prompts/p1-vintage-film-look-21-card.webp",
+  after_image: "/images/prompts/p1-vintage-film-look-21-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -642,8 +642,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/underwater-fantasy-card.webp",
-  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  before_image: "/images/prompts/p1-underwater-fantasy-22-card.webp",
+  after_image: "/images/prompts/p1-underwater-fantasy-22-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -681,8 +681,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/minimalist-line-art-card.webp",
-  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  before_image: "/images/prompts/p1-minimalist-line-art-23-card.webp",
+  after_image: "/images/prompts/p1-minimalist-line-art-23-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -720,8 +720,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
-  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  before_image: "/images/prompts/p1-oil-painting-masterpiece-24-card.webp",
+  after_image: "/images/prompts/p1-oil-painting-masterpiece-24-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -759,8 +759,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/holographic-fashion-card.webp",
-  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  before_image: "/images/prompts/p1-holographic-fashion-25-card.webp",
+  after_image: "/images/prompts/p1-holographic-fashion-25-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -798,8 +798,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
-  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  before_image: "/images/prompts/p1-double-exposure-travel-rishikesh-26-card.webp",
+  after_image: "/images/prompts/p1-double-exposure-travel-rishikesh-26-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -837,8 +837,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
-  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  before_image: "/images/prompts/p1-horror-girlfriend-ai-photo-27-card.webp",
+  after_image: "/images/prompts/p1-horror-girlfriend-ai-photo-27-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -876,8 +876,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
-  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  before_image: "/images/prompts/p1-lofi-girl-vibes-28-card.webp",
+  after_image: "/images/prompts/p1-lofi-girl-vibes-28-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -915,8 +915,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
-  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  before_image: "/images/prompts/p1-3d-cartoon-selfie-29-card.webp",
+  after_image: "/images/prompts/p1-3d-cartoon-selfie-29-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -954,8 +954,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/diwali-light-portrait-card.webp",
-  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  before_image: "/images/prompts/p1-diwali-light-portrait-30-card.webp",
+  after_image: "/images/prompts/p1-diwali-light-portrait-30-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -993,8 +993,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
-  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  before_image: "/images/prompts/p1-cinematic-movie-poster-31-card.webp",
+  after_image: "/images/prompts/p1-cinematic-movie-poster-31-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1032,8 +1032,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
-  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  before_image: "/images/prompts/p1-neon-cyberpunk-portrait-32-card.webp",
+  after_image: "/images/prompts/p1-neon-cyberpunk-portrait-32-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1071,8 +1071,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/vintage-film-look-card.webp",
-  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  before_image: "/images/prompts/p1-vintage-film-look-33-card.webp",
+  after_image: "/images/prompts/p1-vintage-film-look-33-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1110,8 +1110,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/underwater-fantasy-card.webp",
-  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  before_image: "/images/prompts/p1-underwater-fantasy-34-card.webp",
+  after_image: "/images/prompts/p1-underwater-fantasy-34-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1149,8 +1149,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/minimalist-line-art-card.webp",
-  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  before_image: "/images/prompts/p1-minimalist-line-art-35-card.webp",
+  after_image: "/images/prompts/p1-minimalist-line-art-35-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1188,8 +1188,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
-  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  before_image: "/images/prompts/p1-oil-painting-masterpiece-36-card.webp",
+  after_image: "/images/prompts/p1-oil-painting-masterpiece-36-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1227,8 +1227,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/holographic-fashion-card.webp",
-  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  before_image: "/images/prompts/p1-holographic-fashion-37-card.webp",
+  after_image: "/images/prompts/p1-holographic-fashion-37-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1266,8 +1266,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
-  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  before_image: "/images/prompts/p1-double-exposure-travel-rishikesh-38-card.webp",
+  after_image: "/images/prompts/p1-double-exposure-travel-rishikesh-38-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1305,8 +1305,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
-  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  before_image: "/images/prompts/p1-horror-girlfriend-ai-photo-39-card.webp",
+  after_image: "/images/prompts/p1-horror-girlfriend-ai-photo-39-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1344,8 +1344,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
-  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  before_image: "/images/prompts/p1-lofi-girl-vibes-40-card.webp",
+  after_image: "/images/prompts/p1-lofi-girl-vibes-40-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1383,8 +1383,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
-  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  before_image: "/images/prompts/p1-3d-cartoon-selfie-41-card.webp",
+  after_image: "/images/prompts/p1-3d-cartoon-selfie-41-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1422,8 +1422,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/diwali-light-portrait-card.webp",
-  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  before_image: "/images/prompts/p1-diwali-light-portrait-42-card.webp",
+  after_image: "/images/prompts/p1-diwali-light-portrait-42-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1461,8 +1461,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
-  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  before_image: "/images/prompts/p1-cinematic-movie-poster-43-card.webp",
+  after_image: "/images/prompts/p1-cinematic-movie-poster-43-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1500,8 +1500,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
-  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  before_image: "/images/prompts/p1-neon-cyberpunk-portrait-44-card.webp",
+  after_image: "/images/prompts/p1-neon-cyberpunk-portrait-44-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1539,8 +1539,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/vintage-film-look-card.webp",
-  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  before_image: "/images/prompts/p1-vintage-film-look-45-card.webp",
+  after_image: "/images/prompts/p1-vintage-film-look-45-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1578,8 +1578,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/underwater-fantasy-card.webp",
-  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  before_image: "/images/prompts/p1-underwater-fantasy-46-card.webp",
+  after_image: "/images/prompts/p1-underwater-fantasy-46-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1617,8 +1617,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/minimalist-line-art-card.webp",
-  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  before_image: "/images/prompts/p1-minimalist-line-art-47-card.webp",
+  after_image: "/images/prompts/p1-minimalist-line-art-47-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1656,8 +1656,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
-  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  before_image: "/images/prompts/p1-oil-painting-masterpiece-48-card.webp",
+  after_image: "/images/prompts/p1-oil-painting-masterpiece-48-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1695,8 +1695,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/holographic-fashion-card.webp",
-  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  before_image: "/images/prompts/p1-holographic-fashion-49-card.webp",
+  after_image: "/images/prompts/p1-holographic-fashion-49-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1734,8 +1734,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
-  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  before_image: "/images/prompts/p1-double-exposure-travel-rishikesh-50-card.webp",
+  after_image: "/images/prompts/p1-double-exposure-travel-rishikesh-50-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1773,8 +1773,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
-  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  before_image: "/images/prompts/p1-horror-girlfriend-ai-photo-51-card.webp",
+  after_image: "/images/prompts/p1-horror-girlfriend-ai-photo-51-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1812,8 +1812,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
-  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  before_image: "/images/prompts/p1-lofi-girl-vibes-52-card.webp",
+  after_image: "/images/prompts/p1-lofi-girl-vibes-52-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1851,8 +1851,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
-  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  before_image: "/images/prompts/p1-3d-cartoon-selfie-53-card.webp",
+  after_image: "/images/prompts/p1-3d-cartoon-selfie-53-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1890,8 +1890,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/diwali-light-portrait-card.webp",
-  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  before_image: "/images/prompts/p1-diwali-light-portrait-54-card.webp",
+  after_image: "/images/prompts/p1-diwali-light-portrait-54-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1929,8 +1929,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
-  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  before_image: "/images/prompts/p1-cinematic-movie-poster-55-card.webp",
+  after_image: "/images/prompts/p1-cinematic-movie-poster-55-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -1968,8 +1968,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
-  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  before_image: "/images/prompts/p1-neon-cyberpunk-portrait-56-card.webp",
+  after_image: "/images/prompts/p1-neon-cyberpunk-portrait-56-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2007,8 +2007,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/vintage-film-look-card.webp",
-  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  before_image: "/images/prompts/p1-vintage-film-look-57-card.webp",
+  after_image: "/images/prompts/p1-vintage-film-look-57-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2046,8 +2046,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/underwater-fantasy-card.webp",
-  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  before_image: "/images/prompts/p1-underwater-fantasy-58-card.webp",
+  after_image: "/images/prompts/p1-underwater-fantasy-58-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2085,8 +2085,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/minimalist-line-art-card.webp",
-  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  before_image: "/images/prompts/p1-minimalist-line-art-59-card.webp",
+  after_image: "/images/prompts/p1-minimalist-line-art-59-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2124,8 +2124,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
-  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  before_image: "/images/prompts/p1-oil-painting-masterpiece-60-card.webp",
+  after_image: "/images/prompts/p1-oil-painting-masterpiece-60-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2163,8 +2163,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/holographic-fashion-card.webp",
-  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  before_image: "/images/prompts/p1-holographic-fashion-61-card.webp",
+  after_image: "/images/prompts/p1-holographic-fashion-61-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2202,8 +2202,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
-  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  before_image: "/images/prompts/p1-double-exposure-travel-rishikesh-62-card.webp",
+  after_image: "/images/prompts/p1-double-exposure-travel-rishikesh-62-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2241,8 +2241,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
-  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  before_image: "/images/prompts/p1-horror-girlfriend-ai-photo-63-card.webp",
+  after_image: "/images/prompts/p1-horror-girlfriend-ai-photo-63-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [
@@ -2280,8 +2280,8 @@ const p1AdditionalPrompts: Prompt[] = [
     "Bing Image Creator"
   ],
   input_image_required: false,
-  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
-  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  before_image: "/images/prompts/p1-lofi-girl-vibes-64-card.webp",
+  after_image: "/images/prompts/p1-lofi-girl-vibes-64-detail.webp",
   attribution: "RSP Editing style",
   source_url: "#",
   tags: [

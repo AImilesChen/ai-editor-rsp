@@ -241,7 +241,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-10",
-  preview_image: "/images/templates/babuaan-song-capcut-template-2026-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-10-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -275,7 +275,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-11",
-  preview_image: "/images/templates/ekdin-tomay-ghire-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-11-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -309,7 +309,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-12",
-  preview_image: "/images/templates/bollywood-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-12-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -343,7 +343,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-13",
-  preview_image: "/images/templates/english-pop-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-13-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -377,7 +377,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-14",
-  preview_image: "/images/templates/ankhon-ankhon-ka-masla-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-14-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -411,7 +411,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-15",
-  preview_image: "/images/templates/bengali-folk-song-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-15-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -445,7 +445,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-16",
-  preview_image: "/images/templates/hindi-romantic-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-16-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -479,7 +479,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-17",
-  preview_image: "/images/templates/english-edm-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-17-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -513,7 +513,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-18",
-  preview_image: "/images/templates/babuaan-song-capcut-template-2026-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-18-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -547,7 +547,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-19",
-  preview_image: "/images/templates/ekdin-tomay-ghire-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-19-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -581,7 +581,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-20",
-  preview_image: "/images/templates/bollywood-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-20-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -615,7 +615,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-21",
-  preview_image: "/images/templates/english-pop-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-21-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -649,7 +649,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-22",
-  preview_image: "/images/templates/ankhon-ankhon-ka-masla-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-22-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -683,7 +683,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-23",
-  preview_image: "/images/templates/bengali-folk-song-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-23-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -717,7 +717,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-24",
-  preview_image: "/images/templates/hindi-romantic-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-24-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -751,7 +751,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-25",
-  preview_image: "/images/templates/english-edm-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-25-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -785,7 +785,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-26",
-  preview_image: "/images/templates/babuaan-song-capcut-template-2026-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-26-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -819,7 +819,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-27",
-  preview_image: "/images/templates/ekdin-tomay-ghire-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-27-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -853,7 +853,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-28",
-  preview_image: "/images/templates/bollywood-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-28-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -887,7 +887,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-29",
-  preview_image: "/images/templates/english-pop-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-29-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -921,7 +921,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-30",
-  preview_image: "/images/templates/ankhon-ankhon-ka-masla-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-30-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -955,7 +955,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-31",
-  preview_image: "/images/templates/bengali-folk-song-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-31-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -989,7 +989,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-32",
-  preview_image: "/images/templates/hindi-romantic-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-32-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1023,7 +1023,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-33",
-  preview_image: "/images/templates/english-edm-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-33-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1057,7 +1057,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-34",
-  preview_image: "/images/templates/babuaan-song-capcut-template-2026-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-34-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1091,7 +1091,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-35",
-  preview_image: "/images/templates/ekdin-tomay-ghire-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-35-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1125,7 +1125,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-36",
-  preview_image: "/images/templates/bollywood-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-36-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1159,7 +1159,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-37",
-  preview_image: "/images/templates/english-pop-trending-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-english-capcut-template-37-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1193,7 +1193,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-38",
-  preview_image: "/images/templates/ankhon-ankhon-ka-masla-thumbnail.webp",
+  preview_image: "/images/templates/p1-bhojpuri-capcut-template-38-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1227,7 +1227,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-39",
-  preview_image: "/images/templates/bengali-folk-song-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-bengali-capcut-template-39-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
@@ -1261,7 +1261,7 @@ const p1AdditionalTemplates: Template[] = [
   ],
   tool: "CapCut",
   template_url: "https://www.capcut.com/templates/p1-template-40",
-  preview_image: "/images/templates/hindi-romantic-template-thumbnail.webp",
+  preview_image: "/images/templates/p1-hindi-capcut-template-40-thumbnail.webp",
   tutorial_steps: [
     "Open CapCut app on your phone",
     "Tap the template link",
