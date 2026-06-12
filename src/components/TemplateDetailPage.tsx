@@ -78,7 +78,7 @@ export default function TemplateDetailPage({ template }: { template: Template })
                 <a
                   href={template.template_url}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="nofollow sponsored noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-[15px] font-semibold text-white bg-brand-500 no-underline transition-colors hover:bg-brand-400"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -125,7 +125,7 @@ export default function TemplateDetailPage({ template }: { template: Template })
                       <a
                         href={template.source_url}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="nofollow sponsored noopener noreferrer"
                         className="text-brand-500 no-underline hover:underline"
                       >
                         View original →

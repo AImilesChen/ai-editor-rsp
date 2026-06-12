@@ -29,7 +29,7 @@ export default function PromptListPage() {
               AI Photo Prompts Library
             </h1>
             <p className="text-neutral-500 text-lg max-w-[560px] mx-auto">
-              Browse 12+ RSP-style AI photo prompts. Copy to ChatGPT or Gemini.
+              Browse 50+ RSP-style AI photo prompts. Copy to ChatGPT or Gemini.
             </p>
           </div>
 

@@ -29,10 +29,9 @@ export default function FAQPage() {
   return (
     <>
       <Header />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
+      <script type="application/ld+json">
+        {JSON.stringify(faqJsonLd)}
+      </script>
       <section className="py-12 px-4">
         <div className="max-w-[720px] mx-auto">
           <div className="text-center mb-10">

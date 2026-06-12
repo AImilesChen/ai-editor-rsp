@@ -31,7 +31,8 @@ export default function Header() {
     { href: "/prompts", label: "Prompts" },
     { href: "/templates", label: "Templates" },
     { href: "/effects", label: "Effects" },
-    { href: "/about-rsp-editing", label: "About" },
+    { href: "/suggest-prompt", label: "Suggest" },
+    { href: "/faq", label: "FAQ" },
   ];
 
   return (
@@ -53,15 +54,15 @@ export default function Header() {
               </Link>
             ))}
             <Link
-              href="/prompts"
+              href="/waitlist"
               className="bg-brand-500 text-white px-[18px] py-2 rounded-full text-sm font-semibold no-underline transition-colors hover:bg-brand-400"
             >
-              Browse Prompts
+              Join Waitlist
             </Link>
           </nav>
 
           <button
-            className="md:hidden bg-transparent border-none text-white cursor-pointer p-2"
+            className="md:hidden bg-transparent border-none text-white cursor-pointer p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
             aria-label="Open menu"
             onClick={() => setMobileOpen(true)}
           >
@@ -76,7 +77,7 @@ export default function Header() {
       {mobileOpen && (
         <div className="fixed inset-0 bg-brand-900/95 z-[900] flex flex-col items-center justify-center gap-8 md:hidden">
           <button
-            className="absolute top-5 right-6 bg-transparent border-none text-white cursor-pointer"
+            className="absolute top-5 right-6 bg-transparent border-none text-white cursor-pointer min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           >
@@ -95,11 +96,11 @@ export default function Header() {
             </Link>
           ))}
           <Link
-            href="/faq"
+            href="/waitlist"
             onClick={() => setMobileOpen(false)}
-            className="text-white font-heading text-2xl font-semibold no-underline"
+            className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-base font-semibold no-underline min-h-[44px] inline-flex items-center justify-center"
           >
-            FAQ
+            Join Waitlist
           </Link>
         </div>
       )}

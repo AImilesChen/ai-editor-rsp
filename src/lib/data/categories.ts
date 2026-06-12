@@ -30,6 +30,8 @@ export const effectCategories = [
   "3D Cartoon",
   "Bhojpuri",
   "Bengali",
+  "Cinematic",
+  "Cyberpunk",
 ];
 
 export const tools = ["All", "ChatGPT", "Gemini", "Bing Image Creator", "CapCut"];

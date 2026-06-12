@@ -16,9 +16,12 @@ export default function Footer() {
             <Link href="/effects" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">
               Effects
             </Link>
-            <Link href="/about-rsp-editing" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">
-              About
-            </Link>
+            <Link href="/tiktok-effects" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">TikTok Effects</Link>
+            <Link href="/instagram-reels-effects" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">Instagram Reels Effects</Link>
+            <Link href="/youtube-shorts-effects" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">YouTube Shorts Effects</Link>
+            <Link href="/suggest-prompt" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">Suggest Prompt</Link>
+            <Link href="/waitlist" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">Join Waitlist</Link>
+            <Link href="/faq" className="block text-neutral-300 text-sm mb-2.5 no-underline transition-colors hover:text-white">FAQ</Link>
           </div>
           <div>
             <h4 className="text-white text-base font-semibold mb-4">Legal</h4>
@@ -40,7 +43,7 @@ export default function Footer() {
           </div>
           <div>
             <h4 className="text-white text-base font-semibold mb-4">Connect</h4>
-            <span className="block text-neutral-500 text-sm">Social links coming soon</span>
+            <span className="block text-neutral-500 text-sm">Join the waitlist for new prompts and template drops. No spam, opt out anytime.</span>
           </div>
         </div>
         <div className="border-t border-white/10 pt-6 text-center text-[13px] text-neutral-500">

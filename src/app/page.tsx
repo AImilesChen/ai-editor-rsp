@@ -199,7 +199,7 @@ export default function HomePage() {
                   <a
                     href={template.template_url}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="nofollow sponsored noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-white bg-brand-500 no-underline transition-colors hover:bg-brand-400"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -289,7 +289,7 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-neutral-500 text-lg max-w-[560px] mx-auto">
-              Three steps to your next viral effect.
+              Three steps to your next creator-style effect.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">

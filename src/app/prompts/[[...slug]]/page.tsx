@@ -23,7 +23,7 @@ export async function generateMetadata({
     return createMetadata({
       title: "AI Photo Prompts Library",
       description:
-        "Browse 12+ RSP-style AI photo prompts. Double exposure, horror, lofi, 3D, festival, cinematic. Copy to ChatGPT or Gemini.",
+        "Browse 50+ RSP-style AI photo prompts. Double exposure, horror, lofi, 3D, festival, cinematic, and more. Copy to ChatGPT or Gemini.",
       path: "/prompts",
     });
   }

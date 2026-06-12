@@ -3,7 +3,7 @@ import { Metadata } from "next";
 const SITE_NAME = "RSP Hub";
 const SITE_URL = "https://aieditorrspediting.org";
 const DEFAULT_DESCRIPTION =
-  "Discover trending RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.";
+  "Discover RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.";
 
 export function createMetadata({
   title,

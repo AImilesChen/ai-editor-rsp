@@ -6,7 +6,9 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const proto = request.headers.get("x-forwarded-proto") || request.nextUrl.protocol.replace(":", "");
 
-  if (host === `www.${CANONICAL_HOST}` || proto === "http") {
+  const isCanonicalHost = host === CANONICAL_HOST || host === `www.${CANONICAL_HOST}`;
+
+  if (isCanonicalHost && (host === `www.${CANONICAL_HOST}` || proto === "http")) {
     const url = request.nextUrl.clone();
     url.protocol = "https";
     url.host = CANONICAL_HOST;

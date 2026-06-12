@@ -90,7 +90,7 @@ export const effects: Effect[] = [
     template_id: "babuaan-song-capcut-template-2026",
     before_image: "/images/effects/babuaan-song-effect-comparison.webp",
     after_image: "/images/effects/babuaan-song-effect-comparison.webp",
-    description: "Trending Bhojpuri song template with beat-sync transitions. Create viral videos with automatic beat matching.",
+    description: "Trending Bhojpuri song template with beat-sync transitions. Create short videos with automatic beat matching.",
     tutorial_steps: [
       "Open CapCut and search for 'Babuaan' template",
       "Select 3-5 photos or video clips",
@@ -144,3 +144,609 @@ export const effects: Effect[] = [
     status: "active",
   },
 ];
+
+
+const p1AdditionalEffects: Effect[] = [
+{
+  id: "7",
+  slug: "p1-double-exposure-effect-7",
+  title: "Double Exposure Creator Effect 7",
+  category: "Double Exposure",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/double-exposure-travel-comparison.webp",
+  after_image: "/images/effects/double-exposure-travel-comparison.webp",
+  description: "A double exposure before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "double exposure",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "8",
+  slug: "p1-horror-effect-8",
+  title: "Horror Creator Effect 8",
+  category: "Horror",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/horror-portrait-comparison.webp",
+  after_image: "/images/effects/horror-portrait-comparison.webp",
+  description: "A horror before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "horror",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "9",
+  slug: "p1-festival-effect-9",
+  title: "Festival Creator Effect 9",
+  category: "Festival",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/diwali-glow-comparison.webp",
+  after_image: "/images/effects/diwali-glow-comparison.webp",
+  description: "A festival before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "festival",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "10",
+  slug: "p1-3d-cartoon-effect-10",
+  title: "3D Cartoon Creator Effect 10",
+  category: "3D Cartoon",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+  after_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+  description: "A 3d cartoon before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "3d cartoon",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "11",
+  slug: "p1-bhojpuri-effect-11",
+  title: "Bhojpuri Creator Effect 11",
+  category: "Bhojpuri",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "template",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/babuaan-song-effect-comparison.webp",
+  after_image: "/images/effects/babuaan-song-effect-comparison.webp",
+  description: "A bhojpuri before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "bhojpuri",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "12",
+  slug: "p1-bengali-effect-12",
+  title: "Bengali Creator Effect 12",
+  category: "Bengali",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "template",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/bengali-folk-effect-comparison.webp",
+  after_image: "/images/effects/bengali-folk-effect-comparison.webp",
+  description: "A bengali before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "bengali",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "13",
+  slug: "p1-cinematic-effect-13",
+  title: "Cinematic Creator Effect 13",
+  category: "Cinematic",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/double-exposure-travel-comparison.webp",
+  after_image: "/images/effects/double-exposure-travel-comparison.webp",
+  description: "A cinematic before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "cinematic",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "14",
+  slug: "p1-cyberpunk-effect-14",
+  title: "Cyberpunk Creator Effect 14",
+  category: "Cyberpunk",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/horror-portrait-comparison.webp",
+  after_image: "/images/effects/horror-portrait-comparison.webp",
+  description: "A cyberpunk before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "cyberpunk",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "15",
+  slug: "p1-double-exposure-effect-15",
+  title: "Double Exposure Creator Effect 15",
+  category: "Double Exposure",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/double-exposure-travel-comparison.webp",
+  after_image: "/images/effects/double-exposure-travel-comparison.webp",
+  description: "A double exposure before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "double exposure",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "16",
+  slug: "p1-horror-effect-16",
+  title: "Horror Creator Effect 16",
+  category: "Horror",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/horror-portrait-comparison.webp",
+  after_image: "/images/effects/horror-portrait-comparison.webp",
+  description: "A horror before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "horror",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "17",
+  slug: "p1-festival-effect-17",
+  title: "Festival Creator Effect 17",
+  category: "Festival",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/diwali-glow-comparison.webp",
+  after_image: "/images/effects/diwali-glow-comparison.webp",
+  description: "A festival before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "festival",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "18",
+  slug: "p1-3d-cartoon-effect-18",
+  title: "3D Cartoon Creator Effect 18",
+  category: "3D Cartoon",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+  after_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+  description: "A 3d cartoon before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "3d cartoon",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "19",
+  slug: "p1-bhojpuri-effect-19",
+  title: "Bhojpuri Creator Effect 19",
+  category: "Bhojpuri",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "template",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/babuaan-song-effect-comparison.webp",
+  after_image: "/images/effects/babuaan-song-effect-comparison.webp",
+  description: "A bhojpuri before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "bhojpuri",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "20",
+  slug: "p1-bengali-effect-20",
+  title: "Bengali Creator Effect 20",
+  category: "Bengali",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "template",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/bengali-folk-effect-comparison.webp",
+  after_image: "/images/effects/bengali-folk-effect-comparison.webp",
+  description: "A bengali before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "bengali",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "21",
+  slug: "p1-cinematic-effect-21",
+  title: "Cinematic Creator Effect 21",
+  category: "Cinematic",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/double-exposure-travel-comparison.webp",
+  after_image: "/images/effects/double-exposure-travel-comparison.webp",
+  description: "A cinematic before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "cinematic",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "22",
+  slug: "p1-cyberpunk-effect-22",
+  title: "Cyberpunk Creator Effect 22",
+  category: "Cyberpunk",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/horror-portrait-comparison.webp",
+  after_image: "/images/effects/horror-portrait-comparison.webp",
+  description: "A cyberpunk before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "cyberpunk",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "23",
+  slug: "p1-double-exposure-effect-23",
+  title: "Double Exposure Creator Effect 23",
+  category: "Double Exposure",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/double-exposure-travel-comparison.webp",
+  after_image: "/images/effects/double-exposure-travel-comparison.webp",
+  description: "A double exposure before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "double exposure",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "24",
+  slug: "p1-horror-effect-24",
+  title: "Horror Creator Effect 24",
+  category: "Horror",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/horror-portrait-comparison.webp",
+  after_image: "/images/effects/horror-portrait-comparison.webp",
+  description: "A horror before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "horror",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "25",
+  slug: "p1-festival-effect-25",
+  title: "Festival Creator Effect 25",
+  category: "Festival",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/diwali-glow-comparison.webp",
+  after_image: "/images/effects/diwali-glow-comparison.webp",
+  description: "A festival before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "festival",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+},
+{
+  id: "26",
+  slug: "p1-3d-cartoon-effect-26",
+  title: "3D Cartoon Creator Effect 26",
+  category: "3D Cartoon",
+  platform: [
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts"
+  ],
+  type: "prompt",
+  prompt_id: "p1-double-exposure-travel-rishikesh-14",
+  before_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+  after_image: "/images/effects/3d-cartoon-effect-comparison.webp",
+  description: "A 3d cartoon before-and-after direction for short-form creator edits with clear visual contrast and practical reuse notes.",
+  tutorial_steps: [
+    "Choose a clear portrait or clip",
+    "Pick the matching prompt or CapCut direction",
+    "Apply the style with balanced lighting",
+    "Review for natural face details",
+    "Export a 9:16 social-ready version"
+  ],
+  tags: [
+    "3d cartoon",
+    "before after",
+    "creator",
+    "p1"
+  ],
+  status: "active"
+}
+];
+
+effects.push(...p1AdditionalEffects);

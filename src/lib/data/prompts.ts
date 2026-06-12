@@ -304,3 +304,1998 @@ export const prompts: Prompt[] = [
     status: "active",
   },
 ];
+
+
+const p1AdditionalPrompts: Prompt[] = [
+{
+  id: "14",
+  slug: "p1-double-exposure-travel-rishikesh-14",
+  title: "River City Blend 14",
+  category: "Double Exposure",
+  subcategories: [
+    "Double Exposure",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a double exposure RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 14.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
+  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "double exposure",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "15",
+  slug: "p1-horror-girlfriend-ai-photo-15",
+  title: "Moonlit Shadow Portrait 15",
+  category: "Horror",
+  subcategories: [
+    "Horror",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a horror RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 15.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
+  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "horror",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "16",
+  slug: "p1-lofi-girl-vibes-16",
+  title: "Cozy Study Glow 16",
+  category: "Lofi",
+  subcategories: [
+    "Lofi",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a lofi RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 16.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
+  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "lofi",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "17",
+  slug: "p1-3d-cartoon-selfie-17",
+  title: "Rounded Avatar Studio 17",
+  category: "3D Cartoon",
+  subcategories: [
+    "3D Cartoon",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a 3d cartoon RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 17.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
+  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "3d cartoon",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "18",
+  slug: "p1-diwali-light-portrait-18",
+  title: "Lantern Festival Mood 18",
+  category: "Festival",
+  subcategories: [
+    "Festival",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a festival RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 18.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/diwali-light-portrait-card.webp",
+  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "festival",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "19",
+  slug: "p1-cinematic-movie-poster-19",
+  title: "Film Poster Closeup 19",
+  category: "Cinematic",
+  subcategories: [
+    "Cinematic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cinematic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 19.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
+  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cinematic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "20",
+  slug: "p1-neon-cyberpunk-portrait-20",
+  title: "Neon Rain Profile 20",
+  category: "Cyberpunk",
+  subcategories: [
+    "Cyberpunk",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cyberpunk RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 20.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
+  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cyberpunk",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "21",
+  slug: "p1-vintage-film-look-21",
+  title: "Retro Film Memory 21",
+  category: "Vintage",
+  subcategories: [
+    "Vintage",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a vintage RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 21.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/vintage-film-look-card.webp",
+  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "vintage",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "22",
+  slug: "p1-underwater-fantasy-22",
+  title: "Underwater Dream Scene 22",
+  category: "Fantasy",
+  subcategories: [
+    "Fantasy",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fantasy RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 22.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/underwater-fantasy-card.webp",
+  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fantasy",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "23",
+  slug: "p1-minimalist-line-art-23",
+  title: "Clean Line Portrait 23",
+  category: "Minimalist",
+  subcategories: [
+    "Minimalist",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a minimalist RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 23.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/minimalist-line-art-card.webp",
+  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "minimalist",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "24",
+  slug: "p1-oil-painting-masterpiece-24",
+  title: "Gallery Oil Portrait 24",
+  category: "Artistic",
+  subcategories: [
+    "Artistic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a artistic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 24.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
+  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "artistic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "25",
+  slug: "p1-holographic-fashion-25",
+  title: "Chrome Fashion Editorial 25",
+  category: "Fashion",
+  subcategories: [
+    "Fashion",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fashion RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 25.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/holographic-fashion-card.webp",
+  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fashion",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "26",
+  slug: "p1-double-exposure-travel-rishikesh-26",
+  title: "River City Blend 26",
+  category: "Double Exposure",
+  subcategories: [
+    "Double Exposure",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a double exposure RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 26.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
+  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "double exposure",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "27",
+  slug: "p1-horror-girlfriend-ai-photo-27",
+  title: "Moonlit Shadow Portrait 27",
+  category: "Horror",
+  subcategories: [
+    "Horror",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a horror RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 27.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
+  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "horror",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "28",
+  slug: "p1-lofi-girl-vibes-28",
+  title: "Cozy Study Glow 28",
+  category: "Lofi",
+  subcategories: [
+    "Lofi",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a lofi RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 28.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
+  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "lofi",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "29",
+  slug: "p1-3d-cartoon-selfie-29",
+  title: "Rounded Avatar Studio 29",
+  category: "3D Cartoon",
+  subcategories: [
+    "3D Cartoon",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a 3d cartoon RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 29.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
+  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "3d cartoon",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "30",
+  slug: "p1-diwali-light-portrait-30",
+  title: "Lantern Festival Mood 30",
+  category: "Festival",
+  subcategories: [
+    "Festival",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a festival RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 30.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/diwali-light-portrait-card.webp",
+  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "festival",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "31",
+  slug: "p1-cinematic-movie-poster-31",
+  title: "Film Poster Closeup 31",
+  category: "Cinematic",
+  subcategories: [
+    "Cinematic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cinematic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 31.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
+  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cinematic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "32",
+  slug: "p1-neon-cyberpunk-portrait-32",
+  title: "Neon Rain Profile 32",
+  category: "Cyberpunk",
+  subcategories: [
+    "Cyberpunk",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cyberpunk RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 32.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
+  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cyberpunk",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "33",
+  slug: "p1-vintage-film-look-33",
+  title: "Retro Film Memory 33",
+  category: "Vintage",
+  subcategories: [
+    "Vintage",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a vintage RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 33.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/vintage-film-look-card.webp",
+  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "vintage",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "34",
+  slug: "p1-underwater-fantasy-34",
+  title: "Underwater Dream Scene 34",
+  category: "Fantasy",
+  subcategories: [
+    "Fantasy",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fantasy RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 34.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/underwater-fantasy-card.webp",
+  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fantasy",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "35",
+  slug: "p1-minimalist-line-art-35",
+  title: "Clean Line Portrait 35",
+  category: "Minimalist",
+  subcategories: [
+    "Minimalist",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a minimalist RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 35.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/minimalist-line-art-card.webp",
+  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "minimalist",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "36",
+  slug: "p1-oil-painting-masterpiece-36",
+  title: "Gallery Oil Portrait 36",
+  category: "Artistic",
+  subcategories: [
+    "Artistic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a artistic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 36.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
+  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "artistic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "37",
+  slug: "p1-holographic-fashion-37",
+  title: "Chrome Fashion Editorial 37",
+  category: "Fashion",
+  subcategories: [
+    "Fashion",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fashion RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 37.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/holographic-fashion-card.webp",
+  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fashion",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "38",
+  slug: "p1-double-exposure-travel-rishikesh-38",
+  title: "River City Blend 38",
+  category: "Double Exposure",
+  subcategories: [
+    "Double Exposure",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a double exposure RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 38.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
+  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "double exposure",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "39",
+  slug: "p1-horror-girlfriend-ai-photo-39",
+  title: "Moonlit Shadow Portrait 39",
+  category: "Horror",
+  subcategories: [
+    "Horror",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a horror RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 39.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
+  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "horror",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "40",
+  slug: "p1-lofi-girl-vibes-40",
+  title: "Cozy Study Glow 40",
+  category: "Lofi",
+  subcategories: [
+    "Lofi",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a lofi RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 40.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
+  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "lofi",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "41",
+  slug: "p1-3d-cartoon-selfie-41",
+  title: "Rounded Avatar Studio 41",
+  category: "3D Cartoon",
+  subcategories: [
+    "3D Cartoon",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a 3d cartoon RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 41.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
+  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "3d cartoon",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "42",
+  slug: "p1-diwali-light-portrait-42",
+  title: "Lantern Festival Mood 42",
+  category: "Festival",
+  subcategories: [
+    "Festival",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a festival RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 42.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/diwali-light-portrait-card.webp",
+  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "festival",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "43",
+  slug: "p1-cinematic-movie-poster-43",
+  title: "Film Poster Closeup 43",
+  category: "Cinematic",
+  subcategories: [
+    "Cinematic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cinematic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 43.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
+  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cinematic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "44",
+  slug: "p1-neon-cyberpunk-portrait-44",
+  title: "Neon Rain Profile 44",
+  category: "Cyberpunk",
+  subcategories: [
+    "Cyberpunk",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cyberpunk RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 44.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
+  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cyberpunk",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "45",
+  slug: "p1-vintage-film-look-45",
+  title: "Retro Film Memory 45",
+  category: "Vintage",
+  subcategories: [
+    "Vintage",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a vintage RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 45.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/vintage-film-look-card.webp",
+  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "vintage",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "46",
+  slug: "p1-underwater-fantasy-46",
+  title: "Underwater Dream Scene 46",
+  category: "Fantasy",
+  subcategories: [
+    "Fantasy",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fantasy RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 46.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/underwater-fantasy-card.webp",
+  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fantasy",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "47",
+  slug: "p1-minimalist-line-art-47",
+  title: "Clean Line Portrait 47",
+  category: "Minimalist",
+  subcategories: [
+    "Minimalist",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a minimalist RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 47.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/minimalist-line-art-card.webp",
+  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "minimalist",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "48",
+  slug: "p1-oil-painting-masterpiece-48",
+  title: "Gallery Oil Portrait 48",
+  category: "Artistic",
+  subcategories: [
+    "Artistic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a artistic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 48.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
+  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "artistic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "49",
+  slug: "p1-holographic-fashion-49",
+  title: "Chrome Fashion Editorial 49",
+  category: "Fashion",
+  subcategories: [
+    "Fashion",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fashion RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 49.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/holographic-fashion-card.webp",
+  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fashion",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "50",
+  slug: "p1-double-exposure-travel-rishikesh-50",
+  title: "River City Blend 50",
+  category: "Double Exposure",
+  subcategories: [
+    "Double Exposure",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a double exposure RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 50.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
+  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "double exposure",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "51",
+  slug: "p1-horror-girlfriend-ai-photo-51",
+  title: "Moonlit Shadow Portrait 51",
+  category: "Horror",
+  subcategories: [
+    "Horror",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a horror RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 51.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
+  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "horror",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "52",
+  slug: "p1-lofi-girl-vibes-52",
+  title: "Cozy Study Glow 52",
+  category: "Lofi",
+  subcategories: [
+    "Lofi",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a lofi RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 52.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
+  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "lofi",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "53",
+  slug: "p1-3d-cartoon-selfie-53",
+  title: "Rounded Avatar Studio 53",
+  category: "3D Cartoon",
+  subcategories: [
+    "3D Cartoon",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a 3d cartoon RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 53.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/3d-cartoon-selfie-card.webp",
+  after_image: "/images/prompts/3d-cartoon-selfie-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "3d cartoon",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "54",
+  slug: "p1-diwali-light-portrait-54",
+  title: "Lantern Festival Mood 54",
+  category: "Festival",
+  subcategories: [
+    "Festival",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a festival RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 54.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/diwali-light-portrait-card.webp",
+  after_image: "/images/prompts/diwali-light-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "festival",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "55",
+  slug: "p1-cinematic-movie-poster-55",
+  title: "Film Poster Closeup 55",
+  category: "Cinematic",
+  subcategories: [
+    "Cinematic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cinematic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 55.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/cinematic-movie-poster-card.webp",
+  after_image: "/images/prompts/cinematic-movie-poster-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cinematic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "56",
+  slug: "p1-neon-cyberpunk-portrait-56",
+  title: "Neon Rain Profile 56",
+  category: "Cyberpunk",
+  subcategories: [
+    "Cyberpunk",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a cyberpunk RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 56.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/neon-cyberpunk-portrait-card.webp",
+  after_image: "/images/prompts/neon-cyberpunk-portrait-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "cyberpunk",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "57",
+  slug: "p1-vintage-film-look-57",
+  title: "Retro Film Memory 57",
+  category: "Vintage",
+  subcategories: [
+    "Vintage",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a vintage RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 57.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/vintage-film-look-card.webp",
+  after_image: "/images/prompts/vintage-film-look-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "vintage",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "58",
+  slug: "p1-underwater-fantasy-58",
+  title: "Underwater Dream Scene 58",
+  category: "Fantasy",
+  subcategories: [
+    "Fantasy",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fantasy RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 58.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/underwater-fantasy-card.webp",
+  after_image: "/images/prompts/underwater-fantasy-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fantasy",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "59",
+  slug: "p1-minimalist-line-art-59",
+  title: "Clean Line Portrait 59",
+  category: "Minimalist",
+  subcategories: [
+    "Minimalist",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a minimalist RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 59.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/minimalist-line-art-card.webp",
+  after_image: "/images/prompts/minimalist-line-art-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "minimalist",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "60",
+  slug: "p1-oil-painting-masterpiece-60",
+  title: "Gallery Oil Portrait 60",
+  category: "Artistic",
+  subcategories: [
+    "Artistic",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a artistic RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 60.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/oil-painting-masterpiece-card.webp",
+  after_image: "/images/prompts/oil-painting-masterpiece-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "artistic",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "61",
+  slug: "p1-holographic-fashion-61",
+  title: "Chrome Fashion Editorial 61",
+  category: "Fashion",
+  subcategories: [
+    "Fashion",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a fashion RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 61.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/holographic-fashion-card.webp",
+  after_image: "/images/prompts/holographic-fashion-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "fashion",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "62",
+  slug: "p1-double-exposure-travel-rishikesh-62",
+  title: "River City Blend 62",
+  category: "Double Exposure",
+  subcategories: [
+    "Double Exposure",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a double exposure RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 62.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Bing Image Creator",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/double-exposure-travel-rishikesh-card.webp",
+  after_image: "/images/prompts/double-exposure-travel-rishikesh-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "double exposure",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "63",
+  slug: "p1-horror-girlfriend-ai-photo-63",
+  title: "Moonlit Shadow Portrait 63",
+  category: "Horror",
+  subcategories: [
+    "Horror",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a horror RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 63.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "ChatGPT",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/horror-girlfriend-ai-photo-card.webp",
+  after_image: "/images/prompts/horror-girlfriend-ai-photo-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "horror",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Medium",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+},
+{
+  id: "64",
+  slug: "p1-lofi-girl-vibes-64",
+  title: "Cozy Study Glow 64",
+  category: "Lofi",
+  subcategories: [
+    "Lofi",
+    "P1 Collection"
+  ],
+  platform: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  prompt: "Create a lofi RSP-style creator portrait with a clear subject, textured background, cinematic lighting, social-ready composition, detailed face, balanced contrast, and warm editorial color grading. Variation 64.",
+  negative_prompt: "blurry, low quality, distorted face, extra fingers, watermark",
+  tool: "Gemini",
+  tool_alternatives: [
+    "ChatGPT",
+    "Gemini",
+    "Bing Image Creator"
+  ],
+  input_image_required: false,
+  before_image: "/images/prompts/lofi-girl-vibes-card.webp",
+  after_image: "/images/prompts/lofi-girl-vibes-detail.webp",
+  attribution: "RSP Editing style",
+  source_url: "#",
+  tags: [
+    "lofi",
+    "rsp style",
+    "creator",
+    "p1"
+  ],
+  difficulty: "Easy",
+  estimated_time: "2-4 minutes",
+  safety_notes: "Use only photos you have permission to edit.",
+  copyright_notes: "Independent prompt reference for educational use.",
+  status: "active"
+}
+];
+
+prompts.push(...p1AdditionalPrompts);

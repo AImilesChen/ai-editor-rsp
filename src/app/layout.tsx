@@ -6,7 +6,7 @@ import "./globals.css";
 const SITE_URL = "https://aieditorrspediting.org";
 const SITE_NAME = "RSP Hub";
 const SITE_DESCRIPTION =
-  "Discover trending RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.";
+  "Discover RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -118,10 +118,9 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-body antialiased bg-neutral-50 text-neutral-900">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
-        />
+        <script type="application/ld+json">
+          {JSON.stringify(siteJsonLd)}
+        </script>
         <Analytics />
         {children}
       </body>
