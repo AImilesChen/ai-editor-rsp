@@ -6,7 +6,7 @@ import WaitlistForm from "@/components/WaitlistForm";
 import { createMetadata } from "@/lib/utils/metadata";
 
 export const metadata: Metadata = createMetadata({
-  title: "Tell Us What Prompt Templates You Need — RSP Hub",
+  title: "Tell Us What Prompt Templates You Need",
   description:
     "Tell us what photo you want to edit and see which RSP-style prompts match. Join the waitlist to be notified when this feature opens.",
   path: "/suggest-prompt",
