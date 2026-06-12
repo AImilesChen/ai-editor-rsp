@@ -33,7 +33,7 @@ export const templates: Template[] = [
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/babuaan-2026",
     template_url_backup: "https://www.capcut.com/templates/babuaan-2026-alt",
-    preview_image: "/images/templates/babuaan-song-capcut-template-2026-thumbnail.webp",
+    preview_image: "/images/templates/v2-babuaan-phone-preview.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -58,7 +58,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/ankhon-ankhon-ka-masla",
-    preview_image: "/images/templates/ankhon-ankhon-ka-masla-thumbnail.webp",
+    preview_image: "/images/templates/v2-ankhon-phone-preview.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",
@@ -83,7 +83,7 @@ export const templates: Template[] = [
     platform: ["TikTok", "Instagram Reels", "YouTube Shorts"],
     tool: "CapCut",
     template_url: "https://www.capcut.com/templates/ekdin-tomay-ghire",
-    preview_image: "/images/templates/ekdin-tomay-ghire-thumbnail.webp",
+    preview_image: "/images/templates/v2-ekdin-phone-preview.webp",
     tutorial_steps: [
       "Open CapCut app on your phone",
       "Tap 'Use Template' button above",

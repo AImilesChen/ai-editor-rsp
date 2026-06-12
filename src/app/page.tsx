@@ -61,7 +61,7 @@ export default function HomePage() {
                 role="img"
                 aria-label="Double exposure travel prompt preview"
                 className="aspect-[4/3] bg-cover bg-center"
-                style={{ backgroundImage: "url(/images/home/hero-night-bridge.webp)" }}
+                style={{ backgroundImage: "url(/images/home/v2-hero-aurora-city.webp)" }}
               />
               <div className="p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Prompt result</p>
@@ -73,7 +73,7 @@ export default function HomePage() {
                 role="img"
                 aria-label="CapCut template phone mockup preview"
                 className="aspect-[4/3] bg-cover bg-center"
-                style={{ backgroundImage: "url(/images/home/hero-calm-pier.webp)" }}
+                style={{ backgroundImage: "url(/images/home/v2-hero-blue-pier.webp)" }}
               />
               <div className="p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Template cover</p>
@@ -85,7 +85,7 @@ export default function HomePage() {
                 role="img"
                 aria-label="Before and after effect comparison preview"
                 className="aspect-[4/3] bg-cover bg-center"
-                style={{ backgroundImage: "url(/images/home/hero-vintage-camera.webp)" }}
+                style={{ backgroundImage: "url(/images/home/v2-hero-studio-portrait.webp)" }}
               />
               <div className="p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Before / After</p>
