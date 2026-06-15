@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { promptCards } from "@/lib/site";
 
 const styleChips = ["Editorial", "Product", "Architecture", "Fashion", "Abstract"];
@@ -16,6 +16,9 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
   const [style, setStyle] = useState(styleChips[0]);
   const [ratio, setRatio] = useState(ratios[1]);
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
+  const [creditsRemaining, setCreditsRemaining] = useState(3);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const preview = useMemo(() => {
     const index = Math.abs(prompt.length + style.length + ratio.length) % 3;
@@ -26,9 +29,36 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
     ][index];
   }, [prompt, style, ratio]);
 
-  const runMock = () => {
+  useEffect(() => {
+    fetch("/api/session")
+      .then((response) => response.json())
+      .then((data) => {
+        if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const runGenerate = async () => {
     setState("processing");
-    window.setTimeout(() => setState(prompt.trim().length < 20 ? "failed" : "ready"), 650);
+    setError(null);
+    setJobId(null);
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, style, ratio }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Generation request failed.");
+      }
+      setCreditsRemaining(data.creditsRemaining);
+      setJobId(data.job?.requestId || null);
+      setState("ready");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Generation request failed.");
+      setState("failed");
+    }
   };
 
   return (
@@ -39,7 +69,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
             <p className="rsp-chip mb-2">Mock console</p>
             <HeadingTag className="font-heading text-3xl font-bold text-white md:text-4xl">Generate Console</HeadingTag>
           </div>
-          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits preview: 3 lifetime generations</div>
+          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits: {creditsRemaining} lifetime generations</div>
         </div>
         <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
         <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[150px] w-full rounded-2xl border border-white/10 bg-[#0C0E13] p-4 font-mono text-sm text-[#E2E5F3] outline-none ring-[#35D0BA]/40 focus:ring-4" />
@@ -64,10 +94,10 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button onClick={runMock} className="rsp-button-primary">Generate image preview</button>
+          <button onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Submitting…" : "Generate image preview"}</button>
           <button onClick={() => setState("failed")} className="rsp-button-secondary">Preview failed state</button>
         </div>
-        <p className="mt-3 text-sm text-[#A7ABB8]">Backend pending: fal.ai generation, login, credits, and Creem billing are mocked during this front-end stage.</p>
+        <p className="mt-3 text-sm text-[#A7ABB8]">Backend connected: fal.ai requests run through a secure Worker API. Creem billing and login entitlement sync are staged for the next backend pass.</p>
       </div>
 
       <div className="rsp-card flex h-full flex-col overflow-hidden p-5 md:p-6">
@@ -81,11 +111,11 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
         <div className="flex justify-center rounded-2xl border border-white/10 bg-black/20 p-3">
           <div className={`flex aspect-[4/5] max-h-[300px] w-full max-w-[240px] items-center justify-center rounded-2xl bg-gradient-to-br md:max-h-[320px] md:max-w-[256px] ${preview}`}>
             {state === "processing" && <div className="rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white">Generating mock preview…</div>}
-            {state === "failed" && <div className="mx-4 max-w-[240px] rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100">Generation failed state: shorten unsafe inputs, retry later, or contact support.</div>}
-            {(state === "idle" || state === "ready") && <div className="text-center"><div className="mx-auto mb-3 h-20 w-20 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-xl font-bold text-white">{state === "ready" ? "Mock result ready" : "Result preview"}</p><p className="mt-2 text-sm text-[#A7ABB8]">{style} · {ratio}</p></div>}
+            {state === "failed" && <div className="mx-4 max-w-[240px] rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100">{error || "Generation failed state: shorten unsafe inputs, retry later, or contact support."}</div>}
+            {(state === "idle" || state === "ready") && <div className="text-center"><div className="mx-auto mb-3 h-20 w-20 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-xl font-bold text-white">{state === "ready" ? "fal.ai job submitted" : "Result preview"}</p><p className="mt-2 text-sm text-[#A7ABB8]">{jobId ? `Request ${jobId.slice(0, 10)}…` : `${style} · ${ratio}`}</p></div>}
           </div>
         </div>
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm text-[#A7ABB8]"><strong className="text-white">Integration readiness:</strong> generated images, queue labels, and billing states will connect to fal.ai, login, credits, and Creem in the backend stage.</div>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm text-[#A7ABB8]"><strong className="text-white">Integration readiness:</strong> fal.ai submit/session APIs are live; Creem checkout, webhook persistence, and login entitlement sync need confirmed product IDs and database access.</div>
       </div>
     </div>
   );
