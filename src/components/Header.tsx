@@ -1,109 +1,81 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const links = [
+  { href: "/generate", label: "Generate" },
+  { href: "/prompts", label: "Prompts" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/ai-policy", label: "AI Policy" },
+];
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768 && mobileOpen) {
-        setMobileOpen(false);
-      }
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileOpen(false);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [mobileOpen]);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
 
-  const navLinks = [
-    { href: "/prompts", label: "Prompts" },
-    { href: "/templates", label: "Templates" },
-    { href: "/effects", label: "Effects" },
-    { href: "/suggest-prompt", label: "Suggest" },
-    { href: "/faq", label: "FAQ" },
-  ];
-
   return (
-    <header className="bg-brand-900 sticky top-0 z-[800]">
-      <div className="max-w-container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="font-heading text-[22px] font-bold text-white no-underline">
-            RSP<span className="text-brand-400">Hub</span>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-neutral-300 text-[15px] font-medium no-underline transition-colors hover:text-white"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Link
-              href="/waitlist"
-              className="bg-brand-500 text-white px-[18px] py-2 rounded-full text-sm font-semibold no-underline transition-colors hover:bg-brand-400"
-            >
-              Join Waitlist
-            </Link>
-          </nav>
-
-          <button
-            className="md:hidden bg-transparent border-none text-white cursor-pointer p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
-            aria-label="Open menu"
-            onClick={() => setMobileOpen(true)}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 bg-brand-900/95 z-[900] flex flex-col items-center justify-center gap-8 md:hidden">
-          <button
-            className="absolute top-5 right-6 bg-transparent border-none text-white cursor-pointer min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
-            aria-label="Close menu"
-            onClick={() => setMobileOpen(false)}
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="text-white font-heading text-2xl font-semibold no-underline"
-            >
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-rsp-bg/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 md:px-12">
+        <Link href="/" className="flex items-center gap-3 no-underline" aria-label="AI Editor RSP home">
+          <span className="grid h-9 w-9 place-items-center rounded-lg border border-rsp-primary/40 bg-rsp-primary/15 text-rsp-primary shadow-[0_0_30px_rgba(71,220,198,0.20)]">✦</span>
+          <span className="font-heading text-2xl font-bold tracking-tight text-rsp-primary">AI Editor RSP</span>
+        </Link>
+        <nav className="hidden items-center gap-8 md:flex">
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/waitlist"
-            onClick={() => setMobileOpen(false)}
-            className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-base font-semibold no-underline min-h-[44px] inline-flex items-center justify-center"
-          >
-            Join Waitlist
+          <span className="rounded-full border border-amber-300/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">Mock / pending backend</span>
+          <Link href="/generate" className="rounded-full bg-rsp-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
+            Try Generator
           </Link>
+        </nav>
+        <button
+          type="button"
+          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/10 text-rsp-text md:hidden"
+          aria-label="Open navigation menu"
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen(true)}
+        >
+          <span className="text-2xl">☰</span>
+        </button>
+      </div>
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-[60] flex flex-col bg-rsp-bg px-6 py-6 md:hidden">
+          <div className="flex items-center justify-between">
+            <span className="font-heading text-2xl font-bold text-rsp-primary">AI Editor RSP</span>
+            <button type="button" aria-label="Close navigation menu" className="min-h-[44px] min-w-[44px] rounded-lg border border-white/10 text-2xl text-rsp-text" onClick={() => setMobileOpen(false)}>
+              ×
+            </button>
+          </div>
+          <nav className="mt-12 flex flex-col gap-6">
+            {links.map((link) => (
+              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="rounded-xl border border-white/10 bg-rsp-panel px-5 py-4 font-heading text-2xl font-semibold text-rsp-text no-underline">
+                {link.label}
+              </Link>
+            ))}
+            <Link href="/generate" onClick={() => setMobileOpen(false)} className="rounded-full bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
+              Try mock generator
+            </Link>
+          </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

@@ -1,418 +1,61 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CopyButton from "@/components/CopyButton";
-import BeforeAfter from "@/components/BeforeAfter";
-import AffiliateNote from "@/components/AffiliateNote";
-import { prompts } from "@/lib/data/prompts";
-import { templates } from "@/lib/data/templates";
-import { effects } from "@/lib/data/effects";
-import { faqs } from "@/lib/data/faq";
-import FAQAccordion from "@/components/FAQAccordion";
+import GenerateConsole from "@/components/GenerateConsole";
+import { faqItems, integrationStates, pricingPlans, promptCards, site } from "@/lib/rsp-content";
+
+export const metadata = {
+  title: "AI Image Generator for RSP Editing Prompts",
+  description: "Browse RSP editing prompts, preview a mock AI generation console, and compare confirmed Free, Starter, Creator, and Studio credit plans.",
+  alternates: { canonical: site.url },
+};
 
 export default function HomePage() {
-  const featuredPrompts = prompts.slice(0, 6);
-  const featuredTemplates = templates.slice(0, 3);
-  const featuredEffects = effects.slice(0, 3);
-  const featuredFaqs = faqs.slice(0, 6);
-
   return (
     <>
       <Header />
-
-      {/* Hero */}
-      <section
-        className="text-white pt-20 pb-16 px-4"
-        style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
-        }}
-      >
-        <div className="max-w-[1080px] mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white/[0.08] border border-white/10 px-4 py-2.5 rounded-full text-sm text-neutral-300 mb-8">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Independent guide. Not affiliated with RSP Editing.
-          </div>
-          <h1 className="font-heading text-[32px] md:text-5xl font-bold leading-tight mb-5">
-            Get Trending RSP-Style AI Photo Prompts & CapCut Templates
-          </h1>
-          <p className="text-lg text-neutral-300 mb-8 max-w-[560px] mx-auto">
-            Copy trending prompts, discover templates, and try creator-style effects faster. No signup needed.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link
-              href="/prompts"
-              className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400 hover:-translate-y-0.5"
-            >
-              Browse Prompts
-            </Link>
-            <Link
-              href="/templates"
-              className="bg-transparent text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 border-[1.5px] border-white/25 transition-all hover:bg-white/[0.08] hover:border-white/40"
-            >
-              Browse Templates
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.06] shadow-2xl">
-              <div
-                role="img"
-                aria-label="Double exposure travel prompt preview"
-                className="aspect-[4/3] bg-cover bg-center"
-                style={{ backgroundImage: "url(/images/home/v3-hero-urban-night.webp)" }}
-              />
-              <div className="p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Prompt result</p>
-                <p className="text-sm text-white/90">Travel portrait style users can preview before copying.</p>
+      <main className="pt-20">
+        <section className="section-pad relative overflow-hidden">
+          <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-rsp-primary/15 blur-3xl" />
+          <div className="relative mx-auto grid max-w-screen-2xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div>
+              <p className="eyebrow">Dark cinematic creator workstation</p>
+              <h1 className="mt-5 font-heading text-5xl font-bold leading-[0.98] tracking-tight text-rsp-text md:text-7xl">AI Image Generator for RSP Editing Prompts</h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-rsp-muted">Turn curated prompts into stunning AI image concepts. Browse, select, and preview generation states in one workstation-inspired UI.</p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/generate" className="rounded-full bg-rsp-primary px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary no-underline">Try Generator</Link>
+                <Link href="/prompts" className="rounded-full border border-white/15 px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-text no-underline">Browse Prompts</Link>
               </div>
+              <p className="mt-5 text-sm text-rsp-muted">Start with 3 free lifetime generations. Monthly plans from $4.99. Payment and account flows are pending backend integration.</p>
             </div>
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.06] shadow-2xl md:translate-y-6">
-              <div
-                role="img"
-                aria-label="CapCut template phone mockup preview"
-                className="aspect-[4/3] bg-cover bg-center"
-                style={{ backgroundImage: "url(/images/home/v3-hero-travel-water.webp)" }}
-              />
-              <div className="p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Template cover</p>
-                <p className="text-sm text-white/90">Phone-first preview for Reels and CapCut users.</p>
-              </div>
-            </div>
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.06] shadow-2xl">
-              <div
-                role="img"
-                aria-label="Before and after effect comparison preview"
-                className="aspect-[4/3] bg-cover bg-center"
-                style={{ backgroundImage: "url(/images/home/v3-hero-creator-camera.webp)" }}
-              />
-              <div className="p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-brand-200 mb-1">Before / After</p>
-                <p className="text-sm text-white/90">Clear effect examples so users know what they will get.</p>
+            <div className="glass-card p-4">
+              <div className="rounded-2xl bg-gradient-to-br from-rsp-primary/30 via-rsp-panel-strong to-rsp-secondary/30 p-4">
+                <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+                  <div className="mb-4 flex items-center justify-between"><span className="eyebrow">Live preview</span><span className="chip-active">Mock</span></div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    {promptCards.slice(0, 3).map((card) => <div key={card.slug} className={`h-48 rounded-xl bg-gradient-to-br ${card.image} p-3 shadow-glow`}><span className="chip bg-black/30 text-white">{card.style}</span></div>)}
+                  </div>
+                  <div className="mt-5 rounded-xl border border-white/10 bg-rsp-panel/80 p-4"><p className="font-mono text-sm text-rsp-muted">Prompt: cinematic editorial portrait, teal rim light, amber glow, creator workstation...</p></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Featured Prompts */}
-      <section className="py-20 px-4">
-        <div className="max-w-container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-[26px] md:text-4xl font-bold mb-3">
-              Trending AI Photo Prompts
-            </h2>
-            <p className="text-neutral-500 text-lg max-w-[560px] mx-auto">
-              Copy-paste ready prompts for ChatGPT, Gemini, and Bing Image Creator.
-            </p>
+        </section>
+        <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-screen-2xl"><GenerateConsole /></div></section>
+        <section className="section-pad">
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">Prompt Library</p><h2 className="mt-3 font-heading text-4xl font-bold">Curated creator-ready prompts</h2></div><Link href="/prompts" className="text-rsp-primary no-underline">View library →</Link></div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{promptCards.map((card) => <article key={card.slug} className="glass-card overflow-hidden"><div className={`h-44 bg-gradient-to-br ${card.image}`} /><div className="p-5"><div className="mb-3 flex gap-2"><span className="chip-active">{card.style}</span><span className="chip">{card.ratio}</span></div><h3 className="font-heading text-xl font-bold">{card.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-rsp-muted">{card.prompt}</p><Link href={`/prompts/${card.slug}`} className="mt-4 inline-block text-sm font-bold text-rsp-primary no-underline">Use this prompt →</Link></div></article>)}</div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredPrompts.map((prompt) => (
-              <div
-                key={prompt.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:shadow-glow hover:-translate-y-0.5"
-              >
-                <div className="aspect-[4/3] relative overflow-hidden">
-                  <BeforeAfter
-                    image={prompt.before_image}
-                    alt={`${prompt.title} visual preview`}
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex gap-2 flex-wrap mb-3">
-                    <span className="bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-sm text-xs font-medium">
-                      {prompt.category}
-                    </span>
-                    <span className="bg-brand-100 text-brand-500 px-2.5 py-1 rounded-sm text-xs font-medium">
-                      {prompt.tool}
-                    </span>
-                  </div>
-                  <h3 className="text-[17px] font-semibold mb-2 leading-tight">
-                    {prompt.title}
-                  </h3>
-                  <p className="text-sm text-neutral-500 mb-4">
-                    {prompt.prompt.slice(0, 100)}...
-                  </p>
-                  <div className="flex gap-2.5">
-                    <CopyButton text={prompt.prompt} />
-                    <Link
-                      href={`/prompts/${prompt.slug}`}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-neutral-700 border border-neutral-300 no-underline transition-colors hover:bg-neutral-100"
-                    >
-                      View
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Link
-              href="/prompts"
-              className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400"
-            >
-              View All Prompts
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Templates */}
-      <section className="py-20 px-4 bg-neutral-100">
-        <div className="max-w-container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-[26px] md:text-4xl font-bold mb-3">
-              Trending CapCut Templates
-            </h2>
-            <p className="text-neutral-500 text-lg max-w-[560px] mx-auto">
-              One-click links to the popular templates. Use directly in CapCut.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredTemplates.map((template) => (
-              <div
-                key={template.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:shadow-glow hover:-translate-y-0.5"
-              >
-                <div
-                  role="img"
-                  aria-label={`${template.title} template preview`}
-                  className="aspect-[4/3] bg-cover bg-center"
-                  style={{ backgroundImage: `url(${template.preview_image})` }}
-                />
-                <div className="p-5">
-                  <div className="flex gap-2 flex-wrap mb-3">
-                    <span className="bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-sm text-xs font-medium">
-                      {template.category}
-                    </span>
-                    <span className="bg-brand-100 text-brand-500 px-2.5 py-1 rounded-sm text-xs font-medium">
-                      CapCut
-                    </span>
-                  </div>
-                  <h3 className="text-[17px] font-semibold mb-2 leading-tight">
-                    {template.title}
-                  </h3>
-                  <p className="text-sm text-neutral-500 mb-4">
-                    {template.song_name} by {template.artist}
-                  </p>
-                  <a
-                    href={template.template_url}
-                    target="_blank"
-                    rel="nofollow sponsored noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-white bg-brand-500 no-underline transition-colors hover:bg-brand-400"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
-                    Use Template
-                  </a>
-                  <AffiliateNote />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Link
-              href="/templates"
-              className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400"
-            >
-              View All Templates
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Before & After Effects */}
-      <section className="py-20 px-4">
-        <div className="max-w-container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-[26px] md:text-4xl font-bold mb-3">
-              Before & After Effects
-            </h2>
-            <p className="text-neutral-500 text-lg max-w-[560px] mx-auto">
-              See what these prompts and templates can do.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredEffects.map((effect) => (
-              <div
-                key={effect.id}
-                className="bg-brand-900 text-white rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5"
-              >
-                <div className="aspect-[4/3] relative overflow-hidden">
-                  <BeforeAfter
-                    image={effect.before_image}
-                    alt={`${effect.title} before and after comparison`}
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex gap-2 flex-wrap mb-3">
-                    <span className="bg-white/10 text-white px-2.5 py-1 rounded-sm text-xs font-medium">
-                      {effect.category}
-                    </span>
-                  </div>
-                  <h3 className="text-[17px] font-semibold mb-2 leading-tight text-white">
-                    {effect.title}
-                  </h3>
-                  <p className="text-sm text-neutral-300 mb-4">
-                    {effect.description.slice(0, 100)}...
-                  </p>
-                  <Link
-                    href={`/effects/${effect.slug}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-white border-[1.5px] border-white/25 no-underline transition-all hover:bg-white/[0.08] hover:border-white/40"
-                  >
-                    Explore Effect
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Link
-              href="/effects"
-              className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400"
-            >
-              Explore Trending
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 px-4 bg-neutral-100">
-        <div className="max-w-container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-[26px] md:text-4xl font-bold mb-3">
-              How It Works
-            </h2>
-            <p className="text-neutral-500 text-lg max-w-[560px] mx-auto">
-              Three steps to your next creator-style effect.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            {[
-              {
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="M21 21l-4.35-4.35" />
-                  </svg>
-                ),
-                title: "Find",
-                desc: "Browse or search for the effect you want from our curated library.",
-              },
-              {
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" />
-                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                  </svg>
-                ),
-                title: "Copy",
-                desc: "One-click copy the prompt or template link to your clipboard.",
-              },
-              {
-                icon: (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                    <path d="M2 17l10 5 10-5" />
-                    <path d="M2 12l10 5 10-5" />
-                  </svg>
-                ),
-                title: "Create",
-                desc: "Paste into ChatGPT, Gemini, or CapCut and share your creation.",
-              },
-            ].map((step, i) => (
-              <div key={i} className="text-center">
-                <div className="w-16 h-16 bg-brand-100 rounded-xl flex items-center justify-center mx-auto mb-5 text-brand-500">
-                  {step.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-neutral-500 text-[15px]">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-10">
-            <Link
-              href="/prompts"
-              className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Disclaimer Banner */}
-      <section className="px-4 pb-0 pt-0">
-        <div className="max-w-container mx-auto">
-          <div className="bg-neutral-100 border-l-[3px] border-brand-500 px-6 py-5 my-12 rounded-r-md">
-            <p className="text-neutral-700 text-sm leading-relaxed">
-              <strong>Independent guide.</strong> Not affiliated with RSP Editing. All prompts and templates are for educational purposes. Respect copyright and platform terms. AI-generated results may vary. We do not provide AI generation services.{" "}
-              <Link href="/disclaimer" className="text-brand-500 font-medium no-underline hover:underline">
-                Read Full Disclaimer
-              </Link>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-20 px-4 bg-neutral-100">
-        <div className="max-w-container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-[26px] md:text-4xl font-bold mb-3">
-              Frequently Asked Questions
-            </h2>
-          </div>
-          <div className="max-w-[720px] mx-auto">
-            <FAQAccordion items={featuredFaqs} />
-          </div>
-          <div className="text-center mt-8">
-            <Link
-              href="/faq"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-neutral-700 border border-neutral-300 no-underline transition-colors hover:bg-neutral-100"
-            >
-              View All FAQs
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section
-        className="py-20 px-4 text-white text-center"
-        style={{
-          background: "linear-gradient(135deg, #0f172a, #1e293b)",
-        }}
-      >
-        <div className="max-w-container mx-auto">
-          <h2 className="font-heading text-[26px] md:text-4xl font-bold mb-4">
-            Ready to create your next trending effect?
-          </h2>
-          <p className="text-neutral-300 text-lg mb-8 max-w-[480px] mx-auto">
-            Browse prompts and templates — no signup, no cost.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/prompts"
-              className="bg-brand-500 text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 transition-all hover:bg-brand-400"
-            >
-              Browse Prompts
-            </Link>
-            <Link
-              href="/templates"
-              className="bg-transparent text-white px-7 py-3.5 rounded-full text-[15px] font-semibold no-underline inline-flex items-center justify-center gap-2 border-[1.5px] border-white/25 transition-all hover:bg-white/[0.08] hover:border-white/40"
-            >
-              Browse Templates
-            </Link>
-          </div>
-        </div>
-      </section>
-
+        </section>
+        <section className="section-pad bg-rsp-surface">
+          <div className="mx-auto max-w-screen-2xl"><p className="eyebrow text-center">Confirmed Pricing</p><h2 className="mt-3 text-center font-heading text-4xl font-bold">Credits-based plans</h2><div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{pricingPlans.map((plan) => <div key={plan.name} className={`glass-card p-6 ${plan.featured ? "border-rsp-primary" : ""}`}><h3 className="font-heading text-2xl font-bold">{plan.name}</h3><div className="mt-4"><span className="font-heading text-4xl font-bold">{plan.price}</span><span className="text-rsp-muted"> {plan.cadence}</span></div><p className="mt-4 text-rsp-muted">{plan.generations}</p><Link href="/pricing" className="mt-6 block rounded-full border border-white/15 px-4 py-3 text-center text-sm font-bold text-rsp-text no-underline">{plan.cta}</Link></div>)}</div></div>
+        </section>
+        <section className="section-pad">
+          <div className="mx-auto grid max-w-screen-2xl gap-6 lg:grid-cols-2"><div><p className="eyebrow">Component states</p><h2 className="mt-3 font-heading text-4xl font-bold">Production-safe pending states</h2><p className="mt-4 text-rsp-muted">Backend-dependent features are visibly labeled so the frontend does not pretend fal.ai, Creem, login, or credit deduction is live.</p></div><div className="grid gap-3">{integrationStates.map((item) => <div key={item.label} className="glass-card p-4"><div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-bold">{item.label}</h3><span className="chip-active">{item.state}</span></div><p className="mt-2 text-sm text-rsp-muted">{item.detail}</p></div>)}</div></div>
+        </section>
+        <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-3xl"><p className="eyebrow text-center">FAQ</p>{faqItems.map((item) => <div key={item.q} className="mt-5 glass-card p-5"><h3 className="font-heading text-xl font-bold">{item.q}</h3><p className="mt-2 text-rsp-muted">{item.a}</p></div>)}</div></section>
+      </main>
       <Footer />
     </>
   );
