@@ -32,19 +32,19 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_.85fr]">
-      <div className="rsp-card p-5 md:p-7">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div className="grid items-start gap-5 lg:grid-cols-[1.05fr_.8fr]">
+      <div className="rsp-card p-5 md:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="rsp-chip mb-3">Mock console</p>
-            <HeadingTag className="font-heading text-3xl font-bold text-white md:text-5xl">Generate Console</HeadingTag>
+            <p className="rsp-chip mb-2">Mock console</p>
+            <HeadingTag className="font-heading text-3xl font-bold text-white md:text-4xl">Generate Console</HeadingTag>
           </div>
-          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-4 py-3 text-sm text-[#F4B860]">Credits preview: 3 lifetime generations</div>
+          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits preview: 3 lifetime generations</div>
         </div>
         <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
-        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[190px] w-full rounded-2xl border border-white/10 bg-[#0C0E13] p-4 font-mono text-sm text-[#E2E5F3] outline-none ring-[#35D0BA]/40 focus:ring-4" />
+        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[150px] w-full rounded-2xl border border-white/10 bg-[#0C0E13] p-4 font-mono text-sm text-[#E2E5F3] outline-none ring-[#35D0BA]/40 focus:ring-4" />
 
-        <div className="mt-5 grid gap-5 md:grid-cols-2">
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
             <p className="mb-3 text-sm font-semibold text-white">Style</p>
             <div className="flex flex-wrap gap-2">
@@ -63,23 +63,29 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button onClick={runMock} className="rsp-button-primary">Generate preview state</button>
-          <button onClick={() => setState("failed")} className="rsp-button-secondary">Show failed state</button>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button onClick={runMock} className="rsp-button-primary">Generate image preview</button>
+          <button onClick={() => setState("failed")} className="rsp-button-secondary">Preview failed state</button>
         </div>
-        <p className="mt-4 text-sm text-[#A7ABB8]">Backend pending: fal.ai generation, login, credits, and Creem billing are intentionally mocked in this front-end stage.</p>
+        <p className="mt-3 text-sm text-[#A7ABB8]">Backend pending: fal.ai generation, login, credits, and Creem billing are mocked during this front-end stage.</p>
       </div>
 
-      <div className="rsp-card overflow-hidden p-5 md:p-7">
-        <div className={`mb-5 flex aspect-[4/5] items-center justify-center rounded-2xl bg-gradient-to-br ${preview}`}>
-          {state === "processing" && <div className="rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white">Generating mock preview…</div>}
-          {state === "failed" && <div className="max-w-[260px] rounded-2xl border border-red-400/30 bg-red-500/10 p-5 text-center text-red-100">Generation failed state: shorten unsafe inputs, retry later, or contact support.</div>}
-          {(state === "idle" || state === "ready") && <div className="text-center"><div className="mx-auto mb-4 h-24 w-24 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-2xl font-bold text-white">{state === "ready" ? "Mock result ready" : "Result preview"}</p><p className="mt-2 text-sm text-[#A7ABB8]">{style} · {ratio}</p></div>}
+      <div className="rsp-card overflow-hidden p-5 md:p-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-white">Output preview</p>
+            <p className="mt-1 text-xs text-[#A7ABB8]">Aspect-aware frame for the selected mock result.</p>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-[#A7ABB8]">{ratio}</span>
         </div>
-        <div className="grid gap-3 text-sm text-[#A7ABB8]">
-          <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4"><strong className="text-white">Success toast:</strong> Generated images appear here after backend integration.</div>
-          <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4"><strong className="text-white">Queue state:</strong> Free, Starter, Creator, and Studio queue labels are display-only.</div>
+        <div className="flex justify-center rounded-2xl border border-white/10 bg-black/20 p-3">
+          <div className={`flex aspect-[4/5] max-h-[420px] w-full max-w-[340px] items-center justify-center rounded-2xl bg-gradient-to-br ${preview}`}>
+            {state === "processing" && <div className="rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white">Generating mock preview…</div>}
+            {state === "failed" && <div className="mx-4 max-w-[240px] rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100">Generation failed state: shorten unsafe inputs, retry later, or contact support.</div>}
+            {(state === "idle" || state === "ready") && <div className="text-center"><div className="mx-auto mb-3 h-20 w-20 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-xl font-bold text-white">{state === "ready" ? "Mock result ready" : "Result preview"}</p><p className="mt-2 text-sm text-[#A7ABB8]">{style} · {ratio}</p></div>}
+          </div>
         </div>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm text-[#A7ABB8]"><strong className="text-white">Integration readiness:</strong> generated images, queue labels, and billing states will connect to fal.ai, login, credits, and Creem in the backend stage.</div>
       </div>
     </div>
   );
