@@ -32,8 +32,8 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
   };
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[1.05fr_.8fr]">
-      <div className="rsp-card p-5 md:p-6">
+    <div className="grid items-stretch gap-6 lg:grid-cols-[1.05fr_.8fr]">
+      <div className="rsp-card h-full p-5 md:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="rsp-chip mb-2">Mock console</p>
@@ -70,7 +70,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
         <p className="mt-3 text-sm text-[#A7ABB8]">Backend pending: fal.ai generation, login, credits, and Creem billing are mocked during this front-end stage.</p>
       </div>
 
-      <div className="rsp-card overflow-hidden p-5 md:p-6">
+      <div className="rsp-card flex h-full flex-col overflow-hidden p-5 md:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-white">Output preview</p>
@@ -79,7 +79,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
           <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-[#A7ABB8]">{ratio}</span>
         </div>
         <div className="flex justify-center rounded-2xl border border-white/10 bg-black/20 p-3">
-          <div className={`flex aspect-[4/5] max-h-[420px] w-full max-w-[340px] items-center justify-center rounded-2xl bg-gradient-to-br ${preview}`}>
+          <div className={`flex aspect-[4/5] max-h-[300px] w-full max-w-[240px] items-center justify-center rounded-2xl bg-gradient-to-br md:max-h-[320px] md:max-w-[256px] ${preview}`}>
             {state === "processing" && <div className="rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white">Generating mock preview…</div>}
             {state === "failed" && <div className="mx-4 max-w-[240px] rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100">Generation failed state: shorten unsafe inputs, retry later, or contact support.</div>}
             {(state === "idle" || state === "ready") && <div className="text-center"><div className="mx-auto mb-3 h-20 w-20 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-xl font-bold text-white">{state === "ready" ? "Mock result ready" : "Result preview"}</p><p className="mt-2 text-sm text-[#A7ABB8]">{style} · {ratio}</p></div>}

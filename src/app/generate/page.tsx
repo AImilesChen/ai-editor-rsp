@@ -14,7 +14,7 @@ export default function GeneratePage() {
   return (
     <>
       <Header />
-      <main className="rsp-container py-12 md:py-16">
+      <main className="rsp-container pb-10 pt-28 md:pb-12 md:pt-32">
         <GenerateConsole />
       </main>
       <Footer />

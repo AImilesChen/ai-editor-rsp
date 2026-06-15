@@ -15,6 +15,11 @@ body { margin: 0; overflow-x: hidden; }
 ::selection { background: rgba(71, 220, 198, 0.35); }
 
 @layer components {
+  .rsp-container { @apply mx-auto max-w-screen-2xl px-4 md:px-12; }
+  .rsp-card { @apply rounded-3xl border border-white/10 bg-rsp-panel/80 shadow-glow backdrop-blur-xl; }
+  .rsp-chip { @apply inline-flex rounded-full border border-rsp-primary/30 bg-rsp-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-primary; }
+  .rsp-button-primary { @apply inline-flex items-center justify-center rounded-full bg-rsp-primary px-5 py-3 text-sm font-bold text-rsp-on-primary no-underline transition hover:opacity-90; }
+  .rsp-button-secondary { @apply inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-bold text-rsp-text no-underline transition hover:border-rsp-primary/50 hover:text-rsp-primary; }
   .glass-card { @apply rounded-2xl border border-white/10 bg-rsp-panel/70 shadow-glow backdrop-blur-xl; }
   .eyebrow { @apply text-xs font-bold uppercase tracking-[0.22em] text-rsp-primary; }
   .chip { @apply rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-rsp-muted; }
