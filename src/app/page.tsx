@@ -41,7 +41,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-        <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-screen-2xl"><GenerateConsole /></div></section>
+        <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-screen-2xl"><GenerateConsole headingLevel="h2" /></div></section>
         <section className="section-pad">
           <div className="mx-auto max-w-screen-2xl">
             <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">Prompt Library</p><h2 className="mt-3 font-heading text-4xl font-bold">Curated creator-ready prompts</h2></div><Link href="/prompts" className="text-rsp-primary no-underline">View library →</Link></div>

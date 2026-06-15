@@ -6,7 +6,12 @@ import { promptCards } from "@/lib/site";
 const styleChips = ["Editorial", "Product", "Architecture", "Fashion", "Abstract"];
 const ratios = ["1:1", "4:5", "16:9", "3:4"];
 
-export default function GenerateConsole() {
+type GenerateConsoleProps = {
+  headingLevel?: "h1" | "h2";
+};
+
+export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsoleProps) {
+  const HeadingTag = headingLevel;
   const [prompt, setPrompt] = useState(promptCards[0].text);
   const [style, setStyle] = useState(styleChips[0]);
   const [ratio, setRatio] = useState(ratios[1]);
@@ -32,7 +37,7 @@ export default function GenerateConsole() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="rsp-chip mb-3">Mock console</p>
-            <h2 className="font-heading text-3xl font-bold text-white md:text-5xl">Generate Console</h2>
+            <HeadingTag className="font-heading text-3xl font-bold text-white md:text-5xl">Generate Console</HeadingTag>
           </div>
           <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-4 py-3 text-sm text-[#F4B860]">Credits preview: 3 lifetime generations</div>
         </div>
