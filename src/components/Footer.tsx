@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-screen-2xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <div className="font-heading text-2xl font-bold text-rsp-primary">AI Editor RSP</div>
-          <p className="max-w-md text-sm leading-6">Dark cinematic prompt library and mock AI generation console for RSP-style creator workflows. Real generation, billing, credits, and login are pending backend integration.</p>
+          <p className="max-w-md text-sm leading-6">Dark cinematic prompt library with fal.ai generated case images for RSP-style creator workflows. Billing, persistent credits, and login are pending backend integration.</p>
           <p className="text-xs uppercase tracking-[0.16em] text-amber-200">Independent tool. Not affiliated with RSP Editing.</p>
         </div>
         <div>

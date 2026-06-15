@@ -5,6 +5,13 @@ import { promptCards } from "@/lib/site";
 
 const styleChips = ["Editorial", "Product", "Architecture", "Fashion", "Abstract"];
 const ratios = ["1:1", "4:5", "16:9", "3:4"];
+const stylePreviewImages: Record<string, string> = {
+  Editorial: "/images/generated/neon-shadows-portrait.webp",
+  Product: "/images/generated/product-glow-shot.webp",
+  Architecture: "/images/generated/architectural-dreamscape.webp",
+  Fashion: "/images/generated/cinematic-movie-poster.webp",
+  Abstract: "/images/generated/abstract-digital-poster.webp",
+};
 
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";
@@ -28,6 +35,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
       "from-[#F4B860]/30 via-[#11131A] to-[#8EA4FF]/20",
     ][index];
   }, [prompt, style, ratio]);
+  const previewImage = stylePreviewImages[style] || stylePreviewImages.Editorial;
 
   useEffect(() => {
     fetch("/api/session")
@@ -66,7 +74,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
       <div className="rsp-card h-full p-5 md:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="rsp-chip mb-2">Mock console</p>
+            <p className="rsp-chip mb-2">fal.ai console</p>
             <HeadingTag className="font-heading text-3xl font-bold text-white md:text-4xl">Generate Console</HeadingTag>
           </div>
           <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits: {creditsRemaining} lifetime generations</div>
@@ -104,15 +112,17 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-white">Output preview</p>
-            <p className="mt-1 text-xs text-[#A7ABB8]">Aspect-aware frame for the selected mock result.</p>
+            <p className="mt-1 text-xs text-[#A7ABB8]">Aspect-aware frame using a real fal.ai sample case.</p>
           </div>
           <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-[#A7ABB8]">{ratio}</span>
         </div>
         <div className="flex justify-center rounded-2xl border border-white/10 bg-black/20 p-3">
-          <div className={`flex aspect-[4/5] max-h-[300px] w-full max-w-[240px] items-center justify-center rounded-2xl bg-gradient-to-br md:max-h-[320px] md:max-w-[256px] ${preview}`}>
-            {state === "processing" && <div className="rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white">Generating mock preview…</div>}
-            {state === "failed" && <div className="mx-4 max-w-[240px] rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100">{error || "Generation failed state: shorten unsafe inputs, retry later, or contact support."}</div>}
-            {(state === "idle" || state === "ready") && <div className="text-center"><div className="mx-auto mb-3 h-20 w-20 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-xl font-bold text-white">{state === "ready" ? "fal.ai job submitted" : "Result preview"}</p><p className="mt-2 text-sm text-[#A7ABB8]">{jobId ? `Request ${jobId.slice(0, 10)}…` : `${style} · ${ratio}`}</p></div>}
+          <div className={`relative flex aspect-[4/5] max-h-[300px] w-full max-w-[240px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br md:max-h-[320px] md:max-w-[256px] ${preview}`}>
+            <img src={previewImage} alt={`${style} fal.ai generated sample preview`} className="absolute inset-0 h-full w-full object-cover opacity-75" loading="lazy" />
+            <div className="absolute inset-0 bg-black/20" />
+            {state === "processing" && <div className="relative z-10 rounded-full border border-white/10 bg-black/40 px-5 py-3 text-white backdrop-blur">Generating preview…</div>}
+            {state === "failed" && <div className="relative z-10 mx-4 max-w-[240px] rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100 backdrop-blur">{error || "Generation failed state: shorten unsafe inputs, retry later, or contact support."}</div>}
+            {(state === "idle" || state === "ready") && <div className="relative z-10 text-center"><div className="mx-auto mb-3 h-20 w-20 rounded-full bg-[#35D0BA]/30 blur-xl" /><p className="font-heading text-xl font-bold text-white">{state === "ready" ? "fal.ai job submitted" : "fal.ai sample preview"}</p><p className="mt-2 text-sm text-[#D7DAE8]">{jobId ? `Request ${jobId.slice(0, 10)}…` : `${style} · ${ratio}`}</p></div>}
           </div>
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm text-[#A7ABB8]"><strong className="text-white">Integration readiness:</strong> fal.ai submit/session APIs are live; Creem checkout, webhook persistence, and login entitlement sync need confirmed product IDs and database access.</div>

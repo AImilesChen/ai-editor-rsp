@@ -29,30 +29,25 @@ export default function BeforeAfter({
   alt = "Before and after preview",
 }: BeforeAfterProps) {
   if (image) {
-    return (
-      <div
-        role="img"
-        aria-label={alt}
-        className="w-full h-full relative bg-cover bg-center"
-        style={imageBackground(image)}
-      />
-    );
+    return <img src={image} alt={alt} className="h-full w-full object-cover" loading="lazy" />;
   }
 
   return (
     <div className="flex w-full h-full" role="img" aria-label={alt}>
       <div
-        className="flex-1 flex items-center justify-center relative bg-cover bg-center"
-        style={imageBackground(beforeImage, beforeGradient)}
+        className="flex-1 flex items-center justify-center relative overflow-hidden bg-cover bg-center"
+        style={!beforeImage ? imageBackground(undefined, beforeGradient) : undefined}
       >
+        {beforeImage && <img src={beforeImage} alt={`${alt} before`} className="h-full w-full object-cover" loading="lazy" />}
         <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded-sm text-[11px]">
           {beforeLabel}
         </span>
       </div>
       <div
-        className="flex-1 flex items-center justify-center relative bg-cover bg-center"
-        style={imageBackground(afterImage, afterGradient)}
+        className="flex-1 flex items-center justify-center relative overflow-hidden bg-cover bg-center"
+        style={!afterImage ? imageBackground(undefined, afterGradient) : undefined}
       >
+        {afterImage && <img src={afterImage} alt={`${alt} after`} className="h-full w-full object-cover" loading="lazy" />}
         <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded-sm text-[11px]">
           {afterLabel}
         </span>

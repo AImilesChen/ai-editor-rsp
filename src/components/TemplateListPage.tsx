@@ -52,12 +52,14 @@ export default function TemplateListPage() {
                   key={template.id}
                   className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:shadow-glow hover:-translate-y-0.5"
                 >
-                  <div
-                    role="img"
-                    aria-label={`${template.title} template preview`}
-                    className="aspect-[4/3] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${template.preview_image})` }}
-                  />
+                  {template.preview_image && (
+                    <img
+                      src={template.preview_image}
+                      alt={`${template.title} template preview`}
+                      className="aspect-[4/3] w-full object-cover"
+                      loading="lazy"
+                    />
+                  )}
                   <div className="p-5">
                     <div className="flex gap-2 flex-wrap mb-3">
                       <span className="bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-sm text-xs font-medium">

@@ -6,7 +6,7 @@ import { faqItems, integrationStates, pricingPlans, promptCards, site } from "@/
 
 export const metadata = {
   title: "AI Image Generator for RSP Editing Prompts",
-  description: "Browse RSP editing prompts, preview a mock AI generation console, and compare confirmed Free, Starter, Creator, and Studio credit plans.",
+  description: "Browse RSP editing prompts, preview fal.ai generated sample cases, and compare confirmed Free, Starter, Creator, and Studio credit plans.",
   alternates: { canonical: site.url },
 };
 
@@ -31,9 +31,14 @@ export default function HomePage() {
             <div className="glass-card p-4">
               <div className="rounded-2xl bg-gradient-to-br from-rsp-primary/30 via-rsp-panel-strong to-rsp-secondary/30 p-4">
                 <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
-                  <div className="mb-4 flex items-center justify-between"><span className="eyebrow">Live preview</span><span className="chip-active">Mock</span></div>
+                  <div className="mb-4 flex items-center justify-between"><span className="eyebrow">Live preview</span><span className="chip-active">fal.ai samples</span></div>
                   <div className="grid gap-4 sm:grid-cols-3">
-                    {promptCards.slice(0, 3).map((card) => <div key={card.slug} className={`h-48 rounded-xl bg-gradient-to-br ${card.image} p-3 shadow-glow`}><span className="chip bg-black/30 text-white">{card.style}</span></div>)}
+                    {promptCards.slice(0, 3).map((card) => (
+                      <div key={card.slug} className="relative h-48 overflow-hidden rounded-xl shadow-glow">
+                        <img src={card.imagePath} alt={`${card.title} fal.ai generated sample`} className="h-full w-full object-cover" loading="eager" />
+                        <span className="chip absolute left-3 top-3 bg-black/45 text-white">{card.style}</span>
+                      </div>
+                    ))}
                   </div>
                   <div className="mt-5 rounded-xl border border-white/10 bg-rsp-panel/80 p-4"><p className="font-mono text-sm text-rsp-muted">Prompt: cinematic editorial portrait, teal rim light, amber glow, creator workstation...</p></div>
                 </div>
@@ -45,7 +50,7 @@ export default function HomePage() {
         <section className="section-pad">
           <div className="mx-auto max-w-screen-2xl">
             <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">Prompt Library</p><h2 className="mt-3 font-heading text-4xl font-bold">Curated creator-ready prompts</h2></div><Link href="/prompts" className="text-rsp-primary no-underline">View library →</Link></div>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{promptCards.map((card) => <article key={card.slug} className="glass-card overflow-hidden"><div className={`h-44 bg-gradient-to-br ${card.image}`} /><div className="p-5"><div className="mb-3 flex gap-2"><span className="chip-active">{card.style}</span><span className="chip">{card.ratio}</span></div><h3 className="font-heading text-xl font-bold">{card.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-rsp-muted">{card.prompt}</p><Link href={`/prompts/${card.slug}`} className="mt-4 inline-block text-sm font-bold text-rsp-primary no-underline">Use this prompt →</Link></div></article>)}</div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{promptCards.map((card) => <article key={card.slug} className="glass-card overflow-hidden"><img src={card.imagePath} alt={`${card.title} fal.ai generated sample`} className="h-44 w-full object-cover brightness-110 saturate-125" loading="eager" /><div className="p-5"><div className="mb-3 flex gap-2"><span className="chip-active">{card.style}</span><span className="chip">{card.ratio}</span></div><h3 className="font-heading text-xl font-bold">{card.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-rsp-muted">{card.prompt}</p><Link href={`/prompts/${card.slug}`} className="mt-4 inline-block text-sm font-bold text-rsp-primary no-underline">Use this prompt →</Link></div></article>)}</div>
           </div>
         </section>
         <section className="section-pad bg-rsp-surface">

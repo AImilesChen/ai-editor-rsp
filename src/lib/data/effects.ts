@@ -25,8 +25,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "double-exposure-travel-rishikesh",
-    before_image: "/images/effects/v3-travel-effect-before.webp",
-    after_image: "/images/effects/double-exposure-travel-after.webp",
+    before_image: "/images/generated/effect-travel-before.webp",
+    after_image: "/images/generated/effect-travel-after.webp",
     description: "Portrait fused with cityscape for cinematic travel vibes. Blend a portrait photo with iconic landmarks to create a dreamy double exposure effect.",
     tutorial_steps: [
       "Choose a clear portrait photo with good lighting",
@@ -46,8 +46,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "horror-girlfriend-ai-photo",
-    before_image: "/images/effects/v3-dark-effect-before.webp",
-    after_image: "/images/effects/horror-portrait-after.webp",
+    before_image: "/images/generated/effect-horror-before.webp",
+    after_image: "/images/generated/effect-horror-after.webp",
     description: "Ordinary photo turned into a haunting horror scene. Transform any portrait into a dark, eerie image with cinematic horror lighting.",
     tutorial_steps: [
       "Start with a regular portrait photo",
@@ -67,8 +67,8 @@ export const effects: Effect[] = [
     platform: ["ChatGPT", "Gemini", "Bing Image Creator"],
     type: "prompt",
     prompt_id: "diwali-light-portrait",
-    before_image: "/images/effects/v3-light-effect-before.webp",
-    after_image: "/images/effects/diwali-glow-after.webp",
+    before_image: "/images/generated/effect-diwali-before.webp",
+    after_image: "/images/generated/effect-diwali-after.webp",
     description: "Add warm festive lights and golden bokeh to any portrait. Perfect for Diwali, Christmas, or any celebration with lights.",
     tutorial_steps: [
       "Choose a portrait with space around the subject",

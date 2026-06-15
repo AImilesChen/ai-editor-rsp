@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Generate Console — AI Editor RSP",
-  description: "Mock AI image generation console with prompt input, style chips, aspect ratios, credits state, success and failed states.",
+  description: "AI image generation console with prompt input, style chips, aspect ratios, credits state, success and failed states.",
   alternates: { canonical: `${SITE_URL}/generate` },
 };
 
