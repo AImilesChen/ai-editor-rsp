@@ -32,9 +32,9 @@ export default function GenerateConsole() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="rsp-chip mb-3">Mock console</p>
-            <h1 className="font-heading text-3xl font-bold text-white md:text-5xl">Generate Console</h1>
+            <h2 className="font-heading text-3xl font-bold text-white md:text-5xl">Generate Console</h2>
           </div>
-          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-4 py-3 text-sm text-[#F4B860]">Credits preview: 3 free trials</div>
+          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-4 py-3 text-sm text-[#F4B860]">Credits preview: 3 lifetime generations</div>
         </div>
         <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
         <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[190px] w-full rounded-2xl border border-white/10 bg-[#0C0E13] p-4 font-mono text-sm text-[#E2E5F3] outline-none ring-[#35D0BA]/40 focus:ring-4" />

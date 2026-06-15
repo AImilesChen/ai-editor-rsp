@@ -46,10 +46,10 @@ export const pricingPlans = [
 
 export const promptCards = [
   { title: "Editorial portrait", style: "Portrait", ratio: "4:5", text: "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
-  { title: "Architectural landscape", style: "Architecture", ratio: "16:9", text: "A modern coastal house at blue hour, warm interior glow, dramatic sky, reflective water, realistic lens detail, premium travel magazine style." },
+  { title: "Architectural landscape", style: "Architecture", ratio: "16:9", text: "A modern coastal house at blue hour, warm interior glow, dramatic sky, reflective water, realistic lens detail, high-end travel magazine style." },
   { title: "Abstract product art", style: "Abstract", ratio: "1:1", text: "A floating glass perfume bottle surrounded by translucent ribbons, mint cyan highlights, amber reflections, dark studio background, sharp product lighting." },
   { title: "Fashion campaign", style: "Fashion", ratio: "3:4", text: "A futuristic fashion campaign image, silver fabric, confident pose, cinematic shadows, clean negative space, luxury brand mood." },
-  { title: "Food poster", style: "Food", ratio: "4:5", text: "A premium dessert poster with macro texture, falling powdered sugar, warm amber rim light, dark marble surface, editorial food photography." },
+  { title: "Food poster", style: "Food", ratio: "4:5", text: "A high-end dessert poster with macro texture, falling powdered sugar, warm amber rim light, dark marble surface, editorial food photography." },
   { title: "Creator thumbnail", style: "Social", ratio: "16:9", text: "A bold creator thumbnail background with neon cyan accents, dynamic composition, realistic desk setup, space for headline text." },
 ];
 

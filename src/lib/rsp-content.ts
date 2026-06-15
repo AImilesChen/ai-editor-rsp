@@ -14,7 +14,7 @@ export const promptCards = [
     style: "Photo",
     ratio: "1:1",
     prompt:
-      "A cinematic editorial portrait with neon reflections on wet glass, dark studio lighting, teal and amber rim light, premium creator workstation aesthetic, ultra-detailed skin texture, shallow depth of field.",
+      "A cinematic editorial portrait with neon reflections on wet glass, dark studio lighting, teal and amber rim light, high-end creator workstation aesthetic, ultra-detailed skin texture, shallow depth of field.",
     image: "from-cyan-300 via-slate-800 to-amber-300",
   },
   {
@@ -41,7 +41,7 @@ export const promptCards = [
     style: "Product",
     ratio: "1:1",
     prompt:
-      "A premium product photo on a dark cinematic desk, reflective black acrylic base, mint cyan edge lighting, amber back glow, sharp commercial photography, realistic shadows.",
+      "A high-end product photo on a dark cinematic desk, reflective black acrylic base, mint cyan edge lighting, amber back glow, sharp commercial photography, realistic shadows.",
     image: "from-emerald-300 via-zinc-950 to-orange-300",
   },
   {
@@ -82,5 +82,5 @@ export const faqItems = [
   { q: "Can I generate images here today?", a: "The current 07-frontend build provides a mock generation console and prompt library. Real fal.ai generation is pending backend/API integration." },
   { q: "Are the prices final?", a: "The visible plan values are the confirmed frontend copy: Free 3 lifetime, Starter $4.99 for 100/month, Creator $9.99 for 300/month, Studio $19.99 for 800/month." },
   { q: "Is this affiliated with RSP Editing?", a: "No. This is an independent creator tool and prompt hub." },
-  { q: "Are payments active?", a: "No. Creem checkout and subscriptions are shown as pending, not as production payment flows." },
+  { q: "Are payments active?", a: "No. Creem checkout and subscriptions are shown as pending, not as live payment flows." },
 ];
