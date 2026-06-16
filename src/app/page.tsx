@@ -17,8 +17,8 @@ export default function HomePage() {
       <main className="pt-20">
         <section className="section-pad relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,rgba(184,115,51,0.13),transparent_30%),linear-gradient(135deg,#0b0f1a_0%,#101522_48%,#090b10_100%)]">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] opacity-25" />
-          <div className="relative mx-auto grid max-w-screen-2xl items-center gap-12 lg:grid-cols-[0.92fr_1.08fr]">
-            <div>
+          <div className="relative mx-auto grid max-w-screen-2xl items-start gap-12 lg:grid-cols-[0.92fr_1.08fr]">
+            <div className="lg:pt-4">
               <p className="eyebrow">Upload-first image generator</p>
               <h1 className="mt-5 max-w-4xl font-heading text-5xl font-normal leading-[1.02] tracking-[-0.04em] text-rsp-text md:text-7xl">
                 Upload a photo. <span className="italic text-[#f6d0a8]">Generate an RSP-style image.</span>
@@ -26,9 +26,14 @@ export default function HomePage() {
               <p className="mt-6 max-w-2xl text-lg leading-8 text-rsp-muted">
                 Start with your own image, add a short prompt, and generate a polished edit without browsing through examples first.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="#generator" className="rsp-button-primary px-7 py-4 uppercase tracking-[0.12em]">Upload &amp; Generate</Link>
-                <Link href="/prompts" className="rsp-button-secondary px-7 py-4 uppercase tracking-[0.12em]">Browse Prompts</Link>
+              <div className="mt-8 grid max-w-2xl gap-3 text-sm text-rsp-muted sm:grid-cols-3">
+                <div className="border border-rsp-border bg-black/20 p-4"><span className="font-mono text-rsp-secondary">01</span><br />Upload on the right</div>
+                <div className="border border-rsp-border bg-black/20 p-4"><span className="font-mono text-rsp-secondary">02</span><br />Add a short prompt</div>
+                <div className="border border-rsp-border bg-black/20 p-4"><span className="font-mono text-rsp-secondary">03</span><br />Generate on this page</div>
+              </div>
+              <div className="mt-5 flex items-center gap-4 text-sm">
+                <span className="text-rsp-muted">Use the live generator on the right.</span>
+                <Link href="/prompts" className="text-rsp-secondary no-underline">Browse prompts →</Link>
               </div>
               <p className="mt-5 max-w-2xl text-sm leading-6 text-rsp-muted">
                 Start with 3 free credits total. Monthly plan previews begin at $7.99 for 120 credits.
