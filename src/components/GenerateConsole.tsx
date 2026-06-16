@@ -52,9 +52,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const preview = useMemo(() => {
     const index = Math.abs(prompt.length + style.length + ratio.length) % 3;
     return [
-      "from-[#5B8CFF]/20 via-[#0B0F1A] to-[#B87333]/20",
-      "from-[#B87333]/24 via-[#0B0F1A] to-[#6B2C2C]/20",
-      "from-[#6B2C2C]/24 via-[#0B0F1A] to-[#5B8CFF]/16",
+      "from-[#F4DFC8] via-[#FBF7F0] to-[#D4A574]/30",
+      "from-[#E8C19A]/35 via-[#FBF7F0] to-[#6B2C2C]/12",
+      "from-[#E6D4C2] via-[#FBF7F0] to-[#2E4057]/12",
     ][index];
   }, [prompt, style, ratio]);
   const previewImage = stylePreviewImages[style] || stylePreviewImages.Editorial;
@@ -149,36 +149,36 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="rsp-chip mb-2">Creator console</p>
-            <HeadingTag className={`font-heading font-normal tracking-[-0.03em] text-white ${isHero ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"}`}>Generate from your image</HeadingTag>
+            <HeadingTag className={`font-heading font-normal tracking-[-0.03em] text-rsp-text ${isHero ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"}`}>Generate from your image</HeadingTag>
           </div>
-          <div className="border border-[#B87333]/35 bg-[#B87333]/10 px-3 py-2 font-mono text-sm text-[#f6d0a8]">Credits: {creditsRemaining} remaining</div>
+          <div className="border border-[#B87333]/35 bg-[#B87333]/10 px-3 py-2 font-mono text-sm text-rsp-secondary">Credits: {creditsRemaining} remaining</div>
         </div>
 
-        <label className="mb-4 flex cursor-pointer flex-col items-start gap-3 border border-dashed border-[#B87333]/45 bg-[#0B0F1A]/70 p-4 transition hover:border-[#D4A574]" htmlFor="upload-image">
-          <span className="flex h-10 w-10 items-center justify-center border border-[#B87333]/45 bg-[#B87333]/10 text-xl text-[#f6d0a8]">↑</span>
-          <span className="text-sm font-semibold text-white">{uploadedName ? "Uploaded photo" : "Upload photo"}</span>
-          <span className="text-sm text-[#A7ABB8]">{uploadedName || "PNG, JPG, or WebP under 5 MB. Use your own image as the starting point."}</span>
-          {uploadedImage && <img src={uploadedImage} alt="Uploaded source preview" className="mt-2 h-28 w-28 border border-white/10 object-cover" />}
+        <label className="mb-4 flex cursor-pointer flex-col items-start gap-3 border border-dashed border-[#B87333]/45 bg-[#F7F2EA]/80 p-4 transition hover:border-[#D4A574]" htmlFor="upload-image">
+          <span className="flex h-10 w-10 items-center justify-center border border-[#B87333]/45 bg-[#B87333]/10 text-xl text-rsp-secondary">↑</span>
+          <span className="text-sm font-semibold text-rsp-text">{uploadedName ? "Uploaded photo" : "Upload photo"}</span>
+          <span className="text-sm text-rsp-muted">{uploadedName || "PNG, JPG, or WebP under 5 MB. Use your own image as the starting point."}</span>
+          {uploadedImage && <img src={uploadedImage} alt="Uploaded source preview" className="mt-2 h-28 w-28 border border-rsp-border object-cover" />}
         </label>
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
 
-        <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
-        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className={`${isHero ? "min-h-[92px]" : "min-h-[150px]"} w-full border border-white/10 bg-[#0B0F1A] p-4 font-mono text-sm text-[#F1EADF] outline-none ring-[#B87333]/35 focus:ring-4`} />
+        <label className="mb-2 block text-sm font-semibold text-rsp-text" htmlFor="prompt">Prompt</label>
+        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className={`${isHero ? "min-h-[92px]" : "min-h-[150px]"} w-full border border-rsp-border bg-[#FBF7F0] p-4 font-mono text-sm text-rsp-text outline-none ring-[#B87333]/35 focus:ring-4`} />
 
         {!isHero && <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
-            <p className="mb-3 text-sm font-semibold text-white">Style</p>
+            <p className="mb-3 text-sm font-semibold text-rsp-text">Style</p>
             <div className="flex flex-wrap gap-2">
               {styleChips.map((chip) => (
-                <button type="button" key={chip} onClick={() => setStyle(chip)} className={`border px-4 py-2 text-sm font-semibold ${style === chip ? "border-[#B87333] bg-[#B87333] text-[#110B02]" : "border-white/10 bg-white/[0.06] text-[#A7ABB8]"}`}>{chip}</button>
+                <button type="button" key={chip} onClick={() => setStyle(chip)} className={`border px-4 py-2 text-sm font-semibold ${style === chip ? "border-[#B87333] bg-[#B87333] text-[#110B02]" : "border-rsp-border bg-white/55 text-rsp-muted"}`}>{chip}</button>
               ))}
             </div>
           </div>
           <div>
-            <p className="mb-3 text-sm font-semibold text-white">Aspect ratio</p>
+            <p className="mb-3 text-sm font-semibold text-rsp-text">Aspect ratio</p>
             <div className="flex flex-wrap gap-2">
               {ratios.map((item) => (
-                <button type="button" key={item} onClick={() => setRatio(item)} className={`border px-4 py-2 text-sm font-semibold ${ratio === item ? "border-[#D4A574] bg-[#D4A574] text-[#110B02]" : "border-white/10 bg-white/[0.06] text-[#A7ABB8]"}`}>{item}</button>
+                <button type="button" key={item} onClick={() => setRatio(item)} className={`border px-4 py-2 text-sm font-semibold ${ratio === item ? "border-[#D4A574] bg-[#D4A574] text-[#110B02]" : "border-rsp-border bg-white/55 text-rsp-muted"}`}>{item}</button>
               ))}
             </div>
           </div>
@@ -188,37 +188,37 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Generating…" : uploadedImage ? "Generate from uploaded photo" : "Generate from prompt"}</button>
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
-        <p className="mt-3 text-sm text-[#A7ABB8]">You can generate from text only, or upload a photo first and use the prompt as the edit direction.</p>
+        <p className="mt-3 text-sm text-rsp-muted">You can generate from text only, or upload a photo first and use the prompt as the edit direction.</p>
       </div>
 
       <div className={`rsp-card flex h-full flex-col overflow-hidden ${isHero ? "p-4 md:p-5" : "p-5 md:p-6"}`}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-white">Output preview</p>
-            <p className="mt-1 text-xs text-[#A7ABB8]">Result appears here after generation completes.</p>
+            <p className="text-sm font-semibold text-rsp-text">Output preview</p>
+            <p className="mt-1 text-xs text-rsp-muted">Result appears here after generation completes.</p>
           </div>
-          <span className="border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-[#A7ABB8]">{ratio}</span>
+          <span className="border border-rsp-border bg-white/55 px-3 py-1 text-xs font-semibold text-rsp-muted">{ratio}</span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="border border-white/10 bg-black/20 p-2">
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[#A7ABB8]">Original</p>
-            <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br from-[#101522] to-[#0B0F1A]">
-              {uploadedImage ? <img src={uploadedImage} alt="Uploaded original" className="h-full w-full object-cover" /> : <p className="px-4 text-center text-sm text-[#A7ABB8]">Upload a photo or generate directly from text.</p>}
+          <div className="border border-rsp-border bg-[#EFE7DC]/55 p-2">
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-rsp-muted">Original</p>
+            <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br from-[#F3E8DA] to-[#FBF7F0]">
+              {uploadedImage ? <img src={uploadedImage} alt="Uploaded original" className="h-full w-full object-cover" /> : <p className="px-4 text-center text-sm text-rsp-muted">Upload a photo or generate directly from text.</p>}
             </div>
           </div>
-          <div className="border border-white/10 bg-black/20 p-2">
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[#A7ABB8]">Generated</p>
+          <div className="border border-rsp-border bg-[#EFE7DC]/55 p-2">
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-rsp-muted">Generated</p>
             <div className={`relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br ${preview}`}>
               {(generatedImage || (state === "idle" && !uploadedImage)) && <img src={generatedImage || previewImage} alt="Generated result preview" className="absolute inset-0 h-full w-full object-cover opacity-90" loading="lazy" />}
-              <div className="absolute inset-0 bg-black/20" />
-              {state === "processing" && <div className="relative z-10 border border-white/10 bg-black/50 px-5 py-3 text-center text-white backdrop-blur">Generating image…</div>}
+              <div className="absolute inset-0 bg-[#EFE7DC]/55" />
+              {state === "processing" && <div className="relative z-10 border border-rsp-border bg-white/75 px-5 py-3 text-center text-rsp-text backdrop-blur">Generating image…</div>}
               {state === "failed" && <div className="relative z-10 mx-4 max-w-[240px] border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100 backdrop-blur">{error || "Generation failed. Please adjust the prompt and try again."}</div>}
-              {state === "ready" && !generatedImage && <div className="relative z-10 mx-4 max-w-[240px] border border-[#D4A574]/40 bg-black/50 p-4 text-center text-sm text-[#F1EADF] backdrop-blur">Job submitted. Request {jobId?.slice(0, 10)}…</div>}
-              {state === "idle" && uploadedImage && <div className="relative z-10 mx-4 max-w-[240px] border border-white/10 bg-black/50 p-4 text-center text-sm text-[#D7DAE8] backdrop-blur">Ready to generate from your image.</div>}
+              {state === "ready" && !generatedImage && <div className="relative z-10 mx-4 max-w-[240px] border border-[#D4A574]/40 bg-white/75 p-4 text-center text-sm text-rsp-text backdrop-blur">Job submitted. Request {jobId?.slice(0, 10)}…</div>}
+              {state === "idle" && uploadedImage && <div className="relative z-10 mx-4 max-w-[240px] border border-rsp-border bg-white/75 p-4 text-center text-sm text-rsp-muted backdrop-blur">Ready to generate from your image.</div>}
             </div>
           </div>
         </div>
-        <div className="mt-4 border border-white/10 bg-white/[0.04] p-4 text-sm text-[#A7ABB8]"><strong className="text-white">Live generator:</strong> text generation and uploaded-photo generation submit to the image service, then poll the job result and render the generated image here.</div>
+        <div className="mt-4 border border-rsp-border bg-white/60 p-4 text-sm text-rsp-muted"><strong className="text-rsp-text">Live generator:</strong> text generation and uploaded-photo generation submit to the image service, then poll the job result and render the generated image here.</div>
       </div>
     </div>
   );

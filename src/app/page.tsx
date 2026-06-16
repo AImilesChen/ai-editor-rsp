@@ -15,21 +15,21 @@ export default function HomePage() {
     <>
       <Header />
       <main className="pt-20">
-        <section className="section-pad relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,rgba(184,115,51,0.13),transparent_30%),linear-gradient(135deg,#0b0f1a_0%,#101522_48%,#090b10_100%)]">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] opacity-25" />
+        <section className="section-pad relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)]">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
           <div className="relative mx-auto grid max-w-screen-2xl items-start gap-12 lg:grid-cols-[0.92fr_1.08fr]">
             <div className="lg:pt-4">
               <p className="eyebrow">Upload-first image generator</p>
               <h1 className="mt-5 max-w-4xl font-heading text-5xl font-normal leading-[1.02] tracking-[-0.04em] text-rsp-text md:text-7xl">
-                Upload a photo. <span className="italic text-[#f6d0a8]">Generate an RSP-style image.</span>
+                Upload a photo. <span className="italic text-rsp-secondary">Generate an RSP-style image.</span>
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-rsp-muted">
                 Start with your own image, add a short prompt, and generate a polished edit without browsing through examples first.
               </p>
               <div className="mt-8 grid max-w-2xl gap-3 text-sm text-rsp-muted sm:grid-cols-3">
-                <div className="border border-rsp-border bg-black/20 p-4"><span className="font-mono text-rsp-secondary">01</span><br />Upload on the right</div>
-                <div className="border border-rsp-border bg-black/20 p-4"><span className="font-mono text-rsp-secondary">02</span><br />Add a short prompt</div>
-                <div className="border border-rsp-border bg-black/20 p-4"><span className="font-mono text-rsp-secondary">03</span><br />Generate on this page</div>
+                <div className="border border-rsp-border bg-white/45 p-4"><span className="font-mono text-rsp-secondary">01</span><br />Upload on the right</div>
+                <div className="border border-rsp-border bg-white/45 p-4"><span className="font-mono text-rsp-secondary">02</span><br />Add a short prompt</div>
+                <div className="border border-rsp-border bg-white/45 p-4"><span className="font-mono text-rsp-secondary">03</span><br />Generate on this page</div>
               </div>
               <div className="mt-5 flex items-center gap-4 text-sm">
                 <span className="text-rsp-muted">Use the live generator on the right.</span>
@@ -49,7 +49,7 @@ export default function HomePage() {
         <section className="section-pad">
           <div className="mx-auto max-w-screen-2xl">
             <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">Prompt Library</p><h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em]">Curated creator-ready prompts</h2></div><Link href="/prompts" className="text-rsp-secondary no-underline">View library →</Link></div>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{promptCards.map((card) => <article key={card.slug} className="glass-card overflow-hidden"><img src={card.imagePath} alt={`${card.title} generated sample`} className="h-44 w-full object-cover brightness-110 saturate-125" loading="eager" /><div className="p-5"><div className="mb-3 flex gap-2"><span className="chip-active">{card.style}</span><span className="chip">{card.ratio}</span></div><h3 className="font-heading text-xl font-normal tracking-[-0.02em]">{card.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-rsp-muted">{card.prompt}</p><Link href={`/prompts/${card.slug}`} className="mt-4 inline-block text-sm font-bold text-rsp-secondary no-underline">Use this prompt →</Link></div></article>)}</div>
+            <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3">{promptCards.map((card) => <article key={card.slug} className="glass-card overflow-hidden"><div className="bg-[#F3E8DA]"><img src={card.imagePath} alt={`${card.title} generated sample`} className="h-auto w-full object-contain brightness-105 saturate-110" loading="eager" /></div><div className="p-5"><div className="mb-3 flex gap-2"><span className="chip-active">{card.style}</span><span className="chip">{card.ratio}</span></div><h3 className="font-heading text-xl font-normal tracking-[-0.02em]">{card.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-rsp-muted">{card.prompt}</p><Link href={`/prompts/${card.slug}`} className="mt-4 inline-block text-sm font-bold text-rsp-secondary no-underline">Use this prompt →</Link></div></article>)}</div>
           </div>
         </section>
         <section className="section-pad bg-rsp-surface">

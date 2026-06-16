@@ -54,16 +54,16 @@ export default async function PromptsPage({ params }: { params: Promise<{ slug?:
       <main className="section-pad pt-32">
         <div className="mx-auto max-w-screen-2xl">
           {selected ? (
-            <article className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-              <div className="relative min-h-[420px] overflow-hidden rounded-2xl border border-white/10 bg-rsp-panel">
+            <article className="grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="relative overflow-hidden rounded-2xl border border-rsp-border bg-[#F3E8DA]">
                 {selected.after_image ? (
                   <img
                     src={selected.after_image}
                     alt={`${selected.title} preview`}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="h-auto w-full object-contain"
                   />
                 ) : null}
-                <span className="chip absolute left-6 top-6 bg-black/45 text-white">{selected.category}</span>
+                <span className="chip absolute left-6 top-6 bg-white/85 text-rsp-text shadow-sm">{selected.category}</span>
               </div>
               <div>
                 <p className="eyebrow">Prompt detail</p>
@@ -114,18 +114,18 @@ export default async function PromptsPage({ params }: { params: Promise<{ slug?:
                 />
                 <p className="mt-3 text-sm text-rsp-muted">Static library view: use browser find or open a prompt card for details.</p>
               </div>
-              <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-10 grid items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {activePrompts.map((prompt) => (
-                  <Link key={prompt.slug} href={`/prompts/${prompt.slug}`} className="group overflow-hidden rounded-2xl border border-white/10 bg-rsp-panel no-underline transition hover:-translate-y-1 hover:border-rsp-primary/60">
-                    <div className="relative h-56 bg-rsp-panel-strong">
+                  <Link key={prompt.slug} href={`/prompts/${prompt.slug}`} className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel no-underline transition hover:-translate-y-1 hover:border-rsp-primary/60">
+                    <div className="relative bg-[#F3E8DA]">
                       {prompt.after_image ? (
                         <img
                           src={prompt.after_image}
                           alt={`${prompt.title} preview`}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          className="h-auto w-full object-contain transition duration-500"
                         />
                       ) : null}
-                      <span className="chip absolute left-4 top-4 bg-black/45 text-white">{prompt.category}</span>
+                      <span className="chip absolute left-4 top-4 bg-white/85 text-rsp-text shadow-sm">{prompt.category}</span>
                     </div>
                     <div className="p-5">
                       <p className="text-xs uppercase tracking-[0.16em] text-rsp-muted">{prompt.tool}</p>

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   --font-heading: var(--font-libre-caslon);
   --font-body: var(--font-hanken-grotesk);
   --font-mono: var(--font-jetbrains-mono);
@@ -11,18 +11,18 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; overflow-x: hidden; }
-::selection { background: rgba(71, 220, 198, 0.35); }
+body { margin: 0; overflow-x: hidden; background: #F7F2EA; color: #1E1B18; }
+::selection { background: rgba(184, 115, 51, 0.24); }
 
 @layer components {
   .rsp-container { @apply mx-auto max-w-screen-2xl px-4 md:px-12; }
-  .rsp-card { @apply border border-rsp-border bg-rsp-panel/85 backdrop-blur-xl; box-shadow: 0 24px 80px rgba(0,0,0,.28); }
+  .rsp-card { @apply border border-rsp-border bg-rsp-panel/90 backdrop-blur-xl; box-shadow: 0 22px 70px rgba(94,63,36,.13); }
   .rsp-chip { @apply inline-flex border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-1.5 font-mono text-xs font-medium tracking-[0.12em] text-rsp-secondary; }
   .rsp-button-primary { @apply inline-flex items-center justify-center bg-rsp-primary px-5 py-3 font-mono text-sm font-bold text-rsp-on-primary no-underline transition hover:opacity-90; }
-  .rsp-button-secondary { @apply inline-flex items-center justify-center border border-rsp-secondary/45 bg-transparent px-5 py-3 font-mono text-sm font-semibold text-rsp-text no-underline transition hover:border-rsp-secondary hover:text-rsp-secondary; }
-  .glass-card { @apply border border-rsp-border bg-rsp-panel/70 backdrop-blur-xl; box-shadow: 0 20px 60px rgba(0,0,0,.24); }
+  .rsp-button-secondary { @apply inline-flex items-center justify-center border border-rsp-secondary/45 bg-white/40 px-5 py-3 font-mono text-sm font-semibold text-rsp-text no-underline transition hover:border-rsp-secondary hover:text-rsp-secondary; }
+  .glass-card { @apply border border-rsp-border bg-rsp-panel/75 backdrop-blur-xl; box-shadow: 0 18px 55px rgba(94,63,36,.12); }
   .eyebrow { @apply font-mono text-xs font-medium tracking-[0.16em] text-rsp-secondary; }
-  .chip { @apply border border-rsp-border bg-white/[0.03] px-3 py-1.5 font-mono text-xs font-medium text-rsp-muted; }
+  .chip { @apply border border-rsp-border bg-white/45 px-3 py-1.5 font-mono text-xs font-medium text-rsp-muted; }
   .chip-active { @apply border border-rsp-secondary bg-rsp-secondary/10 px-3 py-1.5 font-mono text-xs font-bold text-rsp-secondary; }
   .choice { @apply border border-rsp-border bg-rsp-panel px-4 py-3 text-left text-sm font-semibold text-rsp-muted transition hover:border-rsp-muted; }
   .choice-active { @apply border border-rsp-secondary bg-rsp-secondary/10 px-4 py-3 text-left text-sm font-bold text-rsp-secondary; }
