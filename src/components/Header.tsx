@@ -41,7 +41,6 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-          <span className="rounded-full border border-emerald-300/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">fal.ai samples live</span>
           <Link href="/generate" className="rounded-full bg-rsp-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
             Try Generator
           </Link>
