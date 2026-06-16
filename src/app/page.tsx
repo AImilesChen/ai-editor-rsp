@@ -45,7 +45,7 @@ export default function HomePage() {
                 <Link href="/prompts" className="rsp-button-secondary px-7 py-4 uppercase tracking-[0.12em]">Browse Prompts</Link>
               </div>
               <p className="mt-5 max-w-2xl text-sm leading-6 text-rsp-muted">
-                Start with 3 free credits total. Monthly plans start at $7.99 for 120 credits. Payment and account flows are pending backend integration.
+                Start with 3 free credits total. Monthly plan previews begin at $7.99 for 120 credits.
               </p>
             </div>
 

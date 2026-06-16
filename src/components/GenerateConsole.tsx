@@ -105,7 +105,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
           <button onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Submitting…" : "Generate image preview"}</button>
           <button onClick={() => setState("failed")} className="rsp-button-secondary">Preview failed state</button>
         </div>
-        <p className="mt-3 text-sm text-[#A7ABB8]">Generation runs through a secure image service. Account-based credit history and billing controls are not active yet.</p>
+        <p className="mt-3 text-sm text-[#A7ABB8]">Generation runs through a secure image service. Saved account history is not active yet.</p>
       </div>
 
       <div className="rsp-card flex h-full flex-col overflow-hidden p-5 md:p-6">
