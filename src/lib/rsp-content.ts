@@ -85,7 +85,7 @@ export const integrationStates = [
 ];
 
 export const faqItems = [
-  { q: "Can I generate images here today?", a: "Yes. You can start a preview generation flow from the Generate page. Saved accounts, billing, and long-term credit history are not active yet." },
+  { q: "Can I generate images here today?", a: "Yes. You can upload a photo or enter a prompt directly from the homepage generator. Saved accounts, billing, and long-term credit history are not active yet." },
   { q: "Are the prices final?", a: "The visible plan values are the confirmed frontend copy: Free 3 credits total, Starter $7.99 for 120 credits/month, Creator $14.99 for 300 credits/month, Studio $29.99 for 700 credits/month." },
   { q: "Is this affiliated with RSP Editing?", a: "No. This is an independent creator tool and prompt hub." },
   { q: "Are payments active?", a: "No. Checkout and subscriptions are shown as pending, not as live payment flows." },
