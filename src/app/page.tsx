@@ -19,28 +19,30 @@ export default function HomePage() {
           <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-rsp-primary/15 blur-3xl" />
           <div className="relative mx-auto grid max-w-screen-2xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
             <div>
-              <p className="eyebrow">Dark cinematic creator workstation</p>
-              <h1 className="mt-5 font-heading text-5xl font-bold leading-[0.98] tracking-tight text-rsp-text md:text-7xl">AI Image Generator for RSP Editing Prompts</h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-rsp-muted">Turn curated prompts into stunning AI image concepts. Browse, select, and preview generation states in one workstation-inspired UI.</p>
+              <p className="eyebrow">Upload-first AI image generator</p>
+              <h1 className="mt-5 font-heading text-5xl font-bold leading-[0.98] tracking-tight text-rsp-text md:text-7xl">Upload a photo. Generate an RSP-style image.</h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-rsp-muted">Start with your own image, add a short prompt, and generate a polished edit without browsing through examples first.</p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/generate" className="rounded-full bg-rsp-primary px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary no-underline">Try Generator</Link>
+                <Link href="/generate" className="rounded-full bg-rsp-primary px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary no-underline">Upload & Generate</Link>
                 <Link href="/prompts" className="rounded-full border border-white/15 px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-text no-underline">Browse Prompts</Link>
               </div>
               <p className="mt-5 text-sm text-rsp-muted">Start with 3 free credits total. Monthly plans start at $7.99 for 120 credits. Payment and account flows are pending backend integration.</p>
             </div>
             <div className="glass-card p-4">
-              <div className="rounded-2xl bg-gradient-to-br from-rsp-primary/30 via-rsp-panel-strong to-rsp-secondary/30 p-4">
+              <div className="rounded-2xl bg-gradient-to-br from-rsp-primary/25 via-rsp-panel-strong to-rsp-secondary/20 p-4">
                 <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
-                  <div className="mb-4 flex items-center justify-between"><span className="eyebrow">Live preview</span></div>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    {promptCards.slice(0, 3).map((card) => (
-                      <div key={card.slug} className="relative h-48 overflow-hidden rounded-xl shadow-glow">
-                        <img src={card.imagePath} alt={`${card.title} fal.ai generated sample`} className="h-full w-full object-cover" loading="eager" />
-                        <span className="chip absolute left-3 top-3 bg-black/45 text-white">{card.style}</span>
-                      </div>
-                    ))}
+                  <p className="eyebrow">Quick start</p>
+                  <h2 className="mt-3 font-heading text-3xl font-bold text-rsp-text">Generate from your image</h2>
+                  <div className="mt-5 rounded-2xl border border-dashed border-rsp-primary/50 bg-rsp-primary/5 p-6 text-center">
+                    <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-rsp-primary/15 text-3xl">＋</div>
+                    <p className="mt-4 font-semibold text-rsp-text">Upload photo</p>
+                    <p className="mt-2 text-sm text-rsp-muted">PNG, JPG, or WebP. Use your own image as the starting point.</p>
                   </div>
-                  <div className="mt-5 rounded-xl border border-white/10 bg-rsp-panel/80 p-4"><p className="font-mono text-sm text-rsp-muted">Prompt: cinematic editorial portrait, teal rim light, amber glow, creator workstation...</p></div>
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-rsp-panel/80 p-4">
+                    <p className="text-xs uppercase tracking-[0.16em] text-rsp-muted">Prompt</p>
+                    <p className="mt-2 font-mono text-sm text-rsp-muted">Add the style you want, then generate the edited image.</p>
+                  </div>
+                  <Link href="/generate" className="mt-5 block rounded-full bg-rsp-primary px-6 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary no-underline">Start Generating</Link>
                 </div>
               </div>
             </div>
