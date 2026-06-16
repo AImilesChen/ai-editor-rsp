@@ -15,6 +15,7 @@ const stylePreviewImages: Record<string, string> = {
 
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";
+  variant?: "full" | "hero";
 };
 
 type FalResult = {
@@ -34,8 +35,9 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
-export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsoleProps) {
+export default function GenerateConsole({ headingLevel = "h1", variant = "full" }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
+  const isHero = variant === "hero";
   const [prompt, setPrompt] = useState(promptCards[0].text);
   const [style, setStyle] = useState(styleChips[0]);
   const [ratio, setRatio] = useState(ratios[1]);
@@ -142,12 +144,12 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
   };
 
   return (
-    <div className="grid items-stretch gap-6 lg:grid-cols-[1.05fr_.8fr]">
-      <div className="rsp-card h-full p-5 md:p-6">
+    <div className={isHero ? "grid gap-4" : "grid items-stretch gap-6 lg:grid-cols-[1.05fr_.8fr]"}>
+      <div className={`rsp-card h-full ${isHero ? "p-4 md:p-5" : "p-5 md:p-6"}`}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="rsp-chip mb-2">Creator console</p>
-            <HeadingTag className="font-heading text-3xl font-normal tracking-[-0.03em] text-white md:text-4xl">Generate from your image</HeadingTag>
+            <HeadingTag className={`font-heading font-normal tracking-[-0.03em] text-white ${isHero ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"}`}>Generate from your image</HeadingTag>
           </div>
           <div className="border border-[#B87333]/35 bg-[#B87333]/10 px-3 py-2 font-mono text-sm text-[#f6d0a8]">Credits: {creditsRemaining} remaining</div>
         </div>
@@ -161,9 +163,9 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
 
         <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
-        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[150px] w-full border border-white/10 bg-[#0B0F1A] p-4 font-mono text-sm text-[#F1EADF] outline-none ring-[#B87333]/35 focus:ring-4" />
+        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className={`${isHero ? "min-h-[92px]" : "min-h-[150px]"} w-full border border-white/10 bg-[#0B0F1A] p-4 font-mono text-sm text-[#F1EADF] outline-none ring-[#B87333]/35 focus:ring-4`} />
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {!isHero && <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
             <p className="mb-3 text-sm font-semibold text-white">Style</p>
             <div className="flex flex-wrap gap-2">
@@ -180,7 +182,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
               ))}
             </div>
           </div>
-        </div>
+        </div>}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
           <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Generating…" : uploadedImage ? "Generate from uploaded photo" : "Generate from prompt"}</button>
@@ -189,7 +191,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
         <p className="mt-3 text-sm text-[#A7ABB8]">You can generate from text only, or upload a photo first and use the prompt as the edit direction.</p>
       </div>
 
-      <div className="rsp-card flex h-full flex-col overflow-hidden p-5 md:p-6">
+      <div className={`rsp-card flex h-full flex-col overflow-hidden ${isHero ? "p-4 md:p-5" : "p-5 md:p-6"}`}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-white">Output preview</p>

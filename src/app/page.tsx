@@ -10,21 +10,7 @@ export const metadata = {
   alternates: { canonical: site.url },
 };
 
-function CropMarks() {
-  return (
-    <>
-      <span className="absolute left-3 top-3 h-8 w-8 border-l border-t border-rsp-secondary" aria-hidden="true" />
-      <span className="absolute right-3 top-3 h-8 w-8 border-r border-t border-rsp-secondary" aria-hidden="true" />
-      <span className="absolute bottom-3 left-3 h-8 w-8 border-b border-l border-rsp-secondary" aria-hidden="true" />
-      <span className="absolute bottom-3 right-3 h-8 w-8 border-b border-r border-rsp-secondary" aria-hidden="true" />
-    </>
-  );
-}
-
 export default function HomePage() {
-  const beforeImage = promptCards[3] || promptCards[0];
-  const afterImage = promptCards[0];
-
   return (
     <>
       <Header />
@@ -41,7 +27,7 @@ export default function HomePage() {
                 Start with your own image, add a short prompt, and generate a polished edit without browsing through examples first.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/generate" className="rsp-button-primary px-7 py-4 uppercase tracking-[0.12em]">Upload &amp; Generate</Link>
+                <Link href="#generator" className="rsp-button-primary px-7 py-4 uppercase tracking-[0.12em]">Upload &amp; Generate</Link>
                 <Link href="/prompts" className="rsp-button-secondary px-7 py-4 uppercase tracking-[0.12em]">Browse Prompts</Link>
               </div>
               <p className="mt-5 max-w-2xl text-sm leading-6 text-rsp-muted">
@@ -49,54 +35,12 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="relative border border-rsp-border bg-rsp-panel/75 p-4 backdrop-blur-xl">
-              <CropMarks />
-              <div className="border border-rsp-border bg-[#0a0e19]/80 p-5 md:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-rsp-border pb-4">
-                  <div>
-                    <p className="eyebrow">Result preview</p>
-                    <h2 className="mt-2 font-heading text-3xl font-normal tracking-[-0.03em] text-rsp-text">See the edit direction before you start</h2>
-                  </div>
-                  <span className="border border-rsp-secondary/40 px-3 py-1.5 font-mono text-xs text-rsp-secondary">EXAMPLE OUTPUT</span>
-                </div>
-
-                <div className="mt-5 grid gap-4 md:grid-cols-[0.72fr_1.28fr]">
-                  <div className="border border-rsp-border bg-rsp-secondary/5 p-5">
-                    <p className="font-mono text-xs tracking-[0.12em] text-rsp-secondary">EDIT RECIPE</p>
-                    <p className="mt-4 text-sm leading-6 text-rsp-muted">
-                      Use this panel as a visual reference: your upload stays the starting point, while the prompt controls lighting, mood, texture, and composition.
-                    </p>
-                    <div className="mt-5 space-y-3 border-t border-rsp-border pt-4 text-sm text-rsp-muted">
-                      <p><span className="font-mono text-rsp-secondary">01</span> Keep subject identity</p>
-                      <p><span className="font-mono text-rsp-secondary">02</span> Add cinematic contrast</p>
-                      <p><span className="font-mono text-rsp-secondary">03</span> Render a polished RSP-style edit</p>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-3">
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                      <div className="relative overflow-hidden border border-rsp-border bg-black/30">
-                        <img src={beforeImage.imagePath} alt="Original photo reference for AI Editor RSP" className="h-44 w-full object-cover grayscale-[35%] saturate-75" loading="eager" />
-                        <span className="absolute left-2 top-2 bg-black/55 px-2 py-1 font-mono text-[10px] tracking-[0.08em] text-rsp-muted">INPUT REFERENCE</span>
-                      </div>
-                      <span className="font-mono text-rsp-secondary">→</span>
-                      <div className="relative overflow-hidden border border-rsp-secondary/50 bg-black/30">
-                        <img src={afterImage.imagePath} alt="Generated cinematic edit preview" className="h-44 w-full object-cover brightness-110 saturate-125" loading="eager" />
-                        <span className="absolute left-2 top-2 bg-black/55 px-2 py-1 font-mono text-[10px] tracking-[0.08em] text-rsp-secondary">RSP EDIT</span>
-                      </div>
-                    </div>
-                    <div className="border border-rsp-border bg-black/20 p-4">
-                      <p className="font-mono text-xs tracking-[0.12em] text-rsp-secondary">SAMPLE PROMPT</p>
-                      <p className="mt-2 font-mono text-sm leading-6 text-rsp-muted">cinematic low light, warm skin tone, refined studio contrast</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div id="generator" className="relative scroll-mt-24">
+              <GenerateConsole headingLevel="h2" variant="hero" />
             </div>
           </div>
         </section>
 
-        <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-screen-2xl"><GenerateConsole headingLevel="h2" /></div></section>
         <section className="section-pad">
           <div className="mx-auto max-w-screen-2xl">
             <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">Prompt Library</p><h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em]">Curated creator-ready prompts</h2></div><Link href="/prompts" className="text-rsp-secondary no-underline">View library →</Link></div>
