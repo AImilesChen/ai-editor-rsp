@@ -30,9 +30,9 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
   const preview = useMemo(() => {
     const index = Math.abs(prompt.length + style.length + ratio.length) % 3;
     return [
-      "from-[#35D0BA]/30 via-[#11131A] to-[#F4B860]/20",
-      "from-[#8EA4FF]/30 via-[#11131A] to-[#35D0BA]/20",
-      "from-[#F4B860]/30 via-[#11131A] to-[#8EA4FF]/20",
+      "from-[#5B8CFF]/20 via-[#0B0F1A] to-[#B87333]/20",
+      "from-[#B87333]/24 via-[#0B0F1A] to-[#6B2C2C]/20",
+      "from-[#6B2C2C]/24 via-[#0B0F1A] to-[#5B8CFF]/16",
     ][index];
   }, [prompt, style, ratio]);
   const previewImage = stylePreviewImages[style] || stylePreviewImages.Editorial;
@@ -74,13 +74,13 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
       <div className="rsp-card h-full p-5 md:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="rsp-chip mb-2">fal.ai console</p>
-            <HeadingTag className="font-heading text-3xl font-bold text-white md:text-4xl">Generate Console</HeadingTag>
+            <p className="rsp-chip mb-2">Image studio</p>
+            <HeadingTag className="font-heading text-3xl font-normal tracking-[-0.03em] text-white md:text-4xl">Generate Console</HeadingTag>
           </div>
-          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits: {creditsRemaining} credits remaining</div>
+          <div className="border border-[#B87333]/35 bg-[#B87333]/10 px-3 py-2 font-mono text-sm text-[#f6d0a8]">Credits: {creditsRemaining} credits remaining</div>
         </div>
         <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
-        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[150px] w-full rounded-2xl border border-white/10 bg-[#0C0E13] p-4 font-mono text-sm text-[#E2E5F3] outline-none ring-[#35D0BA]/40 focus:ring-4" />
+        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[150px] w-full border border-white/10 bg-[#0B0F1A] p-4 font-mono text-sm text-[#F1EADF] outline-none ring-[#B87333]/35 focus:ring-4" />
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>

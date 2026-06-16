@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono, Libre_Caslon_Text } from "next/font/google";
 import Analytics from "@/components/Analytics";
 import { site } from "@/lib/rsp-content";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-space-grotesk", display: "swap" });
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-inter", display: "swap" });
+const libreCaslon = Libre_Caslon_Text({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-libre-caslon", display: "swap" });
+const hanken = Hanken_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-hanken-grotesk", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jetbrains-mono", display: "swap" });
 
 const jsonLd = {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} ${mono.variable} dark`}>
+    <html lang="en" className={`${libreCaslon.variable} ${hanken.variable} ${mono.variable} dark`}>
       <body className="min-h-screen bg-rsp-bg font-body text-rsp-text antialiased">
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <Analytics />

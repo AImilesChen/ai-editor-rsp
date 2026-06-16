@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: dark;
-  --font-heading: var(--font-space-grotesk);
-  --font-body: var(--font-inter);
+  --font-heading: var(--font-libre-caslon);
+  --font-body: var(--font-hanken-grotesk);
   --font-mono: var(--font-jetbrains-mono);
 }
 
@@ -16,16 +16,16 @@ body { margin: 0; overflow-x: hidden; }
 
 @layer components {
   .rsp-container { @apply mx-auto max-w-screen-2xl px-4 md:px-12; }
-  .rsp-card { @apply rounded-3xl border border-white/10 bg-rsp-panel/80 shadow-glow backdrop-blur-xl; }
-  .rsp-chip { @apply inline-flex rounded-full border border-rsp-primary/30 bg-rsp-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-primary; }
-  .rsp-button-primary { @apply inline-flex items-center justify-center rounded-full bg-rsp-primary px-5 py-3 text-sm font-bold text-rsp-on-primary no-underline transition hover:opacity-90; }
-  .rsp-button-secondary { @apply inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-bold text-rsp-text no-underline transition hover:border-rsp-primary/50 hover:text-rsp-primary; }
-  .glass-card { @apply rounded-2xl border border-white/10 bg-rsp-panel/70 shadow-glow backdrop-blur-xl; }
-  .eyebrow { @apply text-xs font-bold uppercase tracking-[0.22em] text-rsp-primary; }
-  .chip { @apply rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-rsp-muted; }
-  .chip-active { @apply rounded-full border border-rsp-primary bg-rsp-primary/15 px-3 py-1.5 text-xs font-bold text-rsp-primary; }
-  .choice { @apply rounded-xl border border-white/10 bg-rsp-panel px-4 py-3 text-left text-sm font-semibold text-rsp-muted transition hover:border-rsp-muted; }
-  .choice-active { @apply rounded-xl border border-rsp-primary bg-rsp-primary/10 px-4 py-3 text-left text-sm font-bold text-rsp-primary; }
+  .rsp-card { @apply border border-rsp-border bg-rsp-panel/85 backdrop-blur-xl; box-shadow: 0 24px 80px rgba(0,0,0,.28); }
+  .rsp-chip { @apply inline-flex border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-1.5 font-mono text-xs font-medium tracking-[0.12em] text-rsp-secondary; }
+  .rsp-button-primary { @apply inline-flex items-center justify-center bg-rsp-primary px-5 py-3 font-mono text-sm font-bold text-rsp-on-primary no-underline transition hover:opacity-90; }
+  .rsp-button-secondary { @apply inline-flex items-center justify-center border border-rsp-secondary/45 bg-transparent px-5 py-3 font-mono text-sm font-semibold text-rsp-text no-underline transition hover:border-rsp-secondary hover:text-rsp-secondary; }
+  .glass-card { @apply border border-rsp-border bg-rsp-panel/70 backdrop-blur-xl; box-shadow: 0 20px 60px rgba(0,0,0,.24); }
+  .eyebrow { @apply font-mono text-xs font-medium tracking-[0.16em] text-rsp-secondary; }
+  .chip { @apply border border-rsp-border bg-white/[0.03] px-3 py-1.5 font-mono text-xs font-medium text-rsp-muted; }
+  .chip-active { @apply border border-rsp-secondary bg-rsp-secondary/10 px-3 py-1.5 font-mono text-xs font-bold text-rsp-secondary; }
+  .choice { @apply border border-rsp-border bg-rsp-panel px-4 py-3 text-left text-sm font-semibold text-rsp-muted transition hover:border-rsp-muted; }
+  .choice-active { @apply border border-rsp-secondary bg-rsp-secondary/10 px-4 py-3 text-left text-sm font-bold text-rsp-secondary; }
   .footer-link { @apply mb-2.5 block text-sm text-rsp-muted no-underline transition hover:text-rsp-text; }
   .section-pad { @apply px-4 py-16 md:px-12 md:py-24; }
 }

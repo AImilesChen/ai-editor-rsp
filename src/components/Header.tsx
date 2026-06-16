@@ -29,11 +29,11 @@ export default function Header() {
   }, [mobileOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-rsp-bg/85 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-rsp-border bg-rsp-bg/90 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 md:px-12">
         <Link href="/" className="flex items-center gap-3 no-underline" aria-label="AI Editor RSP home">
-          <span className="grid h-9 w-9 place-items-center rounded-lg border border-rsp-primary/40 bg-rsp-primary/15 text-rsp-primary shadow-[0_0_30px_rgba(71,220,198,0.20)]">✦</span>
-          <span className="font-heading text-2xl font-bold tracking-tight text-rsp-primary">AI Editor RSP</span>
+          <span className="grid h-9 w-9 place-items-center border border-rsp-secondary/50 bg-rsp-secondary/10 font-mono text-rsp-secondary">✦</span>
+          <span className="font-heading text-2xl font-normal tracking-[-0.03em] text-rsp-text">AI Editor RSP</span>
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
@@ -41,7 +41,7 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-          <Link href="/generate" className="rounded-full bg-rsp-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
+          <Link href="/generate" className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
             Try Generator
           </Link>
         </nav>
@@ -58,7 +58,7 @@ export default function Header() {
       {mobileOpen ? (
         <div className="fixed inset-0 z-[60] flex flex-col bg-rsp-bg px-6 py-6 md:hidden">
           <div className="flex items-center justify-between">
-            <span className="font-heading text-2xl font-bold text-rsp-primary">AI Editor RSP</span>
+            <span className="font-heading text-2xl font-normal text-rsp-text">AI Editor RSP</span>
             <button type="button" aria-label="Close navigation menu" className="min-h-[44px] min-w-[44px] rounded-lg border border-white/10 text-2xl text-rsp-text" onClick={() => setMobileOpen(false)}>
               ×
             </button>
