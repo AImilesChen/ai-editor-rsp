@@ -31,7 +31,7 @@ export default function HomePage() {
             <div className="glass-card p-4">
               <div className="rounded-2xl bg-gradient-to-br from-rsp-primary/30 via-rsp-panel-strong to-rsp-secondary/30 p-4">
                 <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
-                  <div className="mb-4 flex items-center justify-between"><span className="eyebrow">Live preview</span><span className="chip-active">fal.ai samples</span></div>
+                  <div className="mb-4 flex items-center justify-between"><span className="eyebrow">Live preview</span></div>
                   <div className="grid gap-4 sm:grid-cols-3">
                     {promptCards.slice(0, 3).map((card) => (
                       <div key={card.slug} className="relative h-48 overflow-hidden rounded-xl shadow-glow">
