@@ -71,10 +71,10 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "$0", cadence: "lifetime", generations: "3 lifetime generations", cta: "Try Generator", featured: false },
-  { name: "Starter", price: "$4.99", cadence: "/mo", generations: "100 generations/month", cta: "Preview Starter", featured: false },
-  { name: "Creator", price: "$9.99", cadence: "/mo", generations: "300 generations/month", cta: "Preview Creator", featured: true },
-  { name: "Studio", price: "$19.99", cadence: "/mo", generations: "800 generations/month", cta: "Preview Studio", featured: false },
+  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Try Generator", featured: false },
+  { name: "Starter", price: "$7.99", cadence: "/mo", generations: "120 credits/month", cta: "Preview Starter", featured: false },
+  { name: "Creator", price: "$14.99", cadence: "/mo", generations: "300 credits/month", cta: "Preview Creator", featured: true },
+  { name: "Studio", price: "$29.99", cadence: "/mo", generations: "700 credits/month", cta: "Preview Studio", featured: false },
 ];
 
 export const integrationStates = [
@@ -86,7 +86,7 @@ export const integrationStates = [
 
 export const faqItems = [
   { q: "Can I generate images here today?", a: "The current build routes generation requests through the secure backend API and shows fal.ai generated case images. Account persistence, Creem billing, and long-term credit history still need the next backend pass." },
-  { q: "Are the prices final?", a: "The visible plan values are the confirmed frontend copy: Free 3 lifetime, Starter $4.99 for 100/month, Creator $9.99 for 300/month, Studio $19.99 for 800/month." },
+  { q: "Are the prices final?", a: "The visible plan values are the confirmed frontend copy: Free 3 credits total, Starter $7.99 for 120 credits/month, Creator $14.99 for 300 credits/month, Studio $29.99 for 700 credits/month." },
   { q: "Is this affiliated with RSP Editing?", a: "No. This is an independent creator tool and prompt hub." },
   { q: "Are payments active?", a: "No. Creem checkout and subscriptions are shown as pending, not as live payment flows." },
 ];

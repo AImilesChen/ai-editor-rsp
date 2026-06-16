@@ -26,7 +26,7 @@ export default function HomePage() {
                 <Link href="/generate" className="rounded-full bg-rsp-primary px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary no-underline">Try Generator</Link>
                 <Link href="/prompts" className="rounded-full border border-white/15 px-7 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-text no-underline">Browse Prompts</Link>
               </div>
-              <p className="mt-5 text-sm text-rsp-muted">Start with 3 free lifetime generations. Monthly plans from $4.99. Payment and account flows are pending backend integration.</p>
+              <p className="mt-5 text-sm text-rsp-muted">Start with 3 free credits total. Monthly plans start at $7.99 for 120 credits. Payment and account flows are pending backend integration.</p>
             </div>
             <div className="glass-card p-4">
               <div className="rounded-2xl bg-gradient-to-br from-rsp-primary/30 via-rsp-panel-strong to-rsp-secondary/30 p-4">

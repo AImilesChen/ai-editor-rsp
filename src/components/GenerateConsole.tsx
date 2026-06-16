@@ -77,7 +77,7 @@ export default function GenerateConsole({ headingLevel = "h1" }: GenerateConsole
             <p className="rsp-chip mb-2">fal.ai console</p>
             <HeadingTag className="font-heading text-3xl font-bold text-white md:text-4xl">Generate Console</HeadingTag>
           </div>
-          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits: {creditsRemaining} lifetime generations</div>
+          <div className="rounded-2xl border border-[#F4B860]/30 bg-[#F4B860]/10 px-3 py-2 text-sm text-[#F4B860]">Credits: {creditsRemaining} credits remaining</div>
         </div>
         <label className="mb-2 block text-sm font-semibold text-white" htmlFor="prompt">Prompt</label>
         <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="min-h-[150px] w-full rounded-2xl border border-white/10 bg-[#0C0E13] p-4 font-mono text-sm text-[#E2E5F3] outline-none ring-[#35D0BA]/40 focus:ring-4" />
