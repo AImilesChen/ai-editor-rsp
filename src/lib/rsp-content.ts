@@ -9,64 +9,64 @@ export const site = {
 
 export const promptCards = [
   {
-    slug: "neon-shadows-portrait",
-    title: "Neon Shadows Portrait",
+    slug: "double-exposure-travel-rishikesh",
+    title: "Double Exposure Travel",
     style: "Photo",
-    ratio: "1:1",
+    ratio: "4:5",
     prompt:
-      "A cinematic editorial portrait with neon reflections on wet glass, dark studio lighting, teal and amber rim light, high-end creator workstation aesthetic, ultra-detailed skin texture, shallow depth of field.",
+      "Blend a portrait with a cinematic travel scene, warm sunset tones, soft double exposure edges, realistic texture, and editorial RSP-style color grading.",
     image: "from-cyan-300 via-slate-800 to-amber-300",
-    imagePath: "/images/generated/neon-shadows-portrait.webp",
+    imagePath: "/images/generated/double-exposure-travel-rishikesh.webp",
   },
   {
-    slug: "architectural-dreamscape",
-    title: "Architectural Dreamscape",
-    style: "3D",
-    ratio: "16:9",
+    slug: "horror-girlfriend-ai-photo",
+    title: "Horror Portrait Edit",
+    style: "Portrait",
+    ratio: "4:5",
     prompt:
-      "A futuristic architectural landscape at blue hour, reflective marble floors, floating light panels, cinematic composition, crisp details, high-end concept art, teal accents and warm amber windows.",
+      "Create a moody horror portrait with controlled shadows, glowing eyes, cinematic contrast, fog texture, and a polished dark editorial finish.",
     image: "from-indigo-400 via-slate-900 to-cyan-300",
-    imagePath: "/images/generated/architectural-dreamscape.webp",
+    imagePath: "/images/generated/horror-girlfriend-ai-photo.webp",
   },
   {
-    slug: "abstract-digital-poster",
-    title: "Abstract Digital Poster",
-    style: "Editorial",
-    ratio: "4:3",
-    prompt:
-      "An abstract digital art poster with liquid chrome ribbons, soft grain, mint cyan glows, amber highlights, dramatic shadows, gallery-quality composition, no text, no watermark.",
-    image: "from-fuchsia-400 via-slate-950 to-amber-200",
-    imagePath: "/images/generated/abstract-digital-poster.webp",
-  },
-  {
-    slug: "product-glow-shot",
-    title: "Product Glow Shot",
-    style: "Product",
-    ratio: "1:1",
-    prompt:
-      "A high-end product photo on a dark cinematic desk, reflective black acrylic base, mint cyan edge lighting, amber back glow, sharp commercial photography, realistic shadows.",
-    image: "from-emerald-300 via-zinc-950 to-orange-300",
-    imagePath: "/images/generated/product-glow-shot.webp",
-  },
-  {
-    slug: "anime-night-market",
-    title: "Anime Night Market",
+    slug: "lofi-girl-vibes",
+    title: "Lofi Study Mood",
     style: "Anime",
     ratio: "9:16",
     prompt:
-      "A vertical anime scene in a rainy night market, glowing signs, cinematic depth, expressive character pose, detailed reflections, teal and amber color palette, clean linework.",
-    image: "from-sky-400 via-slate-900 to-rose-300",
-    imagePath: "/images/generated/anime-night-market.webp",
+      "Turn a cozy desk scene into a lofi night-study visual with warm lamp light, rain outside the window, soft grain, and calm creator atmosphere.",
+    image: "from-fuchsia-400 via-slate-950 to-amber-200",
+    imagePath: "/images/generated/lofi-girl-vibes.webp",
   },
   {
-    slug: "line-art-creator-desk",
-    title: "Line Art Creator Desk",
-    style: "Line Art",
+    slug: "3d-cartoon-selfie",
+    title: "3D Cartoon Selfie",
+    style: "3D",
+    ratio: "1:1",
+    prompt:
+      "Convert a selfie into a friendly 3D cartoon portrait with glossy studio lighting, expressive eyes, clean background, and detailed render quality.",
+    image: "from-emerald-300 via-zinc-950 to-orange-300",
+    imagePath: "/images/generated/three-d-cartoon-selfie.webp",
+  },
+  {
+    slug: "diwali-light-portrait",
+    title: "Diwali Light Portrait",
+    style: "Festival",
+    ratio: "4:5",
+    prompt:
+      "Create a warm festive portrait with Diwali diyas, golden bokeh, rich clothing detail, soft focus background, and cinematic celebration lighting.",
+    image: "from-sky-400 via-slate-900 to-rose-300",
+    imagePath: "/images/generated/diwali-light-portrait.webp",
+  },
+  {
+    slug: "cinematic-movie-poster",
+    title: "Cinematic Movie Poster",
+    style: "Poster",
     ratio: "16:9",
     prompt:
-      "Minimal line art illustration of a creator workstation, image generation console on screen, soft cyan accents, precise vector lines, dark background, editorial tech diagram style.",
+      "Design a dramatic movie-poster image with strong key light, expressive subject, subtle film grain, studio contrast, and clean cinematic composition.",
     image: "from-slate-600 via-black to-cyan-200",
-    imagePath: "/images/generated/line-art-creator-desk.webp",
+    imagePath: "/images/generated/cinematic-movie-poster.webp",
   },
 ];
 
