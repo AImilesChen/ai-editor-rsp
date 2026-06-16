@@ -4,6 +4,7 @@ export type GenerateRequest = {
   prompt: string;
   style?: string;
   ratio?: string;
+  imageDataUrl?: string;
 };
 
 export function falConfigured() {
@@ -28,6 +29,14 @@ function falQueueRequestModel() {
   // submission endpoint is fal-ai/flux/dev. Keep non-flux model paths intact.
   if (model.startsWith("fal-ai/flux/")) return "fal-ai/flux";
   return model;
+}
+
+function falImageToImageModel() {
+  return process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/flux/dev/image-to-image";
+}
+
+function submitModel(input: GenerateRequest) {
+  return input.imageDataUrl ? falImageToImageModel() : falModel();
 }
 
 function ratioToImageSize(ratio?: string) {
@@ -59,18 +68,22 @@ export async function submitFalGeneration(input: GenerateRequest) {
     "Editorial image generation for a user-provided prompt. Avoid text overlays unless explicitly requested.",
   ].filter(Boolean).join("\n");
 
-  const response = await fetch(`${FAL_QUEUE_BASE}/${falModel()}`, {
+  const requestBody = {
+    prompt: enrichedPrompt,
+    image_size: ratioToImageSize(input.ratio),
+    num_images: 1,
+    output_format: "jpeg",
+    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: 0.82 } : {}),
+  };
+
+  const model = submitModel(input);
+  const response = await fetch(`${FAL_QUEUE_BASE}/${model}`, {
     method: "POST",
     headers: {
       Authorization: `Key ${falKey()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      prompt: enrichedPrompt,
-      image_size: ratioToImageSize(input.ratio),
-      num_images: 1,
-      output_format: "jpeg",
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   const data = await response.json().catch(() => ({}));
@@ -86,7 +99,7 @@ export async function submitFalGeneration(input: GenerateRequest) {
   return {
     ok: true as const,
     provider: "fal.ai",
-    model: falModel(),
+    model,
     requestId: data.request_id || data.requestId || null,
     statusUrl: data.status_url || null,
     responseUrl: data.response_url || null,
