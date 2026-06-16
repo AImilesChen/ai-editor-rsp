@@ -2,7 +2,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GenerateConsole from "@/components/GenerateConsole";
-import { faqItems, integrationStates, pricingPlans, promptCards, site } from "@/lib/rsp-content";
+import { faqItems, pricingPlans, promptCards, site } from "@/lib/rsp-content";
 
 export const metadata = {
   title: "AI Image Generator for RSP Editing Prompts",
@@ -100,9 +100,6 @@ export default function HomePage() {
         </section>
         <section className="section-pad bg-rsp-surface">
           <div className="mx-auto max-w-screen-2xl"><p className="eyebrow text-center">Confirmed Pricing</p><h2 className="mt-3 text-center font-heading text-4xl font-normal tracking-[-0.03em]">Credits-based plans</h2><div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{pricingPlans.map((plan) => <div key={plan.name} className={`glass-card p-6 ${plan.featured ? "border-rsp-secondary" : ""}`}><h3 className="font-heading text-2xl font-normal">{plan.name}</h3><div className="mt-4"><span className="font-heading text-4xl font-normal">{plan.price}</span><span className="text-rsp-muted"> {plan.cadence}</span></div><p className="mt-4 text-rsp-muted">{plan.generations}</p><Link href="/pricing" className="rsp-button-secondary mt-6 block px-4 py-3 text-center text-sm">{plan.cta}</Link></div>)}</div></div>
-        </section>
-        <section className="section-pad">
-          <div className="mx-auto grid max-w-screen-2xl gap-6 lg:grid-cols-2"><div><p className="eyebrow">Readiness states</p><h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em]">Integration status without overpromising</h2><p className="mt-4 text-rsp-muted">Backend-dependent features are visibly labeled so the frontend does not pretend image generation, billing, login, or credit deduction is more complete than it is.</p></div><div className="grid gap-3">{integrationStates.map((item) => <div key={item.label} className="glass-card p-4"><div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-bold">{item.label}</h3><span className="chip-active">{item.state}</span></div><p className="mt-2 text-sm text-rsp-muted">{item.detail}</p></div>)}</div></div>
         </section>
         <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-3xl"><p className="eyebrow text-center">FAQ</p>{faqItems.map((item) => <div key={item.q} className="mt-5 glass-card p-5"><h3 className="font-heading text-xl font-normal tracking-[-0.02em]">{item.q}</h3><p className="mt-2 text-rsp-muted">{item.a}</p></div>)}</div></section>
       </main>
