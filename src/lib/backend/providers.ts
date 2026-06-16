@@ -22,6 +22,14 @@ function falModel() {
   return process.env.FAL_MODEL || "fal-ai/flux/dev";
 }
 
+function falQueueRequestModel() {
+  const model = falModel();
+  // fal.ai returns queue status/result URLs under fal-ai/flux even when the
+  // submission endpoint is fal-ai/flux/dev. Keep non-flux model paths intact.
+  if (model.startsWith("fal-ai/flux/")) return "fal-ai/flux";
+  return model;
+}
+
 function ratioToImageSize(ratio?: string) {
   switch (ratio) {
     case "1:1":
@@ -90,7 +98,7 @@ export async function getFalStatus(requestId: string) {
   if (!falConfigured()) {
     return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
   }
-  const response = await fetch(`${FAL_QUEUE_BASE}/${falModel()}/requests/${encodeURIComponent(requestId)}/status`, {
+  const response = await fetch(`${FAL_QUEUE_BASE}/${falQueueRequestModel()}/requests/${encodeURIComponent(requestId)}/status`, {
     headers: { Authorization: `Key ${falKey()}` },
   });
   const data = await response.json().catch(() => ({}));
@@ -102,7 +110,7 @@ export async function getFalResult(requestId: string) {
   if (!falConfigured()) {
     return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
   }
-  const response = await fetch(`${FAL_QUEUE_BASE}/${falModel()}/requests/${encodeURIComponent(requestId)}`, {
+  const response = await fetch(`${FAL_QUEUE_BASE}/${falQueueRequestModel()}/requests/${encodeURIComponent(requestId)}`, {
     headers: { Authorization: `Key ${falKey()}` },
   });
   const data = await response.json().catch(() => ({}));
