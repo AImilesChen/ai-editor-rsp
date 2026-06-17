@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, JetBrains_Mono, Libre_Caslon_Text } from "next/font/google";
+import { DM_Sans, JetBrains_Mono, Newsreader } from "next/font/google";
 import Analytics from "@/components/Analytics";
 import { site } from "@/lib/rsp-content";
 import "./globals.css";
 
-const libreCaslon = Libre_Caslon_Text({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-libre-caslon", display: "swap" });
-const hanken = Hanken_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-hanken-grotesk", display: "swap" });
+const newsreader = Newsreader({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-newsreader", display: "swap" });
+const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-dm-sans", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jetbrains-mono", display: "swap" });
 
 const jsonLd = {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${libreCaslon.variable} ${hanken.variable} ${mono.variable} dark`}>
+    <html lang="en" className={`${newsreader.variable} ${dmSans.variable} ${mono.variable}`}>
       <body className="min-h-screen bg-rsp-bg font-body text-rsp-text antialiased">
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <Analytics />

@@ -188,7 +188,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Generating…" : uploadedImage ? "Generate from uploaded photo" : "Generate from prompt"}</button>
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
-        <p className="mt-3 text-sm text-rsp-muted">You can generate from text only, or upload a photo first and use the prompt as the edit direction.</p>
+        <p className="mt-3 text-sm text-rsp-muted">{creditsRemaining <= 0 ? "Your credits are used up. Get more to continue." : "You can generate from text only, or upload a photo first and use the prompt as the edit direction."}</p>
       </div>
 
       <div className={`rsp-card flex h-full flex-col overflow-hidden ${isHero ? "p-4 md:p-5" : "p-5 md:p-6"}`}>
@@ -212,7 +212,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {(generatedImage || (state === "idle" && !uploadedImage)) && <img src={generatedImage || previewImage} alt="Generated result preview" className="absolute inset-0 h-full w-full object-cover opacity-90" loading="lazy" />}
               <div className="absolute inset-0 bg-[#EFE7DC]/55" />
               {state === "processing" && <div className="relative z-10 border border-rsp-border bg-white/75 px-5 py-3 text-center text-rsp-text backdrop-blur">Generating image…</div>}
-              {state === "failed" && <div className="relative z-10 mx-4 max-w-[240px] border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-100 backdrop-blur">{error || "Generation failed. Please adjust the prompt and try again."}</div>}
+              {state === "failed" && <div className="relative z-10 mx-4 max-w-[240px] border border-red-400/40 bg-red-50 p-4 text-center text-sm text-red-700 backdrop-blur">{error || "Generation failed. Please adjust the prompt and try again."}</div>}
               {state === "ready" && !generatedImage && <div className="relative z-10 mx-4 max-w-[240px] border border-[#D4A574]/40 bg-white/75 p-4 text-center text-sm text-rsp-text backdrop-blur">Job submitted. Request {jobId?.slice(0, 10)}…</div>}
               {state === "idle" && uploadedImage && <div className="relative z-10 mx-4 max-w-[240px] border border-rsp-border bg-white/75 p-4 text-center text-sm text-rsp-muted backdrop-blur">Ready to generate from your image.</div>}
             </div>

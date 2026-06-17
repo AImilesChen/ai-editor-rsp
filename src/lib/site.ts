@@ -10,7 +10,7 @@ export const pricingPlans = [
     price: "$0",
     cadence: "3 credits total",
     quota: "3 credits total",
-    cta: "Start Free",
+    cta: "Try Generator",
     badge: "No card required",
     features: ["Browse prompt library", "Copy prompt text", "Try image generation", "No payment required"],
   },
@@ -19,7 +19,7 @@ export const pricingPlans = [
     price: "$7.99",
     cadence: "/mo",
     quota: "120 credits/month",
-    cta: "Get Started — $7.99/mo",
+    cta: "Continue to checkout",
     badge: "Standard queue",
     features: ["120 credits/month", "No ads", "2 concurrent image requests", "90-day image retention"],
   },
@@ -28,8 +28,8 @@ export const pricingPlans = [
     price: "$14.99",
     cadence: "/mo",
     quota: "300 credits/month",
-    cta: "Get Started — $14.99/mo",
-    badge: "Most Popular",
+    cta: "Continue to checkout",
+    badge: "Recommended",
     featured: true,
     features: ["300 credits/month", "Priority queue", "3 concurrent image requests", "90-day image retention"],
   },
@@ -38,7 +38,7 @@ export const pricingPlans = [
     price: "$29.99",
     cadence: "/mo",
     quota: "700 credits/month",
-    cta: "Get Started — $29.99/mo",
+    cta: "Continue to checkout",
     badge: "Fastest queue",
     features: ["700 credits/month", "Fastest queue", "5 concurrent image requests", "90-day image retention"],
   },
@@ -53,4 +53,4 @@ export const promptCards = [
   { title: "Creator thumbnail", style: "Social", ratio: "16:9", text: "A bold creator thumbnail background with neon cyan accents, dynamic composition, realistic desk setup, space for headline text." },
 ];
 
-export const legalDisclaimer = "Images are generated through third-party AI model providers. Usage rights and limitations may depend on provider and model terms.";
+export const legalDisclaimer = "Images are generated through third-party AI model providers. Usage rights and limitations may depend on provider and model terms. Refunds are available within 14 days if no more than 50% of credits have been used.";

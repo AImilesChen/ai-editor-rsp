@@ -21,8 +21,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        heading: ["var(--font-libre-caslon)", "Georgia", "serif"],
-        body: ["var(--font-hanken-grotesk)", "system-ui", "sans-serif"],
+        heading: ["var(--font-newsreader)", "Georgia", "serif"],
+        body: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains-mono)", "monospace"],
       },
       boxShadow: { glow: "0 22px 70px rgba(184,115,51,0.18)" },

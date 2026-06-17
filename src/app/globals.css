@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: light;
-  --font-heading: var(--font-libre-caslon);
-  --font-body: var(--font-hanken-grotesk);
+  --font-heading: var(--font-newsreader);
+  --font-body: var(--font-dm-sans);
   --font-mono: var(--font-jetbrains-mono);
 }
 

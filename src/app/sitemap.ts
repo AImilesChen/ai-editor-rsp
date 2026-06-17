@@ -8,7 +8,9 @@ const BASE_URL = "https://aieditorrspediting.org";
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     { url: `${BASE_URL}/`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 1.0 },
+    { url: `${BASE_URL}/generate`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.95 },
     { url: `${BASE_URL}/prompts`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.9 },
+    { url: `${BASE_URL}/pricing`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.85 },
     { url: `${BASE_URL}/templates`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.9 },
     { url: `${BASE_URL}/effects`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.9 },
     { url: `${BASE_URL}/tiktok-effects`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.75 },
@@ -18,6 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/waitlist`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/about-rsp-editing`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/faq`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
+    { url: `${BASE_URL}/ai-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.55 },
+    { url: `${BASE_URL}/content-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.55 },
     { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${BASE_URL}/cookie-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
