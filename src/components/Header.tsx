@@ -54,11 +54,8 @@ export default function Header() {
           <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">
             Credits: {credits ?? 3}
           </span>
-          <Link href="/login" className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
+          <Link href="/login" className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
             Log in
-          </Link>
-          <Link href="/generate" className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
-            Try Generator
           </Link>
         </nav>
         <button
@@ -88,11 +85,8 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link href="/login" onClick={() => setMobileOpen(false)} className="border border-rsp-border bg-rsp-panel px-5 py-4 font-heading text-2xl font-normal text-rsp-text no-underline">
+            <Link href="/login" onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
               Log in
-            </Link>
-            <Link href="/generate" onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
-              Try Generator
             </Link>
           </nav>
         </div>
