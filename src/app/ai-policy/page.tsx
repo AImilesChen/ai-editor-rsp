@@ -10,13 +10,33 @@ export const metadata: Metadata = {
 };
 
 export default function AiPolicyPage() {
-  const items = [
-    "Generation uses third-party AI model providers such as fal.ai after backend integration.",
-    "Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.",
-    "The service should not be used to create illegal, abusive, deceptive, or rights-infringing content.",
-    "Usage rights and limitations may depend on provider and model terms.",
-    "Compliance status is NEEDS_REVIEW until provider, payment, retention, and jurisdiction checks are complete.",
+  const rules = [
+    {
+      title: "No illegal or harmful activity",
+      body: "Do not use AI Editor RSP to create content that facilitates illegal activity, abuse, fraud, threats, evasion, or real-world harm.",
+    },
+    {
+      title: "No sexual exploitation or non-consensual imagery",
+      body: "We prohibit child sexual content, sexualized minors, non-consensual intimate imagery, explicit deepfakes, and sexual abuse material.",
+    },
+    {
+      title: "No hate, harassment, or abusive targeting",
+      body: "Prompts and outputs may not promote hateful, demeaning, threatening, or harassing content against protected groups or private individuals.",
+    },
+    {
+      title: "No deception, impersonation, or misleading media",
+      body: "Do not generate images intended to deceive people, impersonate others, falsify events, forge documents, or misrepresent real people or brands.",
+    },
+    {
+      title: "No rights-infringing use",
+      body: "Users remain responsible for respecting copyright, trademark, publicity, privacy, and model/provider terms before using generated images downstream.",
+    },
+    {
+      title: "No graphic violence or extremist content",
+      body: "Do not create graphic gore, instructions for violence, extremist praise, recruitment material, or content designed to intimidate or radicalize.",
+    },
   ];
+
   return (
     <>
       <Header />
@@ -25,16 +45,31 @@ export default function AiPolicyPage() {
           <p className="rsp-chip mb-4 border-rsp-secondary/35 bg-white/70 text-rsp-secondary">AI Policy</p>
           <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Clear AI usage policy before launch.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">{legalDisclaimer}</p>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-rsp-text">
+            Our safety rules are aligned with widely used AI usage-policy principles, including the types of content OpenAI and major AI providers prohibit. This page is not an official OpenAI policy page; it is AI Editor RSP&apos;s own user-facing safety summary.
+          </p>
         </div>
+
         <section className="mt-10 grid gap-4 md:grid-cols-2">
-          {items.map((item) => (
-            <div key={item} className="border border-rsp-border bg-white/80 p-5 text-base leading-7 text-rsp-text shadow-[0_18px_50px_rgba(92,61,34,0.08)]">
-              {item}
-            </div>
+          {rules.map((rule) => (
+            <article key={rule.title} className="border border-rsp-border bg-white/85 p-5 shadow-[0_18px_50px_rgba(92,61,34,0.08)]">
+              <h2 className="font-heading text-2xl font-bold leading-snug text-rsp-text">{rule.title}</h2>
+              <p className="mt-3 text-base leading-7 text-rsp-muted">{rule.body}</p>
+            </article>
           ))}
         </section>
+
+        <section className="mt-8 border border-rsp-border bg-white/75 p-6 shadow-[0_18px_50px_rgba(92,61,34,0.07)]">
+          <h2 className="font-heading text-2xl font-bold text-rsp-text">Enforcement and review</h2>
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-7 text-rsp-muted">
+            <li>We may block prompts, refuse generation, remove outputs, suspend access, or request additional review when content creates safety, legal, or rights risk.</li>
+            <li>Provider terms still apply. Generation uses third-party AI model providers such as {AI_PROVIDER} after backend integration.</li>
+            <li>Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.</li>
+          </ul>
+        </section>
+
         <div className="mt-8 border border-rsp-secondary/25 bg-[#FFF7EA] p-5 text-sm font-medium leading-6 text-[#7A3F12] shadow-[0_18px_40px_rgba(184,115,51,0.10)]">
-          Provider planned: {AI_PROVIDER}. Contact: {SUPPORT_EMAIL}. This is front-end policy copy, not final legal approval.
+          Provider planned: {AI_PROVIDER}. Contact: {SUPPORT_EMAIL}. This is front-end policy copy, not final legal approval. Compliance status remains NEEDS_REVIEW until provider, payment, retention, and jurisdiction checks are complete.
         </div>
       </main>
       <Footer />
