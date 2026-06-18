@@ -132,6 +132,19 @@ export async function getImageAssetForRequest(input: { assetId: string; user?: A
   return { object, contentType: row.content_type || object.httpMetadata?.contentType || "image/jpeg" };
 }
 
+export async function debugImageAssetLookup(assetId: string) {
+  const db = await billingDb();
+  const bucket = await assetsBucket();
+  const result: Record<string, unknown> = { db: Boolean(db), bucket: Boolean(bucket), row: null, objectFound: false };
+  if (!db || !bucket) return result;
+  const row = await db.prepare("SELECT id, user_id, r2_object_key, content_type FROM image_assets WHERE id = ? AND deleted_at IS NULL")
+    .bind(assetId)
+    .first<{ id: string; user_id: string; r2_object_key: string; content_type: string }>();
+  result.row = row ? { id: row.id, r2ObjectKey: row.r2_object_key, contentType: row.content_type } : null;
+  if (row) result.objectFound = Boolean(await bucket.head(row.r2_object_key));
+  return result;
+}
+
 function normalizeFalPayload(raw: unknown): FalResultPayload {
   return raw && typeof raw === "object" ? { ...(raw as FalResultPayload) } : {};
 }

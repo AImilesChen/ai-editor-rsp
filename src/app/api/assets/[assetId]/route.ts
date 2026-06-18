@@ -14,7 +14,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const user = await getAuthUser(request);
   const asset = await getImageAssetForRequest({ assetId, user });
-  if (!asset) return NextResponse.json({ ok: false, error: "Asset not found." }, { status: 404 });
+  if (!asset) {
+    if (request.nextUrl.searchParams.get("debug") === "1") {
+      const { debugImageAssetLookup } = await import("@/lib/backend/generation-store");
+      return NextResponse.json({ ok: false, error: "Asset not found.", debug: await debugImageAssetLookup(assetId) }, { status: 404 });
+    }
+    return NextResponse.json({ ok: false, error: "Asset not found." }, { status: 404 });
+  }
 
   return new Response(asset.object.body, {
     headers: {
