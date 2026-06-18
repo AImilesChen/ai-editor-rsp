@@ -2,13 +2,14 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { AuthUser } from "@/lib/backend/auth";
 import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/creem";
+import { cancelCreemSubscription } from "@/lib/backend/creem";
 
 export type BillingAccount = {
   userId: string;
   email?: string;
   plan: "free" | BillingPlan;
   creditsRemaining: number;
-  subscriptionStatus: "none" | "active" | "canceled" | "past_due" | "expired" | "refund_requested" | "refunded" | "disputed";
+  subscriptionStatus: "none" | "active" | "trialing" | "paused" | "scheduled_cancel" | "canceled" | "past_due" | "expired" | "refund_requested" | "refunded" | "disputed";
   subscriptionId?: string;
   customerId?: string;
   lastCreemEventId?: string;
@@ -242,6 +243,54 @@ export async function submitRefundRequestForUser(user: AuthUser, reason?: string
   await kv.put(refundRequestKey(updated.userId, requestId), JSON.stringify(request));
   await kv.put(ledgerKey(updated.userId, requestId), JSON.stringify({ type: "refund_request", ...request, at: now }));
   return { ok: true, duplicate: false, requestId, account: updated };
+}
+
+export async function submitSubscriptionCancellationForUser(user: AuthUser) {
+  const kv = await billingKv();
+  if (!kv) return { ok: false, reason: "BILLING_KV missing" };
+  const account = await ensureBillingAccount(user);
+  if (!account) return { ok: false, reason: "Account not found" };
+  if (account.plan === "free") return { ok: false, reason: "No paid subscription on this account" };
+  if (account.subscriptionStatus === "canceled" || account.subscriptionStatus === "scheduled_cancel") return { ok: true, duplicate: true, account };
+  if (!account.subscriptionId) return { ok: false, reason: "Creem subscription ID is not available for this account" };
+
+  const creemResult = await cancelCreemSubscription(account.subscriptionId);
+  if (!creemResult.ok) return { ok: false, reason: creemResult.message || "Creem subscription cancellation failed", status: creemResult.status };
+
+  const now = Date.now();
+  const updated: BillingAccount = {
+    ...account,
+    subscriptionStatus: "canceled",
+    updatedAt: now,
+  };
+  await writeAccount(updated, kv);
+  if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
+  const cancellationId = `cancel_${now}_${crypto.randomUUID()}`;
+  await kv.put(ledgerKey(updated.userId, cancellationId), JSON.stringify({ type: "subscription_cancel", userId: updated.userId, email: updated.email, subscriptionId: updated.subscriptionId, creem: creemResult.payload, at: now }));
+  return { ok: true, duplicate: false, account: updated, creem: creemResult.payload };
+}
+
+export async function markRefundedAccount(input: {
+  eventId: string;
+  eventType: string;
+  userId?: string | null;
+  email?: string | null;
+  plan?: BillingPlan | null;
+  subscriptionId?: string | null;
+  customerId?: string | null;
+}) {
+  const result = await updateSubscriptionState({ ...input, status: "refunded" });
+  if (!result.persisted || !result.account) return result;
+  const kv = await billingKv();
+  if (!kv) return result;
+  const account: BillingAccount = {
+    ...result.account,
+    creditsRemaining: 0,
+    updatedAt: Date.now(),
+  };
+  await writeAccount(account, kv);
+  await kv.put(ledgerKey(account.userId, `${input.eventId}_credit_revoke`), JSON.stringify({ type: "refund_credit_revoke", eventId: input.eventId, eventType: input.eventType, userId: account.userId, balanceAfter: 0, at: account.updatedAt }));
+  return { ...result, account };
 }
 
 async function readAccountByUserId(userId: string, kv: KV): Promise<BillingAccount | null> {

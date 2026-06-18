@@ -63,6 +63,7 @@ export default function AiPolicyPage() {
           <h2 className="font-heading text-2xl font-bold text-rsp-text">Enforcement and review</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-7 text-rsp-muted">
             <li>We may block prompts, refuse generation, remove outputs, suspend access, or request additional review when content creates safety, legal, or rights risk.</li>
+            <li>Prompt and output moderation runs before and after generation. AI image/video payment review may also require Creem moderation controls or an equivalent documented moderation process.</li>
             <li>Provider terms still apply. Generation uses third-party AI model providers such as {AI_PROVIDER} after backend integration.</li>
             <li>Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.</li>
           </ul>

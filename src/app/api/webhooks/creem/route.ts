@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { grantCreditsFromCreem, updateSubscriptionState } from "@/lib/backend/billing-store";
+import { grantCreditsFromCreem, markRefundedAccount, updateSubscriptionState } from "@/lib/backend/billing-store";
 import {
   CREEM_PLAN_CREDITS,
   extractCreemEventId,
@@ -62,14 +62,20 @@ export async function POST(request: NextRequest) {
       subscriptionId: ids.subscriptionId,
       customerId: ids.customerId,
     });
-  } else if (eventType === "subscription.canceled" || eventType === "subscription.scheduled_cancel") {
+  } else if (eventType === "subscription.canceled") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "canceled", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "subscription.scheduled_cancel") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "scheduled_cancel", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.past_due") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "past_due", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.expired") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "expired", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "subscription.trialing") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "trialing", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "subscription.paused") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "paused", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "refund.created") {
-    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "refunded", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+    persistence = await markRefundedAccount({ eventId, eventType, userId: identity.userId, email: identity.email, plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "dispute.created") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "disputed", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   }

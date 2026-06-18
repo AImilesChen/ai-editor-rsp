@@ -16,7 +16,8 @@ const pricingFaq = [
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
   ["Can I get a refund?", "Refunds are available within 14 days of purchase if no more than 50% of granted credits have been used. Start the flow directly from Account → Billing → Refund now; status shows refunded only after Creem confirms it."],
-  ["What happens if I cancel?", "Cancellation takes effect at the end of the current billing period. You keep your credits until then. No new credits are granted after cancellation."],
+  ["How do I manage or cancel billing?", "Use Account → Billing → Manage billing to open the Creem Customer Portal, or use Cancel subscription in the product to stop future recurring billing."],
+  ["What happens if I cancel?", "Cancellation stops future recurring billing. Remaining credits and access follow the active plan status, safety rules, and Creem confirmation events."],
 ];
 
 export default function PricingPage() {

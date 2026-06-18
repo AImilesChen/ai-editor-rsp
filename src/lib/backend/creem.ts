@@ -64,6 +64,69 @@ export function missingCreemConfig() {
   return missing;
 }
 
+export async function createCreemCustomerPortal(customerId: string) {
+  const body = { customer_id: customerId };
+  const primary = await creemJsonRequest("/customer-portal", body);
+  if (primary.ok) return { ok: true as const, url: extractPortalUrl(primary.payload), payload: primary.payload };
+
+  // Older Creem docs/API indexes also mention /customers/billing. Try it as a compatibility fallback.
+  const fallback = await creemJsonRequest("/customers/billing", body);
+  if (fallback.ok) return { ok: true as const, url: extractPortalUrl(fallback.payload), payload: fallback.payload };
+
+  return { ok: false as const, status: primary.status || fallback.status, message: primary.message || fallback.message || "Creem customer portal is unavailable." };
+}
+
+export async function cancelCreemSubscription(subscriptionId: string) {
+  return creemJsonRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}/cancel`, {});
+}
+
+async function creemJsonRequest(path: string, body: Record<string, unknown>) {
+  if (!process.env.CREEM_API_KEY) return { ok: false as const, status: 503, message: "CREEM_API_KEY is not configured." };
+  const response = await fetch(`${creemApiBase()}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.CREEM_API_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  let payload: unknown = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = { raw: text };
+  }
+  if (!response.ok) {
+    const message = typeof payload === "object" && payload ? String((payload as Record<string, unknown>).message || (payload as Record<string, unknown>).error || response.statusText) : response.statusText;
+    return { ok: false as const, status: response.status, message, payload };
+  }
+  return { ok: true as const, status: response.status, payload };
+}
+
+export function extractPortalUrl(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const record = payload as Record<string, unknown>;
+  const candidates = [
+    record.customerPortalLink,
+    record.customer_portal_link,
+    record.portal_url,
+    record.portalUrl,
+    record.billing_url,
+    record.billingUrl,
+    record.url,
+    record.link,
+  ];
+  for (const value of candidates) {
+    if (typeof value === "string" && /^https?:\/\//.test(value)) return value;
+  }
+  for (const key of ["data", "customer", "portal", "billing"]) {
+    const url = extractPortalUrl(record[key]);
+    if (url) return url;
+  }
+  return null;
+}
+
 export function originFromRequest(request: NextRequest) {
   return process.env.NEXT_PUBLIC_SITE_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}` || SITE_URL;
 }

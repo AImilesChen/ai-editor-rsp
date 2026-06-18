@@ -55,7 +55,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Cancellations</h2>
             <p className="mb-4">
-              If subscriptions are enabled, cancellation takes effect at the end of the current billing period unless the checkout provider states otherwise. You keep access to remaining eligible credits until the end of the billing period, subject to plan limits, safety rules, and account status.
+              If subscriptions are enabled, you can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel subscription</a> or from the Creem Customer Portal opened by the Manage billing button. Cancellation stops future recurring billing. Remaining credits and access follow the active plan, safety rules, and payment-provider status.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">How Refunds Are Processed</h2>
