@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CheckoutStartButton from "@/components/CheckoutStartButton";
 import { pricingPlans, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
         <div className="mx-auto max-w-5xl">
           <p className="eyebrow">Checkout</p>
           <h1 className="mt-3 font-heading text-5xl font-normal tracking-[-0.04em] text-rsp-text md:text-6xl">{statusCopy}</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Checkout states are prepared for the confirmed monthly credit plans. Live payment collection remains off until billing activation and final compliance review are complete.</p>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Secure checkout is connected through Creem for confirmed monthly credit plans. Sign in first, then continue to the hosted payment page.</p>
           <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.8fr]">
             <section className="rsp-card p-6 md:p-8">
               <h2 className="font-heading text-3xl font-normal text-rsp-text">Selected plan</h2>
@@ -38,10 +39,11 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
                 <p className="mt-3"><span className="font-heading text-5xl font-normal text-rsp-text">{plan.price}</span><span className="text-rsp-muted"> {plan.cadence}</span></p>
                 <p className="mt-3 font-semibold text-rsp-secondary">{plan.quota}</p>
               </div>
+              <CheckoutStartButton plan={plan.name.toLowerCase()} />
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <Link href="/checkout?status=success" className="rsp-button-primary text-center">Preview success</Link>
-                <Link href="/checkout?status=cancel" className="rsp-button-secondary text-center">Preview cancel</Link>
-                <Link href="/checkout?status=failed" className="rsp-button-secondary text-center">Preview failed</Link>
+                <Link href={`/checkout?plan=${plan.name.toLowerCase()}&status=success`} className="rsp-button-secondary text-center">Preview success</Link>
+                <Link href={`/checkout?plan=${plan.name.toLowerCase()}&status=cancel`} className="rsp-button-secondary text-center">Preview cancel</Link>
+                <Link href={`/checkout?plan=${plan.name.toLowerCase()}&status=failed`} className="rsp-button-secondary text-center">Preview failed</Link>
               </div>
             </section>
             <aside className="rsp-card p-6">

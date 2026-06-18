@@ -28,7 +28,7 @@ export default function PricingPage() {
           <div className="mx-auto max-w-screen-2xl text-center">
             <p className="eyebrow">Credits plans</p>
             <h1 className="mx-auto mt-4 max-w-4xl font-heading text-5xl font-normal leading-tight tracking-[-0.04em] text-rsp-text md:text-7xl">Choose a generation plan.</h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Confirmed monthly credit plans for creators. Checkout remains in preview until billing activation and final compliance review are complete.</p>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Monthly credit plans for creators. Checkout is processed through Creem after sign-in.</p>
           </div>
         </section>
         <section className="section-pad">
@@ -44,7 +44,7 @@ export default function PricingPage() {
               </article>
             ))}
           </div>
-          <div className="mx-auto mt-8 max-w-screen-2xl border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted">{legalDisclaimer} Payments, tax, invoice, refund, login, and credits enforcement require backend/compliance follow-up before public launch.</div>
+          <div className="mx-auto mt-8 max-w-screen-2xl border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted">{legalDisclaimer} Payments are processed by Creem. Credits are granted after verified payment webhook events.</div>
         </section>
         <section className="section-pad bg-rsp-surface">
           <div className="mx-auto max-w-4xl">

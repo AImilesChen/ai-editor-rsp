@@ -14,7 +14,13 @@ export function falConfigured() {
 }
 
 export function creemConfigured() {
-  return Boolean(process.env.CREEM_API_KEY && process.env.CREEM_WEBHOOK_SECRET);
+  return Boolean(
+    process.env.CREEM_API_KEY
+      && process.env.CREEM_WEBHOOK_SECRET
+      && process.env.CREEM_STARTER_PRODUCT_ID
+      && process.env.CREEM_CREATOR_PRODUCT_ID
+      && process.env.CREEM_STUDIO_PRODUCT_ID,
+  );
 }
 
 function falKey() {
