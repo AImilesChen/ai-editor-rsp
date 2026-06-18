@@ -39,15 +39,9 @@ export async function POST(request: NextRequest) {
 
   const origin = originFromRequest(request);
   const successUrl = `${origin}/checkout?status=success&plan=${plan}`;
-  const cancelUrl = `${origin}/checkout?status=cancel&plan=${plan}`;
   const checkoutPayload = {
     product_id: productId,
     success_url: successUrl,
-    cancel_url: cancelUrl,
-    customer: {
-      email: user.email,
-      name: user.name,
-    },
     metadata: {
       user_id: user.id,
       email: user.email,
