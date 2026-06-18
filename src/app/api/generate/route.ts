@@ -4,6 +4,7 @@ import { getAuthUser } from "@/lib/backend/auth";
 import { accountForPublicUser, debitCreditForUser } from "@/lib/backend/billing-store";
 import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
 import { checkPromptSafety, logSafetyEvent, promptHash } from "@/lib/backend/safety";
+import { createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
 
 type Body = {
   prompt?: string;
@@ -62,14 +63,39 @@ export async function POST(request: NextRequest) {
     return response;
   }
 
+  const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
+  if (user) await createGenerationJob({ jobId, user, prompt, style: body.style, ratio: body.ratio, creditsQuoted: 1 });
+
   const result = await submitFalGeneration({ prompt, style: body.style, ratio: body.ratio, imageDataUrl: body.imageDataUrl });
   if (!result.ok) {
+    if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });
     await setSessionCookie(response, session);
     return response;
   }
 
-  const nextCreditsRemaining = user ? (await debitCreditForUser(user, 1)).creditsRemaining : Math.max(0, session.creditsRemaining - 1);
+  const debit = user ? await debitCreditForUser(user, 1, jobId) : { creditsRemaining: Math.max(0, session.creditsRemaining - 1), insufficient: false };
+  if (debit.insufficient) {
+    if (user) await markGenerationFailed({ jobId, userId: user.id, code: "CREDITS_EXHAUSTED", message: "No credits remaining after provider submission." });
+    const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
+    await setSessionCookie(response, session);
+    return response;
+  }
+  if (user) {
+    await markGenerationSubmitted({
+      jobId,
+      userId: user.id,
+      provider: result.provider,
+      model: result.model,
+      requestId: result.requestId,
+      statusUrl: result.statusUrl,
+      responseUrl: result.responseUrl,
+      creditsCharged: 1,
+      raw: result.raw,
+    });
+  }
+
+  const nextCreditsRemaining = debit.creditsRemaining;
   const nextSession = { ...session, creditsRemaining: Math.max(0, nextCreditsRemaining) };
   const response = NextResponse.json({
     ok: true,

@@ -61,6 +61,12 @@ export async function POST(request: NextRequest) {
       credits,
       subscriptionId: ids.subscriptionId,
       customerId: ids.customerId,
+      checkoutId: ids.checkoutId,
+      transactionId: ids.transactionId,
+      invoiceId: ids.invoiceId,
+      amountCents: ids.amountCents,
+      currency: ids.currency,
+      rawEvent: event,
     });
   } else if (eventType === "subscription.canceled") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "canceled", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
@@ -75,7 +81,7 @@ export async function POST(request: NextRequest) {
   } else if (eventType === "subscription.paused") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "paused", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "refund.created") {
-    persistence = await markRefundedAccount({ eventId, eventType, userId: identity.userId, email: identity.email, plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+    persistence = await markRefundedAccount({ eventId, eventType, userId: identity.userId, email: identity.email, plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId, refundId: ids.refundId, rawEvent: event });
   } else if (eventType === "dispute.created") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "disputed", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   }
@@ -117,16 +123,28 @@ function extractIdentity(event: unknown) {
 
 function extractBillingIds(event: unknown) {
   const candidates: unknown[] = [];
-  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction"], candidates);
+  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction", "invoice", "payment", "refund"], candidates);
   let subscriptionId: string | null = null;
   let customerId: string | null = null;
+  let checkoutId: string | null = null;
+  let transactionId: string | null = null;
+  let invoiceId: string | null = null;
+  let refundId: string | null = null;
+  let amountCents: number | null = null;
+  let currency: string | null = null;
   for (const candidate of candidates) {
     if (!candidate || typeof candidate !== "object") continue;
     const record = candidate as Record<string, unknown>;
     subscriptionId ||= stringValue(record.subscription_id || record.subscriptionId || record.subscription);
     customerId ||= stringValue(record.customer_id || record.customerId || record.customer);
+    checkoutId ||= stringValue(record.checkout_id || record.checkoutId || record.checkout);
+    transactionId ||= stringValue(record.transaction_id || record.transactionId || record.transaction || record.payment_id || record.paymentId);
+    invoiceId ||= stringValue(record.invoice_id || record.invoiceId || record.invoice);
+    refundId ||= stringValue(record.refund_id || record.refundId || record.refund);
+    amountCents ||= numberValue(record.amount_cents || record.amountCents || record.amount_total || record.amountTotal || record.amount);
+    currency ||= stringValue(record.currency);
   }
-  return { subscriptionId, customerId };
+  return { subscriptionId, customerId, checkoutId, transactionId, invoiceId, refundId, amountCents, currency };
 }
 
 function collectFields(value: unknown, keys: string[], out: unknown[], depth = 0) {
@@ -138,4 +156,10 @@ function collectFields(value: unknown, keys: string[], out: unknown[], depth = 0
 
 function stringValue(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function numberValue(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
+  if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Math.round(Number(value));
+  return null;
 }

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFalResult, getFalStatus } from "@/lib/backend/providers";
+import { getAuthUser } from "@/lib/backend/auth";
+import { refundCreditForUser } from "@/lib/backend/billing-store";
+import { archiveGenerationResult } from "@/lib/backend/generation-store";
 import { getSession, recordSafetyStrike, refundCreditOnce, setSessionCookie } from "@/lib/backend/session";
 import { checkOutputSafety, logSafetyEvent } from "@/lib/backend/safety";
 
@@ -18,7 +21,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const outputSafety = checkOutputSafety(result.raw);
     if (outputSafety.decision !== "allow") {
       const session = await getSession(request);
-      const refundedSession = refundCreditOnce(recordSafetyStrike(session, outputSafety.severity), requestId);
+      const user = await getAuthUser(request);
+      const accountRefund = user ? await refundCreditForUser(user, 1, requestId) : null;
+      const refundedSession = user
+        ? { ...recordSafetyStrike(session, outputSafety.severity), creditsRemaining: accountRefund?.creditsRemaining ?? session.creditsRemaining }
+        : refundCreditOnce(recordSafetyStrike(session, outputSafety.severity), requestId);
       logSafetyEvent({
         sid: session.sid,
         requestId,
@@ -39,6 +46,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       await setSessionCookie(response, refundedSession);
       return response;
     }
+    const user = await getAuthUser(request);
+    const archive = await archiveGenerationResult({ requestId, user, raw: result.raw, provider: result.provider, model: result.model });
+    return NextResponse.json({ ok: true, provider: result.provider, model: result.model, data: archive.data, archive: { archived: archive.archived, publicUrl: archive.publicUrl, reason: archive.reason } });
   }
   return NextResponse.json({ ok: true, provider: result.provider, model: result.model, data: result.raw });
 }
