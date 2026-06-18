@@ -32,7 +32,7 @@ export default function Footer() {
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Contact</h4>
           <a className="footer-link" href={`mailto:${site.support}`}>{site.support}</a>
           <p className="mt-3 text-sm">Operator: AI Editor RSP. Mailing address available upon lawful request.</p>
-          <p className="mt-3 text-xs leading-5">Refunds available within 14 days if no more than 50% of credits have been used. Submit directly from Account → Billing → Request Refund.</p>
+          <p className="mt-3 text-xs leading-5">Refunds available within 14 days if no more than 50% of credits have been used. Start from Account → Billing → Refund Now.</p>
         </div>
       </div>
       <div className="mx-auto mt-10 max-w-screen-2xl border-t border-rsp-border pt-6 text-xs text-rsp-muted">© 2026 AI Editor RSP. Commercial launch pending backend and compliance final review.</div>

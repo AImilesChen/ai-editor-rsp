@@ -12,6 +12,15 @@ type User = {
   subscriptionStatus?: string;
 };
 
+const completedRefundStatuses = new Set(["refunded"]);
+const pendingRefundStatuses = new Set(["refund_requested"]);
+
+function refundLabel(status?: string) {
+  if (completedRefundStatuses.has(status || "")) return "Refund completed";
+  if (pendingRefundStatuses.has(status || "")) return "Refund pending";
+  return "Refund now";
+}
+
 export default function AccountBillingCenter() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +38,9 @@ export default function AccountBillingCenter() {
   }, []);
 
   const hasPaidPlan = Boolean(user && user.plan !== "free");
-  const refundAlreadyRequested = user?.subscriptionStatus === "refund_requested";
+  const refundPending = pendingRefundStatuses.has(user?.subscriptionStatus || "");
+  const refundCompleted = completedRefundStatuses.has(user?.subscriptionStatus || "");
+  const refundDisabled = loading || submitting || !hasPaidPlan || refundPending || refundCompleted;
 
   const submitRefundRequest = async () => {
     setSubmitting(true);
@@ -43,13 +54,13 @@ export default function AccountBillingCenter() {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.ok) {
-        setRefundError(data?.message || "Refund request could not be submitted. Please check your account status.");
+        setRefundError(data?.message || "Refund could not be started. Please check your account status.");
         return;
       }
-      setRefundMessage(data.duplicate ? "Refund request already submitted. No email is required." : "Refund request submitted. No email is required.");
-      setUser((current) => current ? { ...current, subscriptionStatus: "refund_requested" } : current);
+      setRefundMessage(data.duplicate ? "Refund is already pending with the payment provider." : "Refund started. Your account is now marked as refund pending until Creem confirms the refund.");
+      setUser((current) => current ? { ...current, subscriptionStatus: data.status || "refund_requested" } : current);
     } catch {
-      setRefundError("Refund request could not be submitted. Please try again.");
+      setRefundError("Refund could not be started. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -60,23 +71,25 @@ export default function AccountBillingCenter() {
       <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
         <div>
           <p className="eyebrow">Billing status</p>
-          <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Plan, credits, and direct refund request</h2>
+          <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Plan, credits, and refund status</h2>
           <p className="mt-3 max-w-2xl leading-7 text-rsp-muted">
-            Use this page to check your current plan and submit a refund request directly from your account. No email step is required. Refund requests are reviewed within the policy window: within 14 days of purchase and no more than 50% of the granted credits used.
+            Use this page to start a refund from the signed-in account. The account changes to refund pending immediately, and the refund is completed only after Creem/payment-provider confirmation.
           </p>
         </div>
         <button
           type="button"
-          disabled={loading || submitting || !hasPaidPlan || refundAlreadyRequested}
+          disabled={refundDisabled}
           onClick={submitRefundRequest}
           className="rsp-button-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-55"
         >
-          {submitting ? "Submitting…" : refundAlreadyRequested ? "Refund requested" : "Request refund now"}
+          {submitting ? "Starting refund…" : refundLabel(user?.subscriptionStatus)}
         </button>
       </div>
 
       {refundMessage ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{refundMessage}</div> : null}
       {refundError ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{refundError}</div> : null}
+      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund pending: the request has been saved, but the cash refund is not completed yet. Completion requires Creem/payment-provider confirmation.</div> : null}
+      {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: Creem has confirmed the refund.</div> : null}
 
       <div className="mt-8 grid gap-3 md:grid-cols-4">
         <div className="border border-rsp-border bg-white/55 p-4">
@@ -99,12 +112,12 @@ export default function AccountBillingCenter() {
 
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         <article className="border border-rsp-border bg-rsp-surface p-5">
-          <h3 className="font-heading text-2xl font-normal text-rsp-text">Direct refund path</h3>
+          <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund lifecycle</h3>
           <ol className="mt-4 list-decimal space-y-2 pl-5 leading-7 text-rsp-muted">
-            <li>Log in with the account email used for payment.</li>
-            <li>Click <strong className="text-rsp-text">Request refund now</strong>.</li>
-            <li>The request is saved to your billing account automatically.</li>
-            <li>Your account status changes to <strong className="text-rsp-text">refund_requested</strong>.</li>
+            <li>Click <strong className="text-rsp-text">Refund now</strong> from the paid account.</li>
+            <li>The site records the refund action and marks the account as <strong className="text-rsp-text">refund_requested</strong>.</li>
+            <li>Creem/payment-provider confirmation changes the status to <strong className="text-rsp-text">refunded</strong>.</li>
+            <li>Credits and subscription access are then adjusted by the refund webhook.</li>
           </ol>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
@@ -114,15 +127,15 @@ export default function AccountBillingCenter() {
             <Link href="/refund-policy" className="border border-rsp-border bg-white/70 px-4 py-3 text-sm font-semibold text-rsp-text no-underline">Read refund policy</Link>
             <button
               type="button"
-              disabled={loading || submitting || !hasPaidPlan || refundAlreadyRequested}
+              disabled={refundDisabled}
               onClick={submitRefundRequest}
               className="border border-rsp-secondary bg-rsp-secondary/10 px-4 py-3 text-sm font-semibold text-rsp-secondary disabled:cursor-not-allowed disabled:opacity-55"
             >
-              {submitting ? "Submitting…" : refundAlreadyRequested ? "Refund requested" : "Start refund request"}
+              {submitting ? "Starting refund…" : refundLabel(user?.subscriptionStatus)}
             </button>
           </div>
           <p className="mt-4 text-sm leading-6 text-rsp-muted">
-            {hasPaidPlan ? "Your paid plan is visible here. Refund handling may also be subject to Creem/payment-provider terms after the in-app request is submitted." : "No paid plan is active for this account yet. Free credits have no cash value and are not refundable."}
+            {hasPaidPlan ? "The button starts the refund flow from this account. If the status is refund_pending/refund_requested, the refund is not finished yet." : "No paid plan is active for this account yet. Free credits have no cash value and are not refundable."}
           </p>
         </article>
       </div>
