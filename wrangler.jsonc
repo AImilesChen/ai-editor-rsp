@@ -11,6 +11,12 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"kv_namespaces": [
+		{
+			"binding": "BILLING_KV",
+			"id": "9c19c01ef21541ae9b08f621f9af9001"
+		}
+	],
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name

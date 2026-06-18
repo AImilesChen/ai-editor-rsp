@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { submitFalGeneration } from "@/lib/backend/providers";
+import { getAuthUser } from "@/lib/backend/auth";
+import { accountForPublicUser, debitCreditForUser } from "@/lib/backend/billing-store";
 import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
 import { checkPromptSafety, logSafetyEvent, promptHash } from "@/lib/backend/safety";
 
@@ -12,12 +14,15 @@ type Body = {
 
 export async function POST(request: NextRequest) {
   const session = await getSession(request);
+  const user = await getAuthUser(request);
+  const billingAccount = user ? await accountForPublicUser(user) : null;
+  const availableCredits = billingAccount?.creditsRemaining ?? session.creditsRemaining;
   if (isSafetyLimited(session)) {
     const response = NextResponse.json({ ok: false, error: "Generation is temporarily limited because of repeated safety-rule violations. Please try again later.", code: "SAFETY_LIMITED" }, { status: 429 });
     await setSessionCookie(response, session);
     return response;
   }
-  if (session.creditsRemaining <= 0) {
+  if (availableCredits <= 0) {
     const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
     await setSessionCookie(response, session);
     return response;
@@ -64,7 +69,8 @@ export async function POST(request: NextRequest) {
     return response;
   }
 
-  const nextSession = { ...session, creditsRemaining: Math.max(0, session.creditsRemaining - 1) };
+  const nextCreditsRemaining = user ? (await debitCreditForUser(user, 1)).creditsRemaining : Math.max(0, session.creditsRemaining - 1);
+  const nextSession = { ...session, creditsRemaining: Math.max(0, nextCreditsRemaining) };
   const response = NextResponse.json({
     ok: true,
     job: {

@@ -9,13 +9,8 @@ type User = {
   provider: "google" | "email";
   plan: string;
   creditsRemaining: number;
+  subscriptionStatus?: string;
 };
-
-const activity = [
-  ["Today", "No generations yet. Try your first generation.", "Empty"],
-  ["Credits", "+3 free starter credits", "Active"],
-  ["Billing", "Creem products not connected yet. Paid checkout remains closed.", "Pending"],
-];
 
 export default function AccountOverview() {
   const [user, setUser] = useState<User | null>(null);
@@ -56,6 +51,8 @@ export default function AccountOverview() {
         <h2 className="mt-2 break-words font-heading text-3xl font-normal text-rsp-text">{user.name || user.email}</h2>
         <p className="mt-2 break-words text-sm text-rsp-muted">{user.email}</p>
         <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 font-mono text-sm font-semibold text-rsp-secondary">Credits: {user.creditsRemaining} remaining</div>
+        <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Plan: {user.plan}</div>
+        <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Subscription: {user.subscriptionStatus || "none"}</div>
         <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Provider: {user.provider === "google" ? "Google OAuth" : "Email Magic Link"}</div>
         <nav className="mt-6 grid gap-2">
           <Link className="choice-active no-underline" href="/account">Overview</Link>
@@ -67,7 +64,11 @@ export default function AccountOverview() {
       <section className="rsp-card p-5 md:p-7">
         <h2 className="font-heading text-3xl font-normal text-rsp-text">Recent generations</h2>
         <div className="mt-5 grid gap-3">
-          {activity.map(([date, text, status]) => <div key={date} className="grid gap-2 border border-rsp-border bg-white/55 p-4 md:grid-cols-[120px_1fr_120px]"><span className="font-mono text-xs uppercase tracking-[0.16em] text-rsp-muted">{date}</span><span className="text-rsp-text">{text}</span><span className="text-sm font-semibold text-rsp-secondary">{status}</span></div>)}
+          {[
+            ["Today", "No generations yet. Try your first generation.", "Empty"],
+            ["Credits", `${user.creditsRemaining} credits available`, "Active"],
+            ["Billing", user.subscriptionStatus === "active" ? `${user.plan} subscription active` : "No active paid subscription yet.", user.subscriptionStatus || "none"],
+          ].map(([date, text, status]) => <div key={date} className="grid gap-2 border border-rsp-border bg-white/55 p-4 md:grid-cols-[120px_1fr_120px]"><span className="font-mono text-xs uppercase tracking-[0.16em] text-rsp-muted">{date}</span><span className="text-rsp-text">{text}</span><span className="text-sm font-semibold text-rsp-secondary">{status}</span></div>)}
         </div>
       </section>
     </div>

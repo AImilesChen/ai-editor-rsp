@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { creemConfigured, falConfigured } from "@/lib/backend/providers";
+import { billingStoreStatus } from "@/lib/backend/billing-store";
 import { getSession, setSessionCookie } from "@/lib/backend/session";
 
 export async function GET(request: NextRequest) {
   const session = await getSession(request);
+  const billingStore = await billingStoreStatus();
   const response = NextResponse.json({
     ok: true,
     service: "ai-editor-rsp-backend",
@@ -14,6 +16,7 @@ export async function GET(request: NextRequest) {
       googleOAuth: process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? "configured" : "missing",
       resend: process.env.RESEND_API_KEY ? "configured" : "missing",
     },
+    billingStore: billingStore.kv ? "configured" : "missing",
     session: {
       plan: session.plan,
       creditsRemaining: session.creditsRemaining,

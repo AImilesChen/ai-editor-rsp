@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { grantCreditsFromCreem, updateSubscriptionState } from "@/lib/backend/billing-store";
 import {
   CREEM_PLAN_CREDITS,
   extractCreemEventId,
@@ -46,12 +47,32 @@ export async function POST(request: NextRequest) {
   const eventType = extractCreemEventType(event);
   const plan = planFromCreemPayload(event);
   const credits = plan ? CREEM_PLAN_CREDITS[plan] : 0;
+  const identity = extractIdentity(event);
+  const ids = extractBillingIds(event);
+  let persistence: unknown = { persisted: false, reason: "record_only" };
 
-  // Current P0 integration intentionally does not grant credits from webhook yet
-  // because the deployed Worker has no D1 binding. The endpoint verifies signed
-  // Creem events and exposes deterministic event mapping; persistent entitlement
-  // writes must be enabled when D1 tables are added.
-  const entitlementAction = entitlementActionFor(eventType, plan, credits);
+  if (plan && credits > 0 && (eventType === "checkout.completed" || eventType === "subscription.active" || eventType === "subscription.paid")) {
+    persistence = await grantCreditsFromCreem({
+      eventId,
+      eventType,
+      userId: identity.userId,
+      email: identity.email,
+      plan,
+      credits,
+      subscriptionId: ids.subscriptionId,
+      customerId: ids.customerId,
+    });
+  } else if (eventType === "subscription.canceled" || eventType === "subscription.scheduled_cancel") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "canceled", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "subscription.past_due") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "past_due", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "subscription.expired") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "expired", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "refund.created") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "refunded", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "dispute.created") {
+    persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "disputed", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  }
 
   return NextResponse.json({
     ok: true,
@@ -61,24 +82,54 @@ export async function POST(request: NextRequest) {
     eventType,
     supported: BILLING_EVENTS.has(eventType),
     plan,
-    entitlementAction,
-    persisted: false,
-    next: "Add D1 billing tables and idempotent credit_ledger writes before enabling production paid entitlements.",
+    credits,
+    identityFound: Boolean(identity.userId || identity.email),
+    billingIdsFound: ids,
+    persistence,
   });
 }
 
-function entitlementActionFor(eventType: string, plan: string | null, credits: number) {
-  if ((eventType === "subscription.active" || eventType === "subscription.paid") && plan) {
-    return { type: "grant_monthly_credits", plan, credits };
+function extractIdentity(event: unknown) {
+  const candidates: unknown[] = [];
+  collectFields(event, ["metadata", "customer", "user", "data", "object", "checkout", "subscription"], candidates);
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== "object") continue;
+    const record = candidate as Record<string, unknown>;
+    const userId = stringValue(record.user_id || record.userId || record.user);
+    const email = stringValue(record.email || record.customer_email || record.customerEmail);
+    if (userId || email) return { userId, email };
+    const metadata = record.metadata;
+    if (metadata && typeof metadata === "object") {
+      const meta = metadata as Record<string, unknown>;
+      const metaUserId = stringValue(meta.user_id || meta.userId || meta.user);
+      const metaEmail = stringValue(meta.email || meta.customer_email || meta.customerEmail);
+      if (metaUserId || metaEmail) return { userId: metaUserId, email: metaEmail };
+    }
   }
-  if (eventType === "subscription.canceled" || eventType === "subscription.scheduled_cancel") {
-    return { type: "mark_cancelled" };
+  return { userId: null, email: null };
+}
+
+function extractBillingIds(event: unknown) {
+  const candidates: unknown[] = [];
+  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction"], candidates);
+  let subscriptionId: string | null = null;
+  let customerId: string | null = null;
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== "object") continue;
+    const record = candidate as Record<string, unknown>;
+    subscriptionId ||= stringValue(record.subscription_id || record.subscriptionId || record.subscription);
+    customerId ||= stringValue(record.customer_id || record.customerId || record.customer);
   }
-  if (eventType === "subscription.past_due" || eventType === "subscription.expired") {
-    return { type: "restrict_paid_entitlements" };
-  }
-  if (eventType === "refund.created" || eventType === "dispute.created") {
-    return { type: "review_or_revoke_credits" };
-  }
-  return { type: "record_only" };
+  return { subscriptionId, customerId };
+}
+
+function collectFields(value: unknown, keys: string[], out: unknown[], depth = 0) {
+  if (!value || typeof value !== "object" || depth > 5) return;
+  out.push(value);
+  const record = value as Record<string, unknown>;
+  for (const key of keys) collectFields(record[key], keys, out, depth + 1);
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
