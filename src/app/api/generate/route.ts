@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { submitFalGeneration } from "@/lib/backend/providers";
-import { getSession, setSessionCookie } from "@/lib/backend/session";
+import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
+import { checkPromptSafety, logSafetyEvent, promptHash } from "@/lib/backend/safety";
 
 type Body = {
   prompt?: string;
@@ -11,6 +12,11 @@ type Body = {
 
 export async function POST(request: NextRequest) {
   const session = await getSession(request);
+  if (isSafetyLimited(session)) {
+    const response = NextResponse.json({ ok: false, error: "Generation is temporarily limited because of repeated safety-rule violations. Please try again later.", code: "SAFETY_LIMITED" }, { status: 429 });
+    await setSessionCookie(response, session);
+    return response;
+  }
   if (session.creditsRemaining <= 0) {
     const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
     await setSessionCookie(response, session);
@@ -28,7 +34,30 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
-  const result = await submitFalGeneration({ prompt: body.prompt || "", style: body.style, ratio: body.ratio, imageDataUrl: body.imageDataUrl });
+  const prompt = body.prompt || "";
+  const safety = checkPromptSafety(prompt);
+  if (safety.decision !== "allow") {
+    const nextSession = recordSafetyStrike(session, safety.severity);
+    logSafetyEvent({
+      sid: session.sid,
+      promptHash: await promptHash(prompt),
+      category: safety.categories,
+      severity: safety.severity,
+      decision: safety.decision,
+      reason: safety.reason,
+      creditDecision: "not_charged",
+    });
+    const response = NextResponse.json({
+      ok: false,
+      error: safety.message || "This prompt may violate our content safety rules. Please revise it and try again.",
+      code: safety.decision === "block" ? "SAFETY_BLOCKED" : "SAFETY_REVIEW_REQUIRED",
+      safety: { decision: safety.decision, categories: safety.categories, severity: safety.severity },
+    }, { status: safety.decision === "block" ? 451 : 400 });
+    await setSessionCookie(response, nextSession);
+    return response;
+  }
+
+  const result = await submitFalGeneration({ prompt, style: body.style, ratio: body.ratio, imageDataUrl: body.imageDataUrl });
   if (!result.ok) {
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });
     await setSessionCookie(response, session);

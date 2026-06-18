@@ -7,6 +7,9 @@ type SessionPayload = {
   sid: string;
   plan: "free" | "starter" | "creator" | "studio";
   creditsRemaining: number;
+  safetyStrikeCount: number;
+  safetyLimitedUntil?: number;
+  refundedRequestIds: string[];
   createdAt: number;
   updatedAt: number;
 };
@@ -56,6 +59,8 @@ function newSession(): SessionPayload {
     sid: crypto.randomUUID(),
     plan: "free",
     creditsRemaining: DEFAULT_LIFETIME_CREDITS,
+    safetyStrikeCount: 0,
+    refundedRequestIds: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -76,7 +81,16 @@ export async function decodeSession(value?: string | null): Promise<SessionPaylo
   try {
     const parsed = JSON.parse(base64UrlDecode(body)) as SessionPayload;
     if (!parsed.sid || typeof parsed.creditsRemaining !== "number") return null;
-    return parsed;
+    return {
+      sid: parsed.sid,
+      plan: parsed.plan || "free",
+      creditsRemaining: Math.max(0, Number(parsed.creditsRemaining) || 0),
+      safetyStrikeCount: Math.max(0, Number(parsed.safetyStrikeCount) || 0),
+      safetyLimitedUntil: typeof parsed.safetyLimitedUntil === "number" ? parsed.safetyLimitedUntil : undefined,
+      refundedRequestIds: Array.isArray(parsed.refundedRequestIds) ? parsed.refundedRequestIds.filter((id): id is string => typeof id === "string").slice(-20) : [],
+      createdAt: typeof parsed.createdAt === "number" ? parsed.createdAt : Date.now(),
+      updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : Date.now(),
+    };
   } catch {
     return null;
   }
@@ -95,6 +109,29 @@ export async function setSessionCookie(response: NextResponse, session: SessionP
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   });
+}
+
+export function recordSafetyStrike(session: SessionPayload, severity: "low" | "medium" | "high" | "critical") {
+  const nextStrikeCount = session.safetyStrikeCount + 1;
+  const shouldLimit = severity === "critical" || nextStrikeCount >= 3;
+  return {
+    ...session,
+    safetyStrikeCount: nextStrikeCount,
+    safetyLimitedUntil: shouldLimit ? Date.now() + 24 * 60 * 60 * 1000 : session.safetyLimitedUntil,
+  };
+}
+
+export function isSafetyLimited(session: SessionPayload) {
+  return typeof session.safetyLimitedUntil === "number" && session.safetyLimitedUntil > Date.now();
+}
+
+export function refundCreditOnce(session: SessionPayload, requestId: string) {
+  if (!requestId || session.refundedRequestIds.includes(requestId)) return session;
+  return {
+    ...session,
+    creditsRemaining: session.creditsRemaining + 1,
+    refundedRequestIds: [...session.refundedRequestIds, requestId].slice(-20),
+  };
 }
 
 export type { SessionPayload };

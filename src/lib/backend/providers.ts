@@ -1,3 +1,5 @@
+import { providerSafetyOptions, safePromptInstruction } from "@/lib/backend/safety";
+
 const FAL_QUEUE_BASE = "https://queue.fal.run";
 
 export type GenerateRequest = {
@@ -65,6 +67,7 @@ export async function submitFalGeneration(input: GenerateRequest) {
   const enrichedPrompt = [
     prompt,
     input.style ? `Style direction: ${input.style}.` : "",
+    safePromptInstruction(),
     "Editorial image generation for a user-provided prompt. Avoid text overlays unless explicitly requested.",
   ].filter(Boolean).join("\n");
 
@@ -73,6 +76,7 @@ export async function submitFalGeneration(input: GenerateRequest) {
     image_size: ratioToImageSize(input.ratio),
     num_images: 1,
     output_format: "jpeg",
+    ...providerSafetyOptions(),
     ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: 0.82 } : {}),
   };
 

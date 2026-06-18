@@ -99,8 +99,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       await new Promise((resolve) => setTimeout(resolve, attempt < 2 ? 1800 : 3000));
       const mode = attempt < 2 ? "" : "?mode=result";
       const response = await fetch(`/api/jobs/${encodeURIComponent(requestId)}${mode}`);
-      const data = (await response.json()) as FalResult;
-      if (!response.ok || !data.ok) continue;
+      const data = await response.json() as FalResult & { error?: string; creditsRemaining?: number };
+      if (!response.ok || !data.ok) {
+        if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
+        if (response.status === 451) throw new Error(data.error || "The generated output was blocked by our safety checks. Your credit was returned.");
+        continue;
+      }
       const imageUrl = data.data?.images?.[0]?.url;
       if (imageUrl) return imageUrl;
       if (data.data?.status === "FAILED") throw new Error("Image generation failed. Please adjust the prompt and try again.");
@@ -189,6 +193,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
         <p className="mt-3 text-sm text-rsp-muted">{creditsRemaining <= 0 ? "Your credits are used up. Get more to continue." : "You can generate from text only, or upload a photo first and use the prompt as the edit direction."}</p>
+        <p className="mt-2 text-xs leading-5 text-rsp-muted">Safety checks block sexual, violent, deceptive, deepfake, minor-related, extremist, and rights-infringing requests before generation. Blocked safety requests do not use credits.</p>
       </div>
 
       <div className={`rsp-card flex h-full flex-col overflow-hidden ${isHero ? "p-4 md:p-5" : "p-5 md:p-6"}`}>
