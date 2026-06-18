@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
     providers: {
       fal: falConfigured() ? "configured" : "missing",
       creem: creemConfigured() ? "configured" : "missing",
+      googleOAuth: process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? "configured" : "missing",
+      resend: process.env.RESEND_API_KEY ? "configured" : "missing",
     },
     session: {
       plan: session.plan,

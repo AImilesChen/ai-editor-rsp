@@ -13,14 +13,20 @@ const links = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    fetch("/api/session")
-      .then((response) => response.json())
-      .then((data) => {
-        if (typeof data.creditsRemaining === "number") setCredits(data.creditsRemaining);
-      })
-      .catch(() => undefined);
+    Promise.all([
+      fetch("/api/session").then((response) => response.json()).catch(() => null),
+      fetch("/api/auth/me").then((response) => response.json()).catch(() => null),
+    ]).then(([sessionData, authData]) => {
+      if (authData?.authenticated && authData.user) {
+        setAuthenticated(true);
+        if (typeof authData.user.creditsRemaining === "number") setCredits(authData.user.creditsRemaining);
+        return;
+      }
+      if (typeof sessionData?.creditsRemaining === "number") setCredits(sessionData.creditsRemaining);
+    }).catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -54,8 +60,8 @@ export default function Header() {
           <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">
             Credits: {credits ?? 3}
           </span>
-          <Link href="/login" className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
-            Log in
+          <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
+            {authenticated ? "Account" : "Log in"}
           </Link>
         </nav>
         <button
@@ -85,8 +91,8 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link href="/login" onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
-              Log in
+            <Link href={authenticated ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
+              {authenticated ? "Account" : "Log in"}
             </Link>
           </nav>
         </div>
