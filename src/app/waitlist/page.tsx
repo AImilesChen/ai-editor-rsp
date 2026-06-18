@@ -8,7 +8,7 @@ import { createMetadata } from "@/lib/utils/metadata";
 export const metadata: Metadata = createMetadata({
   title: "Join the Waitlist — Get New Prompts & Templates First",
   description:
-    "Join the RSP Hub waitlist and be the first to know when we add new prompts, templates, and features. No spam, opt out anytime.",
+    "Join the AI Editor RSP waitlist and be the first to know when we add new prompts, templates, and features. No spam, opt out anytime.",
   path: "/waitlist",
 });
 

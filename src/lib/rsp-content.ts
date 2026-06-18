@@ -1,6 +1,6 @@
 export const site = {
   name: "AI Editor RSP",
-  product: "RSP Hub",
+  product: "AI Editor RSP",
   url: "https://aieditorrspediting.org",
   support: "support@aieditorrspediting.org",
   description:

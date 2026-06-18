@@ -39,7 +39,7 @@ export default function FAQPage() {
               Frequently Asked Questions
             </h1>
             <p className="text-neutral-500 text-lg">
-              Everything you need to know about using RSP Hub.
+              Everything you need to know about using AI Editor RSP.
             </p>
           </div>
 

@@ -6,7 +6,7 @@ import { createMetadata } from "@/lib/utils/metadata";
 export const metadata: Metadata = createMetadata({
   title: "Disclaimer",
   description:
-    "Important disclaimers about RSP Hub's relationship to RSP Editing and third-party tools.",
+    "Important disclaimers about AI Editor RSP's relationship to RSP Editing, AI generation, and third-party tools.",
   path: "/disclaimer",
   noindex: true,
 });
@@ -37,8 +37,8 @@ export default function DisclaimerPage() {
               Independent Status
             </h2>
             <p className="mb-4">
-              RSP Hub is an independent educational resource created by fans of
-              RSP Editing content. We are not affiliated with, endorsed by, or
+              AI Editor RSP is an independent creator tool and prompt-assisted
+              image generation site inspired by RSP-style editing workflows. We are not affiliated with, endorsed by, or
               sponsored by RSP Editing, rspediting.com, or any associated
               entities.
             </p>
@@ -47,10 +47,10 @@ export default function DisclaimerPage() {
               AI Generation Disclaimer
             </h2>
             <p className="mb-4">
-              We do not provide AI image generation services. All prompts are
-              provided for use with third-party AI tools (ChatGPT, Gemini, Bing
-              Image Creator, etc.). Results may vary significantly based on the
-              tool version, settings, and input images used.
+              AI Editor RSP provides prompt-assisted image generation and curated
+              prompt inspiration. Generated images are processed by third-party
+              AI model/API providers and results may vary significantly based on
+              provider availability, model version, settings, prompts, and input images used.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">
@@ -97,7 +97,7 @@ export default function DisclaimerPage() {
               Limitation of Liability
             </h2>
             <p className="mb-4">
-              RSP Hub and its operators shall not be liable for any damages
+              AI Editor RSP and its operators shall not be liable for any damages
               arising from the use of this site or third-party tools. This
               includes but is not limited to direct, indirect, incidental, or
               consequential damages.

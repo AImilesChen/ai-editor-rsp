@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
-const SITE_NAME = "RSP Hub";
+const SITE_NAME = "AI Editor RSP";
 const SITE_URL = "https://aieditorrspediting.org";
 const DEFAULT_DESCRIPTION =
-  "Discover RSP-style AI photo prompts and CapCut templates. Copy in one click. Free to browse. Independent guide.";
+  "AI Editor RSP provides prompt-assisted AI image generation, curated RSP-style prompts, account access, credits, and creator workflows.";
 
 export function createMetadata({
   title,

@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="font-heading text-2xl font-normal text-rsp-text">AI Editor RSP</div>
           <p className="max-w-md text-sm leading-6">Upload-first image generation and curated RSP-style prompts for creator workflows.</p>
           <p className="text-xs uppercase tracking-[0.16em] text-rsp-secondary">Independent tool. Not affiliated with RSP Editing.</p>
-          <p className="max-w-md text-xs leading-5 text-rsp-muted">Compliance status: NEEDS_REVIEW before public launch.</p>
+          <p className="max-w-md text-xs leading-5 text-rsp-muted">Legal pages updated for account access, credits, AI generation, and billing activation.</p>
         </div>
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Product</h4>
@@ -30,7 +30,7 @@ export default function Footer() {
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Contact</h4>
           <a className="footer-link" href={`mailto:${site.support}`}>{site.support}</a>
-          <p className="mt-3 text-sm">Operator details: [to be confirmed before launch]</p>
+          <p className="mt-3 text-sm">Operator: AI Editor RSP. Mailing address available upon lawful request.</p>
           <p className="mt-3 text-xs leading-5">Refunds available within 14 days if no more than 50% of credits have been used.</p>
         </div>
       </div>
