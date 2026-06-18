@@ -15,7 +15,7 @@ const pricingFaq = [
   ["How do I get free credits?", "New users receive 3 credits upon first registration. This is a one-time grant and does not refresh monthly."],
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
-  ["Can I get a refund?", "Refunds are available within 14 days of purchase if no more than 50% of granted credits have been used."],
+  ["Can I get a refund?", "Refunds are available within 14 days of purchase if no more than 50% of granted credits have been used. Go to Account → Billing → Request refund, or open the Refund Policy."],
   ["What happens if I cancel?", "Cancellation takes effect at the end of the current billing period. You keep your credits until then. No new credits are granted after cancellation."],
 ];
 

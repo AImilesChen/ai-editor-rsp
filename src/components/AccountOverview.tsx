@@ -58,6 +58,7 @@ export default function AccountOverview() {
           <Link className="choice-active no-underline" href="/account">Overview</Link>
           <Link className="choice no-underline" href="/account/history">Generation History</Link>
           <Link className="choice no-underline" href="/account/billing">Billing</Link>
+          <Link className="choice no-underline" href="/account/billing#refund">Request refund</Link>
         </nav>
         <button type="button" onClick={logout} className="mt-6 w-full border border-rsp-border bg-white/60 px-4 py-3 text-sm font-semibold text-rsp-text">Log out</button>
       </aside>

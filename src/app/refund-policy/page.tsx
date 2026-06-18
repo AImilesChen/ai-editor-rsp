@@ -24,7 +24,7 @@ export default function RefundPolicyPage() {
 
           <div className="prose prose-neutral max-w-none text-neutral-700 leading-7">
             <p className="mb-4">
-              AI Editor RSP uses credits for AI image generation. This Refund Policy explains the refund rules that apply once paid monthly plans are activated. Live payment collection remains disabled until {PAYMENT_PROVIDER} product IDs, webhook handling, and final compliance review are complete.
+              AI Editor RSP uses credits for AI image generation. This Refund Policy explains the refund rules for paid monthly plans processed through {PAYMENT_PROVIDER} and for failed or blocked generation attempts.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Free Credits</h2>
@@ -66,6 +66,9 @@ export default function RefundPolicyPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Request a Refund</h2>
             <p className="mb-4">
               Contact <a className="text-brand-500 underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> from the email associated with your account. Include your account email, approximate purchase date, plan, and reason for the request. Do not send card numbers, passwords, API keys, or sensitive identity documents by email.
+            </p>
+            <p className="mb-4">
+              You can also start from your account billing page: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund</a>. The button opens a pre-filled email using your account details where available.
             </p>
           </div>
         </div>
