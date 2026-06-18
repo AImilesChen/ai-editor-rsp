@@ -8,11 +8,26 @@ export type BillingAccount = {
   email?: string;
   plan: "free" | BillingPlan;
   creditsRemaining: number;
-  subscriptionStatus: "none" | "active" | "canceled" | "past_due" | "expired" | "refunded" | "disputed";
+  subscriptionStatus: "none" | "active" | "canceled" | "past_due" | "expired" | "refund_requested" | "refunded" | "disputed";
   subscriptionId?: string;
   customerId?: string;
   lastCreemEventId?: string;
+  lastRefundRequestId?: string;
   updatedAt: number;
+  createdAt: number;
+};
+
+export type RefundRequest = {
+  requestId: string;
+  userId: string;
+  email?: string;
+  plan: BillingAccount["plan"];
+  subscriptionStatus: BillingAccount["subscriptionStatus"];
+  creditsRemaining: number;
+  subscriptionId?: string;
+  customerId?: string;
+  reason?: string;
+  status: "submitted";
   createdAt: number;
 };
 
@@ -192,6 +207,43 @@ export async function updateSubscriptionState(input: {
   return { persisted: true, account };
 }
 
+export async function submitRefundRequestForUser(user: AuthUser, reason?: string) {
+  const kv = await billingKv();
+  if (!kv) return { ok: false, reason: "BILLING_KV missing" };
+  const account = await ensureBillingAccount(user);
+  if (!account) return { ok: false, reason: "Account not found" };
+  if (account.plan === "free") return { ok: false, reason: "No paid plan on this account" };
+  if (account.subscriptionStatus === "refund_requested" && account.lastRefundRequestId) {
+    return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account };
+  }
+  const now = Date.now();
+  const requestId = `refund_${now}_${crypto.randomUUID()}`;
+  const request: RefundRequest = {
+    requestId,
+    userId: account.userId,
+    email: account.email || user.email,
+    plan: account.plan,
+    subscriptionStatus: account.subscriptionStatus,
+    creditsRemaining: account.creditsRemaining,
+    subscriptionId: account.subscriptionId,
+    customerId: account.customerId,
+    reason: reason?.trim().slice(0, 1000) || undefined,
+    status: "submitted",
+    createdAt: now,
+  };
+  const updated: BillingAccount = {
+    ...account,
+    subscriptionStatus: "refund_requested",
+    lastRefundRequestId: requestId,
+    updatedAt: now,
+  };
+  await writeAccount(updated, kv);
+  if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
+  await kv.put(refundRequestKey(updated.userId, requestId), JSON.stringify(request));
+  await kv.put(ledgerKey(updated.userId, requestId), JSON.stringify({ type: "refund_request", ...request, at: now }));
+  return { ok: true, duplicate: false, requestId, account: updated };
+}
+
 async function readAccountByUserId(userId: string, kv: KV): Promise<BillingAccount | null> {
   const raw = await kv.get(accountKey(userId));
   if (!raw) return null;
@@ -228,6 +280,10 @@ function grantCycleKey(userId: string, seed: string) {
 
 function ledgerKey(userId: string, eventId: string) {
   return `billing:ledger:${userId}:${eventId}`;
+}
+
+function refundRequestKey(userId: string, requestId: string) {
+  return `billing:refund:${userId}:${requestId}`;
 }
 
 function eventRecord(input: CreditGrantInput) {

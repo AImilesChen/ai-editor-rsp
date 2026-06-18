@@ -65,10 +65,10 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Request a Refund</h2>
             <p className="mb-4">
-              Contact <a className="text-brand-500 underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> from the email associated with your account. Include your account email, approximate purchase date, plan, and reason for the request. Do not send card numbers, passwords, API keys, or sensitive identity documents by email.
+              The primary refund path is inside your account: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund</a>. The button submits the refund request directly from the signed-in account, so you do not need to send an email to start the process.
             </p>
             <p className="mb-4">
-              You can also start from your account billing page: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund</a>. The button opens a pre-filled email using your account details where available.
+              If the account button is unavailable, contact <a className="text-brand-500 underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> from the email associated with your account. Do not send card numbers, passwords, API keys, or sensitive identity documents by email.
             </p>
           </div>
         </div>
