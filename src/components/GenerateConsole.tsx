@@ -26,6 +26,16 @@ type FalResult = {
   };
 };
 
+type SessionResponse = {
+  creditsRemaining?: number;
+};
+
+type GenerateResponse = FalResult & {
+  error?: string;
+  creditsRemaining?: number;
+  job?: { requestId?: string };
+};
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -61,7 +71,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
 
   useEffect(() => {
     fetch("/api/session")
-      .then((response) => response.json())
+      .then((response) => response.json() as Promise<SessionResponse>)
       .then((data) => {
         if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
       })
@@ -129,11 +139,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: trimmedPrompt, style, ratio, imageDataUrl: uploadedImage || undefined }),
       });
-      const data = await response.json();
+      const data = await response.json() as GenerateResponse;
       if (!response.ok || !data.ok) {
         throw new Error(data.error || "Generation request failed.");
       }
-      setCreditsRemaining(data.creditsRemaining);
+      if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
       const requestId = data.job?.requestId || null;
       setJobId(requestId);
       if (requestId) {

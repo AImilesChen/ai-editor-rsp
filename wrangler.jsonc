@@ -17,6 +17,19 @@
 			"id": "9c19c01ef21541ae9b08f621f9af9001"
 		}
 	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "ai_editor_rsp",
+			"database_id": "52f89a34-11a4-4ecf-b0fc-2ad72a914f10"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "R2_ASSETS",
+			"bucket_name": "ai-editor-rsp-assets"
+		}
+	],
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name

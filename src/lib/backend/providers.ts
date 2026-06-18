@@ -61,6 +61,19 @@ function ratioToImageSize(ratio?: string) {
   }
 }
 
+type FalQueuePayload = {
+  detail?: string;
+  request_id?: string;
+  requestId?: string;
+  status_url?: string;
+  response_url?: string;
+  [key: string]: unknown;
+};
+
+function jsonObject(value: unknown): FalQueuePayload {
+  return value && typeof value === "object" ? value as FalQueuePayload : {};
+}
+
 export async function submitFalGeneration(input: GenerateRequest) {
   const prompt = input.prompt?.trim();
   if (!prompt || prompt.length < 20) {
@@ -96,7 +109,7 @@ export async function submitFalGeneration(input: GenerateRequest) {
     body: JSON.stringify(requestBody),
   });
 
-  const data = await response.json().catch(() => ({}));
+  const data = jsonObject(await response.json().catch(() => ({})));
   if (!response.ok) {
     return {
       ok: false as const,
@@ -124,7 +137,7 @@ export async function getFalStatus(requestId: string) {
   const response = await fetch(`${FAL_QUEUE_BASE}/${falQueueRequestModel()}/requests/${encodeURIComponent(requestId)}/status`, {
     headers: { Authorization: `Key ${falKey()}` },
   });
-  const data = await response.json().catch(() => ({}));
+  const data = jsonObject(await response.json().catch(() => ({})));
   if (!response.ok) return { ok: false as const, status: response.status, error: "fal.ai status request failed.", raw: data };
   return { ok: true as const, provider: "fal.ai", model: falModel(), raw: data };
 }
@@ -136,7 +149,7 @@ export async function getFalResult(requestId: string) {
   const response = await fetch(`${FAL_QUEUE_BASE}/${falQueueRequestModel()}/requests/${encodeURIComponent(requestId)}`, {
     headers: { Authorization: `Key ${falKey()}` },
   });
-  const data = await response.json().catch(() => ({}));
+  const data = jsonObject(await response.json().catch(() => ({})));
   if (!response.ok) return { ok: false as const, status: response.status, error: "fal.ai result request failed.", raw: data };
   return { ok: true as const, provider: "fal.ai", model: falModel(), raw: data };
 }

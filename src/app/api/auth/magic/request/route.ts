@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
     }),
   });
 
-  const data = await response.json().catch(() => ({}));
+  const data = (await response.json().catch(() => ({}))) as { message?: string; error?: string };
   if (!response.ok) {
-    console.warn("resend_magic_link_failed", JSON.stringify({ status: response.status, error: data?.message || data?.error }));
+    console.warn("resend_magic_link_failed", JSON.stringify({ status: response.status, error: data.message || data.error }));
     return NextResponse.json({ ok: false, error: "Could not send magic link. Please try again later." }, { status: 502 });
   }
 

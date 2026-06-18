@@ -12,6 +12,19 @@ type User = {
   subscriptionStatus?: string;
 };
 
+type AuthMeResponse = {
+  authenticated?: boolean;
+  user?: User;
+};
+
+type ActionResponse = {
+  ok?: boolean;
+  message?: string;
+  duplicate?: boolean;
+  status?: string;
+  url?: string;
+};
+
 const completedRefundStatuses = new Set(["refunded"]);
 const pendingRefundStatuses = new Set(["refund_requested"]);
 const canceledStatuses = new Set(["canceled", "scheduled_cancel", "expired"]);
@@ -39,7 +52,7 @@ export default function AccountBillingCenter() {
 
   useEffect(() => {
     fetch("/api/auth/me")
-      .then((response) => response.json())
+      .then((response) => response.json() as Promise<AuthMeResponse>)
       .then((data) => {
         if (data.authenticated && data.user) setUser(data.user);
       })
@@ -69,7 +82,7 @@ export default function AccountBillingCenter() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: "Customer clicked the account refund button." }),
       });
-      const data = await response.json().catch(() => null);
+      const data = await response.json().catch(() => null) as ActionResponse | null;
       if (!response.ok || !data?.ok) {
         setError(data?.message || "Refund could not be started. Please check your account status.");
         return;
@@ -88,7 +101,7 @@ export default function AccountBillingCenter() {
     resetNotices();
     try {
       const response = await fetch("/api/billing/customer-portal", { method: "POST" });
-      const data = await response.json().catch(() => null);
+      const data = await response.json().catch(() => null) as ActionResponse | null;
       if (!response.ok || !data?.ok || !data?.url) {
         setError(data?.message || "Billing portal is not available for this account yet.");
         return;
@@ -107,7 +120,7 @@ export default function AccountBillingCenter() {
     resetNotices();
     try {
       const response = await fetch("/api/billing/cancel-subscription", { method: "POST" });
-      const data = await response.json().catch(() => null);
+      const data = await response.json().catch(() => null) as ActionResponse | null;
       if (!response.ok || !data?.ok) {
         setError(data?.message || "Subscription could not be canceled. Use Manage billing or contact support.");
         return;

@@ -12,13 +12,18 @@ type User = {
   subscriptionStatus?: string;
 };
 
+type AuthMeResponse = {
+  authenticated?: boolean;
+  user?: User;
+};
+
 export default function AccountOverview() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/auth/me")
-      .then((response) => response.json())
+      .then((response) => response.json() as Promise<AuthMeResponse>)
       .then((data) => {
         if (data.authenticated && data.user) setUser(data.user);
       })

@@ -10,6 +10,15 @@ const links = [
   { href: "/ai-policy", label: "AI Policy" },
 ];
 
+type SessionResponse = {
+  creditsRemaining?: number;
+};
+
+type AuthMeResponse = {
+  authenticated?: boolean;
+  user?: { creditsRemaining?: number };
+};
+
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
@@ -17,8 +26,8 @@ export default function Header() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/session").then((response) => response.json()).catch(() => null),
-      fetch("/api/auth/me").then((response) => response.json()).catch(() => null),
+      fetch("/api/session").then((response) => response.json() as Promise<SessionResponse>).catch(() => null),
+      fetch("/api/auth/me").then((response) => response.json() as Promise<AuthMeResponse>).catch(() => null),
     ]).then(([sessionData, authData]) => {
       if (authData?.authenticated && authData.user) {
         setAuthenticated(true);

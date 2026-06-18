@@ -7,6 +7,12 @@ type LoginPanelProps = {
   error?: string;
 };
 
+type MagicLinkResponse = {
+  ok?: boolean;
+  message?: string;
+  error?: string;
+};
+
 const errorCopy: Record<string, string> = {
   oauth_state: "Google sign-in session expired. Please try again.",
   oauth_not_configured: "Google login is not configured yet.",
@@ -31,7 +37,7 @@ export default function LoginPanel({ error }: LoginPanelProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await response.json();
+      const data = await response.json() as MagicLinkResponse;
       if (!response.ok || !data.ok) throw new Error(data.error || "Could not send magic link.");
       setStatus("sent");
       setMessage(data.message || "Magic link sent. Check your inbox.");
