@@ -14,9 +14,17 @@ type Body = {
 };
 
 export async function POST(request: NextRequest) {
-  const session = await getSession(request);
   const user = await getAuthUser(request);
-  const billingAccount = user ? await accountForPublicUser(user) : null;
+  if (!user) {
+    return NextResponse.json({
+      ok: false,
+      error: "Please log in to claim your one-time free credits and generate images.",
+      code: "LOGIN_REQUIRED",
+    }, { status: 401 });
+  }
+
+  const session = await getSession(request);
+  const billingAccount = await accountForPublicUser(user);
   const availableCredits = billingAccount?.creditsRemaining ?? session.creditsRemaining;
   if (isSafetyLimited(session)) {
     const response = NextResponse.json({ ok: false, error: "Generation is temporarily limited because of repeated safety-rule violations. Please try again later.", code: "SAFETY_LIMITED" }, { status: 429 });

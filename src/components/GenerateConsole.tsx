@@ -27,7 +27,9 @@ type FalResult = {
 };
 
 type SessionResponse = {
+  authenticated?: boolean;
   creditsRemaining?: number;
+  loginRequired?: boolean;
 };
 
 type GenerateResponse = FalResult & {
@@ -52,7 +54,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const [style, setStyle] = useState(styleChips[0]);
   const [ratio, setRatio] = useState(ratios[1]);
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
-  const [creditsRemaining, setCreditsRemaining] = useState(3);
+  const [creditsRemaining, setCreditsRemaining] = useState(0);
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -73,9 +76,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     fetch("/api/session")
       .then((response) => response.json() as Promise<SessionResponse>)
       .then((data) => {
+        setAuthenticated(Boolean(data.authenticated));
         if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
       })
-      .catch(() => undefined);
+      .catch(() => setAuthenticated(false));
   }, []);
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -124,6 +128,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
 
   const runGenerate = async () => {
     const trimmedPrompt = prompt.trim();
+    if (!authenticated) {
+      window.location.href = "/login?next=/generate";
+      return;
+    }
     if (trimmedPrompt.length < 20) {
       setError("Prompt must be at least 20 characters.");
       setState("failed");
@@ -141,6 +149,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       });
       const data = await response.json() as GenerateResponse;
       if (!response.ok || !data.ok) {
+        if (response.status === 401) {
+          window.location.href = "/login?next=/generate";
+          return;
+        }
         throw new Error(data.error || "Generation request failed.");
       }
       if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
@@ -165,7 +177,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <p className="rsp-chip mb-2">Creator console</p>
             <HeadingTag className={`font-heading font-normal tracking-[-0.03em] text-rsp-text ${isHero ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"}`}>Generate from your image</HeadingTag>
           </div>
-          <div className="border border-[#B87333]/35 bg-[#B87333]/10 px-3 py-2 font-mono text-sm text-rsp-secondary">Credits: {creditsRemaining} remaining</div>
+          <div className="border border-[#B87333]/35 bg-[#B87333]/10 px-3 py-2 font-mono text-sm text-rsp-secondary">
+            {authenticated ? `Credits: ${creditsRemaining} remaining` : "Log in to claim 3 credits"}
+          </div>
         </div>
 
         <label className="mb-4 flex cursor-pointer flex-col items-start gap-3 border border-dashed border-[#B87333]/45 bg-[#F7F2EA]/80 p-4 transition hover:border-[#D4A574]" htmlFor="upload-image">
@@ -199,10 +213,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         </div>}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Generating…" : uploadedImage ? "Generate from uploaded photo" : "Generate from prompt"}</button>
+          <button type="button" onClick={runGenerate} disabled={state === "processing" || (authenticated === true && creditsRemaining <= 0)} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Generating…" : authenticated ? (uploadedImage ? "Generate from uploaded photo" : "Generate from prompt") : "Log in to generate"}</button>
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
-        <p className="mt-3 text-sm text-rsp-muted">{creditsRemaining <= 0 ? "Your credits are used up. Get more to continue." : "You can generate from text only, or upload a photo first and use the prompt as the edit direction."}</p>
+        <p className="mt-3 text-sm text-rsp-muted">{!authenticated ? "Sign in first. New accounts get 3 one-time free credits; credits do not reset after logout or clearing cookies." : creditsRemaining <= 0 ? "Your credits are used up. Get more to continue." : "You can generate from text only, or upload a photo first and use the prompt as the edit direction."}</p>
         <p className="mt-2 text-xs leading-5 text-rsp-muted">Safety checks block sexual, violent, deceptive, deepfake, minor-related, extremist, and rights-infringing requests before generation. Blocked safety requests do not use credits.</p>
       </div>
 

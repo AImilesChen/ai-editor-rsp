@@ -10,10 +10,6 @@ const links = [
   { href: "/ai-policy", label: "AI Policy" },
 ];
 
-type SessionResponse = {
-  creditsRemaining?: number;
-};
-
 type AuthMeResponse = {
   authenticated?: boolean;
   user?: { creditsRemaining?: number };
@@ -25,17 +21,18 @@ export default function Header() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/session").then((response) => response.json() as Promise<SessionResponse>).catch(() => null),
-      fetch("/api/auth/me").then((response) => response.json() as Promise<AuthMeResponse>).catch(() => null),
-    ]).then(([sessionData, authData]) => {
-      if (authData?.authenticated && authData.user) {
-        setAuthenticated(true);
-        if (typeof authData.user.creditsRemaining === "number") setCredits(authData.user.creditsRemaining);
-        return;
-      }
-      if (typeof sessionData?.creditsRemaining === "number") setCredits(sessionData.creditsRemaining);
-    }).catch(() => undefined);
+    fetch("/api/auth/me")
+      .then((response) => response.json() as Promise<AuthMeResponse>)
+      .then((authData) => {
+        if (authData?.authenticated && authData.user) {
+          setAuthenticated(true);
+          if (typeof authData.user.creditsRemaining === "number") setCredits(authData.user.creditsRemaining);
+          return;
+        }
+        setAuthenticated(false);
+        setCredits(null);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -53,6 +50,8 @@ export default function Header() {
     };
   }, [mobileOpen]);
 
+  const creditBadge = authenticated ? `Credits: ${credits ?? "…"}` : "Log in to claim 3 credits";
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-rsp-border bg-rsp-bg/92 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 md:px-12">
@@ -67,7 +66,7 @@ export default function Header() {
             </Link>
           ))}
           <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">
-            Credits: {credits ?? 3}
+            {creditBadge}
           </span>
           <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
             {authenticated ? "Account" : "Log in"}
@@ -92,7 +91,7 @@ export default function Header() {
             </button>
           </div>
           <div className="mt-8 border border-rsp-secondary/35 bg-rsp-secondary/10 px-4 py-3 font-mono text-sm font-semibold text-rsp-secondary">
-            Credits: {credits ?? 3}
+            {creditBadge}
           </div>
           <nav className="mt-8 flex flex-col gap-4">
             {links.map((link) => (

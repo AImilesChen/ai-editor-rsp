@@ -170,11 +170,11 @@ export default function AccountBillingCenter() {
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Plan</strong><br />
-          <span className="text-rsp-muted">{loading ? "Loading…" : user?.plan || "free"}</span>
+          <span className="text-rsp-muted">{loading ? "Loading…" : user?.plan || "Not signed in"}</span>
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Credits</strong><br />
-          <span className="text-rsp-muted">{loading ? "Loading…" : `${user?.creditsRemaining ?? 3} remaining`}</span>
+          <span className="text-rsp-muted">{loading ? "Loading…" : user ? `${user.creditsRemaining} remaining` : "Log in to claim"}</span>
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Status</strong><br />
