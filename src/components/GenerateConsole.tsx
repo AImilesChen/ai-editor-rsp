@@ -213,7 +213,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         </div>}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button type="button" onClick={runGenerate} disabled={state === "processing" || (authenticated === true && creditsRemaining <= 0)} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">{state === "processing" ? "Generating…" : authenticated ? (uploadedImage ? "Generate from uploaded photo" : "Generate from prompt") : "Log in to generate"}</button>
+          {authenticated ? (
+            <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">
+              {state === "processing" ? "Generating…" : uploadedImage ? "Generate from uploaded photo" : "Generate from prompt"}
+            </button>
+          ) : (
+            <a href="/login?next=/generate" className="rsp-button-primary text-center no-underline">Log in to generate</a>
+          )}
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
         <p className="mt-3 text-sm text-rsp-muted">{!authenticated ? "Sign in first. New accounts get 3 one-time free credits; credits do not reset after logout or clearing cookies." : creditsRemaining <= 0 ? "Your credits are used up. Get more to continue." : "You can generate from text only, or upload a photo first and use the prompt as the edit direction."}</p>
