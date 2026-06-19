@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CopyPromptButton from "@/components/CopyPromptButton";
 import { prompts } from "@/lib/data/prompts";
 import { site } from "@/lib/rsp-content";
 
@@ -82,6 +83,9 @@ export default async function PromptsPage({ params }: { params: Promise<{ slug?:
                 <div className="mt-6 rounded-2xl border border-white/10 bg-rsp-panel p-5 font-mono text-sm leading-6 text-rsp-text">
                   {selected.prompt}
                 </div>
+                <div className="mt-4">
+                  <CopyPromptButton prompt={selected.prompt} />
+                </div>
                 {selected.negative_prompt ? (
                   <div className="mt-4 rounded-2xl border border-white/10 bg-rsp-panel/70 p-5 text-sm leading-6 text-rsp-muted">
                     <span className="font-semibold text-rsp-text">Negative prompt: </span>
@@ -116,8 +120,8 @@ export default async function PromptsPage({ params }: { params: Promise<{ slug?:
               </div>
               <div className="mt-10 grid items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {activePrompts.map((prompt) => (
-                  <Link key={prompt.slug} href={`/prompts/${prompt.slug}`} className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel no-underline transition hover:-translate-y-1 hover:border-rsp-primary/60">
-                    <div className="relative bg-[#F3E8DA]">
+                  <article key={prompt.slug} className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel transition hover:-translate-y-1 hover:border-rsp-primary/60">
+                    <Link href={`/prompts/${prompt.slug}`} className="relative block bg-[#F3E8DA] no-underline">
                       {prompt.after_image ? (
                         <img
                           src={prompt.after_image}
@@ -126,7 +130,7 @@ export default async function PromptsPage({ params }: { params: Promise<{ slug?:
                         />
                       ) : null}
                       <span className="chip absolute left-4 top-4 bg-white/85 text-rsp-text shadow-sm">{prompt.category}</span>
-                    </div>
+                    </Link>
                     <div className="p-5">
                       <p className="text-xs uppercase tracking-[0.16em] text-rsp-muted">{prompt.tool}</p>
                       <h2 className="mt-2 font-heading text-2xl font-bold text-rsp-text">{prompt.title}</h2>
@@ -136,8 +140,12 @@ export default async function PromptsPage({ params }: { params: Promise<{ slug?:
                           <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-rsp-muted">{tag}</span>
                         ))}
                       </div>
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <CopyPromptButton prompt={prompt.prompt} />
+                        <Link href={`/prompts/${prompt.slug}`} className="text-sm font-bold text-rsp-secondary no-underline">View details →</Link>
+                      </div>
                     </div>
-                  </Link>
+                  </article>
                 ))}
               </div>
             </>
