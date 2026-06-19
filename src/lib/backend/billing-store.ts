@@ -32,6 +32,15 @@ export type RefundRequest = {
   createdAt: number;
 };
 
+type FreeCreditRefundBalance = {
+  paidGranted: number;
+  generationDebited: number;
+  generationRefunded: number;
+  paidCreditsConsumedFirst: number;
+  freeCreditsConsumed: number;
+  freeCreditsRemaining: number;
+};
+
 export type CreditGrantInput = {
   eventId: string;
   eventType: string;
@@ -355,9 +364,10 @@ export async function markRefundedAccount(input: {
   if (!result.persisted || !result.account) return result;
   const kv = await billingKv();
   if (!kv) return result;
-  const account: BillingAccount = { ...result.account, creditsRemaining: 0, updatedAt: Date.now() };
+  const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, result.account.creditsRemaining));
+  const account: BillingAccount = { ...result.account, creditsRemaining: preservedFreeCredits, updatedAt: Date.now() };
   await writeAccount(account, kv);
-  await kv.put(ledgerKey(account.userId, `${input.eventId}_credit_revoke`), JSON.stringify({ type: "refund_credit_revoke", eventId: input.eventId, eventType: input.eventType, userId: account.userId, balanceAfter: 0, at: account.updatedAt }));
+  await kv.put(ledgerKey(account.userId, `${input.eventId}_credit_revoke`), JSON.stringify({ type: "refund_paid_credit_revoke", eventId: input.eventId, eventType: input.eventType, userId: account.userId, preservedFreeCredits, balanceAfter: preservedFreeCredits, at: account.updatedAt }));
   return { ...result, account };
 }
 
@@ -512,13 +522,43 @@ async function markRefundedAccountD1(db: D1Database, input: {
   if (!state.persisted || !state.account) return state;
   const account = state.account;
   const now = Date.now();
-  const revoked = account.creditsRemaining;
-  await db.prepare("UPDATE users SET status = 'refunded', credits_remaining = 0, updated_at = ? WHERE id = ?").bind(now, account.userId).run();
+  const freeBalance = await calculateFreeCreditRefundBalanceD1(db, account.userId);
+  const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, account.creditsRemaining, freeBalance.freeCreditsRemaining));
+  const revoked = Math.max(0, account.creditsRemaining - preservedFreeCredits);
+  await db.prepare("UPDATE users SET status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, account.userId).run();
   await db.prepare("UPDATE refund_requests SET status = 'refunded', creem_refund_id = COALESCE(?, creem_refund_id), resolved_at = ?, metadata_json = COALESCE(metadata_json, ?) WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested')")
     .bind(input.refundId || null, now, JSON.stringify({ eventId: input.eventId }), account.userId)
     .run();
-  await insertCreditLedger(db, account.userId, "refund_credit_revoke", input.eventId, -revoked, 0, "Creem refund confirmed", { eventType: input.eventType, refundId: input.refundId });
-  return { ...state, account: { ...account, subscriptionStatus: "refunded" as const, creditsRemaining: 0, updatedAt: now } };
+  await insertCreditLedger(db, account.userId, "refund_paid_credit_revoke", input.eventId, -revoked, preservedFreeCredits, "Creem refund confirmed; paid credits revoked and unused free signup credits preserved", { eventType: input.eventType, refundId: input.refundId, preservedFreeCredits, ...freeBalance });
+  return { ...state, account: { ...account, subscriptionStatus: "refunded" as const, creditsRemaining: preservedFreeCredits, updatedAt: now } };
+}
+
+async function calculateFreeCreditRefundBalanceD1(db: D1Database, userId: string): Promise<FreeCreditRefundBalance> {
+  const row = await db.prepare(`SELECT
+      COALESCE(SUM(CASE WHEN source_type = 'creem_credit_grant' AND delta > 0 THEN delta ELSE 0 END), 0) AS paid_granted,
+      COALESCE(SUM(CASE WHEN source_type = 'generation_debit' AND delta < 0 THEN -delta ELSE 0 END), 0) AS generation_debited,
+      COALESCE(SUM(CASE WHEN source_type = 'generation_refund' AND delta > 0 THEN delta ELSE 0 END), 0) AS generation_refunded
+    FROM credit_ledger
+    WHERE user_id = ?`)
+    .bind(userId)
+    .first<{ paid_granted: number | null; generation_debited: number | null; generation_refunded: number | null }>();
+
+  const paidGranted = Number(row?.paid_granted || 0);
+  const generationDebited = Number(row?.generation_debited || 0);
+  const generationRefunded = Number(row?.generation_refunded || 0);
+  const netGenerationDebits = Math.max(0, generationDebited - generationRefunded);
+  const paidCreditsConsumedFirst = Math.min(paidGranted, netGenerationDebits);
+  const freeCreditsConsumed = Math.max(0, netGenerationDebits - paidCreditsConsumedFirst);
+  const freeCreditsRemaining = Math.max(0, DEFAULT_LIFETIME_CREDITS - freeCreditsConsumed);
+
+  return {
+    paidGranted,
+    generationDebited,
+    generationRefunded,
+    paidCreditsConsumedFirst,
+    freeCreditsConsumed,
+    freeCreditsRemaining,
+  };
 }
 
 async function resolveD1UserId(db: D1Database, userId?: string | null, email?: string | null, customerId?: string | null) {

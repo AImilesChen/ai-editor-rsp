@@ -29,7 +29,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Free Credits</h2>
             <p className="mb-4">
-              New users receive 3 free credits total as a one-time trial grant. Free credits have no cash value, are not transferable, and are not refundable.
+              New users receive 3 free credits total as a one-time trial grant. Free credits have no cash value, are not transferable, and are not refundable. If a paid plan is later refunded, any unused free signup credits remain on the account; the refund only revokes paid-plan credits and paid subscription access.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Paid Monthly Plans</h2>
