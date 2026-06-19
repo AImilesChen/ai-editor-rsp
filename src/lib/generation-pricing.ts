@@ -2,6 +2,7 @@ export type GenerationRatio = "1:1" | "3:4" | "4:5" | "16:9";
 
 export type GenerationQuote = {
   ratio: GenerationRatio;
+  requestedRatio: string;
   imageSize: "square_hd" | "portrait_4_3" | "landscape_16_9";
   sizeLabel: string;
   sizeMultiplier: 1 | 2;
@@ -31,7 +32,8 @@ export function ratioToImageSize(ratio?: string): GenerationQuote["imageSize"] {
 }
 
 export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: string | null }): GenerationQuote {
-  const ratio = normalizeGenerationRatio(input.ratio);
+  const requestedRatio = input.ratio || "4:5";
+  const ratio = normalizeGenerationRatio(requestedRatio);
   const mode = input.imageDataUrl ? "image-to-image" : "text-to-image";
   const imageSize = ratioToImageSize(ratio);
   const isLowCostPortrait = imageSize === "portrait_4_3";
@@ -39,8 +41,9 @@ export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: s
   const baseCredits = mode === "image-to-image" ? 2 : 1;
   return {
     ratio,
+    requestedRatio,
     imageSize,
-    sizeLabel: isLowCostPortrait ? "Portrait" : imageSize === "square_hd" ? "Square HD" : "Landscape",
+    sizeLabel: requestedRatio === "auto" ? "Auto / source ratio" : isLowCostPortrait ? "Portrait" : imageSize === "square_hd" ? "Square HD" : "Landscape",
     sizeMultiplier,
     mode,
     creditsCharged: baseCredits * sizeMultiplier,
@@ -48,9 +51,12 @@ export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: s
   };
 }
 
-export const GENERATION_RATIOS: Array<{ ratio: GenerationRatio; label: string; textCredits: number; imageCredits: number }> = SUPPORTED_RATIOS.map((ratio) => ({
-  ratio,
-  label: ratio,
-  textCredits: quoteGenerationCredits({ ratio }).creditsCharged,
-  imageCredits: quoteGenerationCredits({ ratio, imageDataUrl: "data:image/png;base64," }).creditsCharged,
-}));
+export const GENERATION_RATIOS: Array<{ ratio: "auto" | GenerationRatio; label: string; textCredits: number; imageCredits: number; note?: string }> = [
+  { ratio: "auto", label: "Auto", textCredits: quoteGenerationCredits({ ratio: "4:5" }).creditsCharged, imageCredits: quoteGenerationCredits({ ratio: "4:5", imageDataUrl: "data:image/png;base64," }).creditsCharged, note: "Keep source feel" },
+  ...SUPPORTED_RATIOS.map((ratio) => ({
+    ratio,
+    label: ratio,
+    textCredits: quoteGenerationCredits({ ratio }).creditsCharged,
+    imageCredits: quoteGenerationCredits({ ratio, imageDataUrl: "data:image/png;base64," }).creditsCharged,
+  })),
+];

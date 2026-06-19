@@ -5,8 +5,8 @@ import GenerateConsole from "@/components/GenerateConsole";
 import { faqItems, pricingPlans, promptCards, site } from "@/lib/rsp-content";
 
 export const metadata = {
-  title: "AI Image Generator for RSP Editing Prompts",
-  description: "Upload a photo, add a short prompt, and generate polished AI image edits with confirmed credits-based plans.",
+  title: "AI Image Editor for Reference Edits and RSP Prompts",
+  description: "Upload a reference image, describe the edit, and generate polished AI image edits with transparent credits-based plans.",
   alternates: { canonical: site.url },
 };
 
@@ -19,12 +19,12 @@ export default function HomePage() {
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
           <div className="relative mx-auto grid max-w-screen-2xl items-start gap-12 lg:grid-cols-[0.92fr_1.08fr]">
             <div className="lg:pt-4">
-              <p className="eyebrow">Upload-first image generator</p>
+              <p className="eyebrow">Reference-first AI Image Editor</p>
               <h1 className="mt-5 max-w-4xl font-heading text-5xl font-normal leading-[1.02] tracking-[-0.04em] text-rsp-text md:text-7xl">
-                Upload a photo. <span className="italic text-rsp-secondary">Generate an RSP-style image.</span>
+                Upload a reference. <span className="italic text-rsp-secondary">Edit it with a prompt.</span>
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-rsp-muted">
-                Start with your own image, add a short prompt, and generate a polished edit without browsing through examples first.
+                Keep the subject and composition clear, describe what to change, then compare the reference with the edited result in one workspace.
               </p>
               <div className="mt-8 grid max-w-2xl gap-3 text-sm text-rsp-muted sm:grid-cols-3">
                 <div className="border border-rsp-border bg-white/45 p-4"><span className="font-mono text-rsp-secondary">01</span><br />Upload on the right</div>
