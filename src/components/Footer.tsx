@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="font-heading text-2xl font-normal text-rsp-text">AI Editor RSP</div>
           <p className="max-w-md text-sm leading-6">Upload-first image generation and curated RSP-style prompts for creator workflows.</p>
           <p className="text-xs uppercase tracking-[0.16em] text-rsp-secondary">Independent tool. Not affiliated with RSP Editing.</p>
-          <p className="max-w-md text-xs leading-5 text-rsp-muted">Legal pages updated for account access, credits, AI generation, and billing activation.</p>
+          <p className="max-w-md text-xs leading-5 text-rsp-muted">Legal pages cover account access, credits, AI generation, billing, refunds, and content safety.</p>
         </div>
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Product</h4>
@@ -36,7 +36,7 @@ export default function Footer() {
           <p className="mt-3 text-xs leading-5">Use Account → Billing to manage billing, cancel subscriptions, or start eligible refund requests. We respond within 3 business days.</p>
         </div>
       </div>
-      <div className="mx-auto mt-10 max-w-screen-2xl border-t border-rsp-border pt-6 text-xs text-rsp-muted">© 2026 AI Editor RSP. Commercial launch pending backend and compliance final review.</div>
+      <div className="mx-auto mt-10 max-w-screen-2xl border-t border-rsp-border pt-6 text-xs text-rsp-muted">© 2026 AI Editor RSP. Payments are processed by Creem. AI generation uses third-party model providers and requires user review.</div>
     </footer>
   );
 }

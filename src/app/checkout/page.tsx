@@ -7,7 +7,7 @@ import { pricingPlans, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Checkout Preview — AI Editor RSP",
-  description: "Checkout state preview for AI Editor RSP credits plans.",
+  description: "Secure checkout entry for AI Editor RSP credits plans.",
   alternates: { canonical: `${SITE_URL}/checkout` },
   robots: { index: false, follow: true },
 };
@@ -21,7 +21,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
   const params = await searchParams;
   const plan = selectedPlan(params?.plan);
   const status = params?.status;
-  const statusCopy = status === "success" ? "Payment success" : status === "cancel" ? "Checkout canceled" : status === "failed" ? "Payment failed" : "Checkout selection";
+  const statusCopy = status === "success" ? "Payment confirmation" : status === "cancel" ? "Checkout canceled" : status === "failed" ? "Payment failed" : "Checkout selection";
   return (
     <>
       <Header />
@@ -29,7 +29,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
         <div className="mx-auto max-w-5xl">
           <p className="eyebrow">Checkout</p>
           <h1 className="mt-3 font-heading text-5xl font-normal tracking-[-0.04em] text-rsp-text md:text-6xl">{statusCopy}</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Secure checkout is connected through Creem for confirmed monthly credit plans. Sign in first, then continue to the hosted payment page.</p>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Secure checkout is processed through Creem for monthly credit plans. Sign in first, then continue to the hosted payment page. Credits are added after payment confirmation.</p>
           <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.8fr]">
             <section className="rsp-card p-6 md:p-8">
               <h2 className="font-heading text-3xl font-normal text-rsp-text">Selected plan</h2>
@@ -40,16 +40,12 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
                 <p className="mt-3 font-semibold text-rsp-secondary">{plan.quota}</p>
               </div>
               <CheckoutStartButton plan={plan.name.toLowerCase()} />
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <Link href={`/checkout?plan=${plan.name.toLowerCase()}&status=success`} className="rsp-button-secondary text-center">Preview success</Link>
-                <Link href={`/checkout?plan=${plan.name.toLowerCase()}&status=cancel`} className="rsp-button-secondary text-center">Preview cancel</Link>
-                <Link href={`/checkout?plan=${plan.name.toLowerCase()}&status=failed`} className="rsp-button-secondary text-center">Preview failed</Link>
-              </div>
+              <p className="mt-5 text-sm leading-6 text-rsp-muted">Do not close the hosted checkout until Creem returns you to this site. Account credits update after the payment webhook confirms the transaction.</p>
             </section>
             <aside className="rsp-card p-6">
               <h2 className="font-heading text-2xl font-normal text-rsp-text">State copy</h2>
               <div className="mt-5 space-y-4 text-sm leading-6 text-rsp-muted">
-                <p><strong className="text-rsp-text">Success:</strong> Payment received. Credits have been added to your account.</p>
+                <p><strong className="text-rsp-text">Success:</strong> Payment confirmation is checked through Creem webhooks. Credits appear after confirmation.</p>
                 <p><strong className="text-rsp-text">Cancel:</strong> Checkout canceled. No payment was taken.</p>
                 <p><strong className="text-rsp-text">Failed:</strong> Payment failed. Please try another payment method or contact support.</p>
                 <p><strong className="text-rsp-text">Refund:</strong> Refunds available within 14 days if no more than 50% of credits have been used.</p>

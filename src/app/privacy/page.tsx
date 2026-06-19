@@ -8,7 +8,6 @@ export const metadata: Metadata = createMetadata({
   title: "Privacy Policy",
   description: "Learn how AI Editor RSP collects, uses, and protects account, credits, generation, and billing data.",
   path: "/privacy",
-  noindex: true,
 });
 
 export default function PrivacyPage() {
@@ -29,7 +28,7 @@ export default function PrivacyPage() {
               AI Editor RSP (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) provides prompt-assisted AI image generation, account access, and credits-based generation plans. This Privacy Policy explains what information we collect, why we use it, which third-party services process it, and how you can contact us.
             </p>
             <p className="mb-6 text-sm text-neutral-500">
-              This policy is a user-facing compliance summary, not legal advice. Payment collection remains disabled until billing activation and final compliance review are complete.
+              This policy is a user-facing compliance summary, not legal advice. Payments are processed by third-party payment providers when you choose a paid plan.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Information We Collect</h2>
@@ -37,7 +36,7 @@ export default function PrivacyPage() {
               <li><strong>Account information:</strong> email address, display name, login provider, authentication state, plan, and credits balance.</li>
               <li><strong>Authentication data:</strong> Google OAuth response data needed to sign you in, email magic link tokens, and security/session cookies.</li>
               <li><strong>Generation data:</strong> prompts, selected style/aspect settings, uploaded input image data when you choose to upload a photo, generated image request IDs, provider response metadata, safety events, and credit usage.</li>
-              <li><strong>Billing data:</strong> selected plan, checkout status, payment identifiers, subscription status, refunds, and credit grants once {PAYMENT_PROVIDER} billing is activated. We do not store full card numbers on our servers.</li>
+              <li><strong>Billing data:</strong> selected plan, checkout status, payment identifiers, subscription status, refunds, and credit grants when you choose a paid plan through {PAYMENT_PROVIDER}. We do not store full card numbers on our servers.</li>
               <li><strong>Technical data:</strong> IP address, browser/device information, logs, abuse-prevention signals, and Cloudflare security/performance data.</li>
             </ul>
 
@@ -56,7 +55,7 @@ export default function PrivacyPage() {
               <li><strong>Google OAuth:</strong> sign-in with your Google account when you choose Google login.</li>
               <li><strong>Resend:</strong> email magic links and transactional email delivery.</li>
               <li><strong>{AI_PROVIDER}:</strong> third-party AI model/API provider used to process prompts, uploaded input images, and generation requests.</li>
-              <li><strong>{PAYMENT_PROVIDER}:</strong> payment, tax, invoice, subscription, refund, and chargeback processing once live billing is enabled.</li>
+              <li><strong>{PAYMENT_PROVIDER}:</strong> payment, tax, invoice, subscription, refund, and chargeback processing when billing is used.</li>
               <li><strong>External creator tools:</strong> links to platforms such as CapCut, ChatGPT, Gemini, Bing Image Creator, or similar services are governed by those services&apos; own policies.</li>
             </ul>
 
@@ -68,7 +67,7 @@ export default function PrivacyPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Retention</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>Authentication cookies are time-limited and can be cleared by logging out or clearing browser cookies.</li>
-              <li>Generated image retention depends on your plan and current product settings. Public plan copy currently describes up to 90-day image retention for paid plans after billing is activated.</li>
+              <li>Generated image retention depends on your plan and current product settings. Public plan copy describes up to 90-day image retention for paid plans.</li>
               <li>Payment, invoice, refund, tax, fraud, and support records may be retained as needed for compliance, dispute handling, and legal obligations.</li>
               <li>Safety and abuse-prevention records may be retained to enforce our Content Policy and protect the service.</li>
             </ul>

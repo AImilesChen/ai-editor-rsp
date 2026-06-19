@@ -8,7 +8,6 @@ export const metadata: Metadata = createMetadata({
   title: "Refund Policy",
   description: "Refund rules for AI Editor RSP credits, monthly plans, failed generations, and billing-provider refunds.",
   path: "/refund-policy",
-  noindex: true,
 });
 
 export default function RefundPolicyPage() {
@@ -34,13 +33,14 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Paid Monthly Plans</h2>
             <p className="mb-4">
-              After billing activation, paid plans may grant a fixed number of credits for each billing period. Current public plan copy describes Starter, Creator, and Studio monthly credit plans. Paid credits are intended for the current billing period and do not roll over unless the plan page says otherwise.
+              Paid plans grant a fixed number of credits for each billing period after payment confirmation. Current plan copy describes Starter, Creator, and Studio monthly credit plans. Paid credits are intended for the current billing period and do not roll over unless the plan page says otherwise.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Refund Eligibility</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>Refund requests are eligible within 14 days of purchase.</li>
-              <li>Refunds are available only if no more than 50% of the credits granted by that purchase or billing period have been used.</li>
+              <li>Refunds are available only if no more than 50% of the paid credits granted by that purchase or billing period have been used.</li>
+              <li>For example, a 300-credit plan remains eligible only while 150 or fewer paid credits from that billing period have been used.</li>
               <li>Refunds may be denied for abuse, fraud, policy violations, chargeback abuse, or attempts to bypass technical or safety limits.</li>
               <li>Applicable consumer protection law may provide additional rights in some regions.</li>
             </ul>
@@ -55,7 +55,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Cancellations</h2>
             <p className="mb-4">
-              If subscriptions are enabled, you can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel subscription</a> or from the Creem Customer Portal opened by the Manage billing button. Cancellation stops future recurring billing. Remaining credits and access follow the active plan, safety rules, and payment-provider status.
+              You can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel subscription</a> or from the Creem Customer Portal opened by the Manage billing button. Cancellation stops future recurring billing. Remaining credits and access follow the active plan, safety rules, and payment-provider status.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">How Refunds Are Processed</h2>

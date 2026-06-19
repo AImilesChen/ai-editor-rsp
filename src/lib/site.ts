@@ -12,6 +12,8 @@ export const pricingPlans = [
     quota: "3 credits total",
     cta: "Try Generator",
     badge: "No card required",
+    audience: "Best for testing the editor before paying.",
+    estimate: "Includes 3 one-time signup credits.",
     features: ["Browse prompt library", "Copy prompt text", "Try image generation", "No payment required"],
   },
   {
@@ -21,6 +23,8 @@ export const pricingPlans = [
     quota: "120 credits/month",
     cta: "Continue to checkout",
     badge: "Standard queue",
+    audience: "For light creator use and occasional edits.",
+    estimate: "Up to 120 portrait text-to-image generations.",
     features: ["120 credits/month", "No ads", "2 concurrent image requests", "90-day image retention"],
   },
   {
@@ -31,6 +35,8 @@ export const pricingPlans = [
     cta: "Continue to checkout",
     badge: "Recommended",
     featured: true,
+    audience: "Best balance for weekly creator workflows.",
+    estimate: "Up to 300 portrait text-to-image generations.",
     features: ["300 credits/month", "Priority queue", "3 concurrent image requests", "90-day image retention"],
   },
   {
@@ -40,6 +46,8 @@ export const pricingPlans = [
     quota: "700 credits/month",
     cta: "Continue to checkout",
     badge: "Fastest queue",
+    audience: "For high-volume production and faster queues.",
+    estimate: "Up to 700 portrait text-to-image generations.",
     features: ["700 credits/month", "Fastest queue", "5 concurrent image requests", "90-day image retention"],
   },
 ];
@@ -53,4 +61,4 @@ export const promptCards = [
   { title: "Creator thumbnail", style: "Social", ratio: "16:9", text: "A bold creator thumbnail background with neon cyan accents, dynamic composition, realistic desk setup, space for headline text." },
 ];
 
-export const legalDisclaimer = "Images are generated through third-party AI model providers. Usage rights and limitations may depend on provider and model terms. Refunds are available within 14 days if no more than 50% of credits have been used.";
+export const legalDisclaimer = "Images are generated through third-party AI model providers. Upload only images you have rights to use. Usage rights and limitations may depend on provider and model terms. Refunds are available within 14 days if no more than 50% of paid credits from that billing period have been used.";

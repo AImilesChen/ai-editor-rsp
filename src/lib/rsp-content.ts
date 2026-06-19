@@ -4,7 +4,7 @@ export const site = {
   url: "https://aieditorrspediting.org",
   support: "support@aieditorrspediting.org",
   description:
-    "Upload a photo, add a short prompt, and generate polished RSP-style image edits with a credits-based plan preview.",
+    "Upload a photo, add a short prompt, and generate polished reference-based AI image edits with credits-based plans.",
 };
 
 export const promptCards = [
@@ -71,22 +71,22 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Try Generator", featured: false },
-  { name: "Starter", price: "$7.99", cadence: "/mo", generations: "120 credits/month", cta: "Preview Starter", featured: false },
-  { name: "Creator", price: "$14.99", cadence: "/mo", generations: "300 credits/month", cta: "Preview Creator", featured: true },
-  { name: "Studio", price: "$29.99", cadence: "/mo", generations: "700 credits/month", cta: "Preview Studio", featured: false },
+  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Claim 3 free credits", featured: false },
+  { name: "Starter", price: "$7.99", cadence: "/mo", generations: "Light creator use", cta: "View Starter", featured: false },
+  { name: "Creator", price: "$14.99", cadence: "/mo", generations: "Best for weekly workflows", cta: "View Creator", featured: true },
+  { name: "Studio", price: "$29.99", cadence: "/mo", generations: "High-volume generation", cta: "View Studio", featured: false },
 ];
 
 export const integrationStates = [
-  { label: "fal.ai image generation", state: "API connected", detail: "Worker API and generated case-image assets are connected; production moderation and retention policy still need backend/legal review." },
-  { label: "Creem subscription billing", state: "Pending", detail: "Do not collect payment until MoR subscription support is confirmed." },
-  { label: "Login and library", state: "Pending", detail: "Account persistence belongs to the backend phase." },
-  { label: "Credits", state: "Session preview", detail: "Free credits are tracked in a secure session cookie; persistent account credits still need D1 and login." },
+  { label: "fal.ai image generation", state: "Connected", detail: "Generation requests run through the backend provider integration with safety and credit checks." },
+  { label: "Creem subscription billing", state: "Connected", detail: "Checkout, customer portal, cancellation, webhook credit grants, and refund status are handled through Creem." },
+  { label: "Login and library", state: "Connected", detail: "Google OAuth, email magic links, account credits, and billing status are available from signed-in accounts." },
+  { label: "Credits", state: "Account-based", detail: "New accounts receive 3 one-time free credits. Paid credits are granted after payment confirmation." },
 ];
 
 export const faqItems = [
-  { q: "Can I generate images here today?", a: "Yes. You can upload a photo or enter a prompt directly from the homepage generator. Saved accounts, billing, and long-term credit history are not active yet." },
-  { q: "Are the prices final?", a: "The visible plan values are the confirmed frontend copy: Free 3 credits total, Starter $7.99 for 120 credits/month, Creator $14.99 for 300 credits/month, Studio $29.99 for 700 credits/month." },
+  { q: "Can I generate images here today?", a: "Yes. Sign in to claim 3 one-time free credits, then upload a reference image or create from a prompt." },
+  { q: "How do credits work?", a: "Credits are usage units. Portrait text-to-image uses 1 credit; larger text images use 2 credits; uploaded-photo edits use 2 to 4 credits depending on size." },
   { q: "Is this affiliated with RSP Editing?", a: "No. This is an independent creator tool and prompt hub." },
-  { q: "Are payments active?", a: "No. Checkout and subscriptions are shown as pending, not as live payment flows." },
+  { q: "How are payments handled?", a: "Paid plans use secure Creem checkout after sign-in. Credits are added after payment is confirmed, and eligible refunds can be requested from Account → Billing." },
 ];

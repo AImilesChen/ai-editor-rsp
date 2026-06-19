@@ -8,7 +8,6 @@ export const metadata: Metadata = createMetadata({
   title: "Cookie Policy",
   description: "Learn how AI Editor RSP uses essential cookies for login, sessions, credits, OAuth security, and analytics status.",
   path: "/cookie-policy",
-  noindex: true,
 });
 
 export default function CookiePolicyPage() {

@@ -15,9 +15,9 @@ const pricingFaq = [
   ["How do I get free credits?", "New users receive 3 credits upon first registration. This is a one-time grant and does not refresh monthly."],
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
-  ["Can I get a refund?", "Refunds are available within 14 days of purchase if no more than 50% of granted paid credits have been used. A confirmed refund revokes paid-plan credits but preserves any unused one-time free signup credits."],
+  ["Can I get a refund?", "Refunds are available within 14 days of purchase if no more than 50% of paid credits from that billing period have been used. A confirmed refund revokes paid-plan credits but preserves any unused one-time free signup credits."],
   ["How do I manage or cancel billing?", "Use Account → Billing → Manage billing to open the Creem Customer Portal, or use Cancel subscription in the product to stop future recurring billing."],
-  ["What happens if I cancel?", "Cancellation stops future recurring billing. Remaining credits and access follow the active plan status, safety rules, and Creem confirmation events."],
+  ["What happens if I cancel?", "Cancellation stops future recurring billing. Remaining credits and access follow the active plan status, safety rules, and Creem confirmation events. Monthly credits do not roll over after the billing period ends."],
 ];
 
 export default function PricingPage() {
@@ -40,12 +40,18 @@ export default function PricingPage() {
                 <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
                 <div className="mt-4"><span className="font-heading text-5xl font-normal text-rsp-text">{plan.price}</span><span className="text-rsp-muted"> {plan.cadence}</span></div>
                 <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
+                {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
+                {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
                 <ul className="mt-6 flex-1 space-y-3 text-sm leading-6 text-rsp-muted">{plan.features.map((f) => <li key={f}>• {f}</li>)}</ul>
                 <Link href={plan.name === "Free" ? "/generate" : `/checkout?plan=${plan.name.toLowerCase()}`} className="rsp-button-primary mt-7 w-full">{plan.name === "Free" ? "Try Generator" : plan.cta}</Link>
               </article>
             ))}
           </div>
-          <div className="mx-auto mt-8 max-w-screen-2xl border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted">{legalDisclaimer} Payments are processed by Creem. Credits are granted after verified payment webhook events.</div>
+          <div className="mx-auto mt-8 grid max-w-screen-2xl gap-3 md:grid-cols-3">
+            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Payments are processed by Creem after sign-in. Credits are added after payment is confirmed.</div>
+            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Cancel anytime:</strong> Monthly credits are valid for the current billing period and do not roll over.</div>
+            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">AI usage:</strong> {legalDisclaimer}</div>
+          </div>
         </section>
         <section className="section-pad bg-rsp-surface">
           <div className="mx-auto max-w-4xl">

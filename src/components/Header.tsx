@@ -63,7 +63,7 @@ export default function Header() {
     };
   }, [mobileOpen]);
 
-  const creditBadge = authenticated ? `Credits: ${credits ?? "…"}` : "Log in to claim 3 credits";
+  const creditBadge = authenticated ? `Credits: ${credits ?? "…"}` : null;
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-rsp-border bg-rsp-bg/92 backdrop-blur-xl">
@@ -78,11 +78,13 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-          <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">
-            {creditBadge}
-          </span>
+          {creditBadge ? (
+            <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">
+              {creditBadge}
+            </span>
+          ) : null}
           <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
-            {authenticated ? "Account" : "Log in"}
+            {authenticated ? "Account" : "Claim 3 free credits"}
           </Link>
         </nav>
         <button
@@ -103,9 +105,11 @@ export default function Header() {
               ×
             </button>
           </div>
-          <div className="mt-8 border border-rsp-secondary/35 bg-rsp-secondary/10 px-4 py-3 font-mono text-sm font-semibold text-rsp-secondary">
-            {creditBadge}
-          </div>
+          {creditBadge ? (
+            <div className="mt-8 border border-rsp-secondary/35 bg-rsp-secondary/10 px-4 py-3 font-mono text-sm font-semibold text-rsp-secondary">
+              {creditBadge}
+            </div>
+          ) : null}
           <nav className="mt-8 flex flex-col gap-4">
             {links.map((link) => (
               <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="border border-rsp-border bg-rsp-panel px-5 py-4 font-heading text-2xl font-normal text-rsp-text no-underline">
@@ -113,7 +117,7 @@ export default function Header() {
               </Link>
             ))}
             <Link href={authenticated ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
-              {authenticated ? "Account" : "Log in"}
+              {authenticated ? "Account" : "Claim 3 free credits"}
             </Link>
           </nav>
         </div>

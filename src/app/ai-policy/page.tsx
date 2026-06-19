@@ -70,7 +70,7 @@ export default function AiPolicyPage() {
         </section>
 
         <div className="mt-8 border border-rsp-secondary/25 bg-[#FFF7EA] p-5 text-sm font-medium leading-6 text-[#7A3F12] shadow-[0_18px_40px_rgba(184,115,51,0.10)]">
-          Provider: {AI_PROVIDER}. Contact: {SUPPORT_EMAIL}. This policy describes the current safety and AI-use rules for account access, credits, generation requests, and billing activation.
+          Provider: {AI_PROVIDER}. Contact: {SUPPORT_EMAIL}. This policy describes the current safety and AI-use rules for account access, credits, generation requests, billing, and refunds.
         </div>
       </main>
       <Footer />

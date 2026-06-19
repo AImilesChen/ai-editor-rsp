@@ -253,15 +253,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   };
 
   return (
-    <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid gap-0 xl:grid-cols-[340px_1fr]" : "grid gap-0 lg:grid-cols-[430px_1fr]"}`}>
-      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-3 md:p-4" : "p-4 md:p-5"}`}>
+    <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid gap-0 xl:grid-cols-[300px_1fr]" : "grid gap-0 lg:grid-cols-[430px_1fr]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-3" : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
             <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] text-[#F4DFC8]">
-            {authenticated ? `${creditsRemaining} credits` : isHero ? "3 free cr" : "Log in for 3 credits"}
+            {authenticated ? `${creditsRemaining} credits` : isHero ? "3 free" : "Log in for 3 credits"}
           </div>
         </div>
 
@@ -295,20 +295,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? "min-h-[158px] p-4 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
+          className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
         <div className={`${isHero ? "mt-2 gap-1.5" : "mt-3 gap-2"} flex flex-wrap`}>
-          {(isHero ? activeTasks.slice(0, 3) : activeTasks).map((item) => (
+          {(isHero ? activeTasks.slice(0, 2) : activeTasks).map((item) => (
             <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2" : "px-3 py-2"} text-sm font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
         </div>
 
         <div className={isHero ? "mt-4" : "mt-5"}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Ratio</p>
-          <div className={`${isHero ? "grid-cols-4" : "grid-cols-4"} grid gap-2`}>
+          <div className={`${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"} grid`}>
             {GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto").map((item) => (
-              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 py-2 text-center ${isHero ? "text-sm" : "text-xs"} font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
+              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
                 <span className="block">{item.label}</span>
                 {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{mode === "edit" ? item.imageCredits : item.textCredits} cr</span>}
               </button>
@@ -323,7 +323,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {state === "processing" ? "Generating…" : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
             </button>
           ) : (
-            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">Log in to generate</a>
+            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">Claim 3 free credits</a>
           )}
           {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
         </div>
@@ -350,7 +350,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           {isHero ? (
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
-              <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-5xl">
+              <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
                 AI Editor <span className="italic text-[#86EFAC]">RSP</span>
               </h1>
               <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">Upload a reference image, describe exactly what should change, then compare the original with the edited result.</p>
@@ -368,7 +368,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
 
         <div className={`${isHero ? "mt-2" : "mt-6"} mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
-            <div className={`relative ${isHero ? "aspect-[16/8.2]" : "aspect-[16/10]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
+            <div className={`relative ${isHero ? "aspect-[16/7.5]" : "aspect-[16/10]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
               <img src={generatedImage || previewImage} alt="Generated image preview" className="h-full w-full object-cover brightness-105 contrast-105 saturate-110" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/12" />
               <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Prompt preview"}</span>
@@ -379,7 +379,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             </div>
           ) : (
             <div
-              className={`relative ${isHero ? "aspect-[16/8.2]" : "aspect-[16/10]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
+              className={`relative ${isHero ? "aspect-[16/7.5]" : "aspect-[16/10]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
               role="slider"
               aria-label="Drag to compare before and after preview"
               aria-valuemin={12}
