@@ -233,36 +233,38 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   };
 
   return (
-    <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid gap-0 xl:grid-cols-[390px_1fr]" : "grid gap-0 lg:grid-cols-[430px_1fr]"}`}>
-      <aside className="border-r border-white/10 bg-[#1E1711] p-4 md:p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
+    <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid gap-0 xl:grid-cols-[350px_1fr]" : "grid gap-0 lg:grid-cols-[430px_1fr]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-3 md:p-4" : "p-4 md:p-5"}`}>
+        <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]">AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>Edit with a reference</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>Edit with a reference</HeadingTag>
           </div>
-          <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-xs text-[#F4DFC8]">
+          <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : "Log in for 3 credits"}
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className={isHero ? "mb-3" : "mb-4"}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Mode</p>
-          <div className="grid gap-2">
-            <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border p-3 text-left transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
+          <div className={`grid gap-2 ${isHero ? "grid-cols-2" : ""}`}>
+            <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "p-2.5" : "p-3"} text-left transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
               <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Reference Edit</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
-              <span className="mt-1 block text-xs leading-5 text-white/58">Best for keeping the uploaded subject, pose, composition, and visual identity.</span>
+              <span className={`${isHero ? "mt-1 line-clamp-2 leading-4" : "mt-1 leading-5"} block text-xs text-white/58`}>Best for keeping the uploaded subject, pose, composition, and visual identity.</span>
             </button>
-            <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border p-3 text-left transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
+            <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border ${isHero ? "p-2.5" : "p-3"} text-left transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
               <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Create from Text</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
-              <span className="mt-1 block text-xs leading-5 text-white/58">Best for creating a new image from a prompt without using a reference photo.</span>
+              <span className={`${isHero ? "mt-1 line-clamp-2 leading-4" : "mt-1 leading-5"} block text-xs text-white/58`}>Best for creating a new image from a prompt without using a reference photo.</span>
             </button>
           </div>
         </div>
 
-        <label className="mb-4 block cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] p-4 transition hover:border-[#D4A574]" htmlFor="upload-image">
-          <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]">↑</span>
+        <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
+          <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
+          <span className="min-w-0">
           <span className="block text-sm font-semibold text-white">{uploadedName ? "Reference image uploaded" : "Upload reference image"}</span>
-          <span className="mt-1 block text-xs leading-5 text-white/58">{uploadedName || "PNG, JPG, or WebP under 5 MB. Upload when you want the edit to keep subject and composition."}</span>
+          <span className={`${isHero ? "line-clamp-2 leading-4" : "leading-5"} mt-1 block text-xs text-white/58`}>{uploadedName || "PNG, JPG, or WebP under 5 MB. Upload when you want the edit to keep subject and composition."}</span>
+          </span>
           {uploadedImage && <img src={uploadedImage} alt="Uploaded source preview" className="mt-3 h-24 w-24 rounded-xl border border-white/10 object-cover" />}
         </label>
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
@@ -273,18 +275,18 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={mode === "edit" ? "Describe what to change. Example: keep the kitten, turn the background into a cozy lofi study room." : "Describe the new image you want to create."}
-          className={`${isHero ? "min-h-[110px]" : "min-h-[140px]"} w-full rounded-2xl border border-white/10 bg-[#100C08] p-4 text-sm leading-6 text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
+          className={`${isHero ? "min-h-[98px] p-3 leading-5" : "min-h-[140px] p-4 leading-6"} w-full rounded-2xl border border-white/10 bg-[#100C08] text-sm text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className={`${isHero ? "mt-2 gap-1.5" : "mt-3 gap-2"} flex flex-wrap`}>
           {activeTasks.map((item) => (
-            <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
+            <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
         </div>
 
-        <div className="mt-5">
+        <div className={isHero ? "mt-4" : "mt-5"}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Aspect Ratio</p>
-          <div className="grid grid-cols-4 gap-2">
+          <div className={`${isHero ? "grid-cols-5" : "grid-cols-4"} grid gap-2`}>
             {GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto").map((item) => (
               <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 py-2 text-center text-xs font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
                 <span className="block">{item.label}</span>
@@ -292,10 +294,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               </button>
             ))}
           </div>
-          <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>
+          {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
         </div>
 
-        <div className="mt-5 flex flex-col gap-2">
+        <div className={`${isHero ? "mt-4" : "mt-5"} flex flex-col gap-2`}>
           {authenticated ? (
             <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-sm font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
               {state === "processing" ? "Generating…" : mode === "edit" ? `Transform reference image (${currentQuote.creditsCharged} credits)` : `Generate from prompt (${currentQuote.creditsCharged} credits)`}
@@ -319,19 +321,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         </p>
       </aside>
 
-      <section className="relative min-h-[520px] bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] p-4 md:p-6">
-        <div className="mb-5 flex items-center justify-between gap-3 text-xs text-white/55">
+      <section className={`relative bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? "min-h-[500px] p-4 md:p-5" : "min-h-[520px] p-4 md:p-6"}`}>
+        <div className={`${isHero ? "mb-3" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span>Display History →</span>
           <span>{mode === "edit" ? "Reference Edit" : "Text to Image"} · {currentQuote.sizeLabel}</span>
         </div>
         <div className="mx-auto max-w-4xl text-center">
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
-          <h3 className={`${isHero ? "text-3xl" : "text-4xl md:text-5xl"} mt-2 font-heading font-normal tracking-[-0.04em] text-[#86EFAC]`}>AI Image Editor</h3>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">Edit reference images with text, or create new visuals from prompts. Keep the source image clear when you need consistency.</p>
+          <h3 className={`${isHero ? "text-2xl" : "text-4xl md:text-5xl"} mt-2 font-heading font-normal tracking-[-0.04em] text-[#86EFAC]`}>AI Image Editor</h3>
+          <p className={`${isHero ? "mt-1 leading-5" : "mt-2 leading-6"} mx-auto max-w-2xl text-sm text-white/68`}>Edit reference images with text, or create new visuals from prompts. Keep the source image clear when you need consistency.</p>
         </div>
 
-        <div className="mx-auto mt-6 max-w-5xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-3 shadow-2xl">
-          <div className="relative aspect-[16/10] overflow-hidden rounded-[22px] bg-[#241B13]">
+        <div className={`${isHero ? "mt-4" : "mt-6"} mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-3 shadow-2xl`}>
+          <div className={`relative ${isHero ? "aspect-[16/8.6]" : "aspect-[16/10]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
             <div className="absolute inset-0 grid grid-cols-2">
               <div className="relative overflow-hidden bg-gradient-to-br from-[#4B3A2A] via-[#211810] to-[#0D0A07]">
                 {uploadedImage ? <img src={uploadedImage} alt="Reference image" className="h-full w-full object-cover" /> : <img src={previewImage} alt="Before reference example" className="h-full w-full object-cover opacity-80" />}
@@ -344,7 +346,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
                 {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
                 {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
                 {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-                {state === "idle" && !generatedImage && <div className="absolute inset-x-6 bottom-6 rounded-2xl border border-white/10 bg-black/55 p-4 text-left text-sm leading-6 text-white/72">{mode === "edit" ? "Upload a reference image, then describe the exact edit you want. The result appears here." : "Write a prompt and generate a new image. Upload a photo if you need reference consistency."}</div>}
+                {state === "idle" && !generatedImage && <div className={`${isHero ? "inset-x-4 bottom-4 p-3 leading-5" : "inset-x-6 bottom-6 p-4 leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-sm text-white/72`}>{mode === "edit" ? "Upload a reference image, describe the exact edit, and the result appears here." : "Write a prompt and generate a new image. Upload a photo if you need reference consistency."}</div>}
               </div>
             </div>
             <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-white/70" />
@@ -352,7 +354,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           </div>
         </div>
 
-        <div className="mx-auto mt-4 flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/62 md:flex-row md:items-center md:justify-between">
+        <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white/62 md:flex-row md:items-center md:justify-between`}>
           <p><strong className="text-white">Live generator:</strong> {mode === "edit" ? "Reference Edit keeps the uploaded image as the visual anchor, then applies your prompt." : "Text-to-image creates a new visual from the prompt without a reference image."}</p>
           {generatedImage ? (
             <div className="flex flex-wrap gap-2">
