@@ -201,7 +201,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         <label className="mb-4 flex cursor-pointer flex-col items-start gap-3 border border-dashed border-[#B87333]/45 bg-[#F7F2EA]/80 p-4 transition hover:border-[#D4A574]" htmlFor="upload-image">
           <span className="flex h-10 w-10 items-center justify-center border border-[#B87333]/45 bg-[#B87333]/10 text-xl text-rsp-secondary">↑</span>
           <span className="text-sm font-semibold text-rsp-text">{uploadedName ? "Uploaded photo" : "Upload photo"}</span>
-          <span className="text-sm text-rsp-muted">{uploadedName || "PNG, JPG, or WebP under 5 MB. Use your own image as the starting point."}</span>
+          <span className="text-sm text-rsp-muted">{uploadedName || "PNG, JPG, or WebP under 5 MB. Upload only when you want to keep the subject/composition as a reference."}</span>
           {uploadedImage && <img src={uploadedImage} alt="Uploaded source preview" className="mt-2 h-28 w-28 border border-rsp-border object-cover" />}
         </label>
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
@@ -235,14 +235,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
           {authenticated ? (
             <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining < currentQuote.creditsCharged} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">
-              {state === "processing" ? "Generating…" : uploadedImage ? `Generate from uploaded photo (${currentQuote.creditsCharged} credits)` : `Generate from prompt (${currentQuote.creditsCharged} credits)`}
+              {state === "processing" ? "Generating…" : uploadedImage ? `Transform uploaded photo (${currentQuote.creditsCharged} credits)` : `Generate from prompt (${currentQuote.creditsCharged} credits)`}
             </button>
           ) : (
             <a href="/login?next=/generate" className="rsp-button-primary text-center no-underline">Log in to generate</a>
           )}
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
-        <p className="mt-3 text-sm text-rsp-muted">{!authenticated ? "Sign in first. New accounts get 3 one-time free credits; credits do not reset after logout or clearing cookies." : creditsRemaining < currentQuote.creditsCharged ? `This ${uploadedImage ? "uploaded-photo" : "text"} request needs ${currentQuote.creditsCharged} credits. Choose a lower-cost size or get more credits.` : `This ${uploadedImage ? "uploaded-photo" : "text"} request will use ${currentQuote.creditsCharged} credits. Portrait sizes cost less; square and landscape remain available at higher credit cost.`}</p>
+        <p className="mt-3 text-sm text-rsp-muted">{!authenticated ? "Sign in first. New accounts get 3 one-time free credits; credits do not reset after logout or clearing cookies." : creditsRemaining < currentQuote.creditsCharged ? `This ${uploadedImage ? "reference edit" : "text"} request needs ${currentQuote.creditsCharged} credits. Choose a lower-cost size or get more credits.` : uploadedImage ? `This reference edit will use ${currentQuote.creditsCharged} credits. The uploaded image will be used as the subject/composition reference; write the prompt as an edit to that image. Remove the photo for pure text-to-image.` : `This text request will use ${currentQuote.creditsCharged} credits. Portrait sizes cost less; square and landscape remain available at higher credit cost.`}</p>
         <p className="mt-2 text-xs leading-5 text-rsp-muted">Safety checks block sexual, violent, deceptive, deepfake, minor-related, extremist, and rights-infringing requests before generation. Blocked safety requests do not use credits.</p>
       </div>
 
@@ -261,9 +261,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="border border-rsp-border bg-[#EFE7DC]/55 p-2">
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-rsp-muted">Original</p>
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-rsp-muted">Reference</p>
             <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br from-[#F3E8DA] to-[#FBF7F0]">
-              {uploadedImage ? <img src={uploadedImage} alt="Uploaded original" className="h-full w-full object-cover" /> : <p className="px-4 text-center text-sm text-rsp-muted">Upload a photo or generate directly from text.</p>}
+              {uploadedImage ? <img src={uploadedImage} alt="Uploaded original" className="h-full w-full object-cover" /> : <p className="px-4 text-center text-sm text-rsp-muted">Upload a photo to use as a visual reference, or remove it for text-only generation.</p>}
             </div>
           </div>
           <div className="border border-rsp-border bg-[#EFE7DC]/55 p-2">
@@ -278,7 +278,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             </div>
           </div>
         </div>
-        <div className="mt-4 border border-rsp-border bg-white/60 p-4 text-sm text-rsp-muted"><strong className="text-rsp-text">Live generator:</strong> text generation and uploaded-photo generation submit to the image service, then poll the job result and render the generated image here.</div>
+        <div className="mt-4 border border-rsp-border bg-white/60 p-4 text-sm text-rsp-muted"><strong className="text-rsp-text">Live generator:</strong> Text-to-image creates a new image from the prompt. Reference edit keeps the uploaded image as the visual anchor, then applies your prompt and renders the generated result here.</div>
         {generatedImage ? (
           <div className="mt-3 flex flex-wrap gap-2">
             <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rsp-button-primary text-center no-underline">Download image</a>

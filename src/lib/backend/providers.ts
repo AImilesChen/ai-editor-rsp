@@ -70,11 +70,15 @@ export async function submitFalGeneration(input: GenerateRequest) {
     return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
   }
 
+  const referenceInstruction = input.imageDataUrl
+    ? "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
+    : "Create a new image from the user-provided text prompt.";
   const enrichedPrompt = [
+    referenceInstruction,
     prompt,
     input.style ? `Style direction: ${input.style}.` : "",
     safePromptInstruction(),
-    "Editorial image generation for a user-provided prompt. Avoid text overlays unless explicitly requested.",
+    "Avoid text overlays unless explicitly requested.",
   ].filter(Boolean).join("\n");
 
   const requestBody = {
@@ -83,7 +87,7 @@ export async function submitFalGeneration(input: GenerateRequest) {
     num_images: 1,
     output_format: "jpeg",
     ...providerSafetyOptions(),
-    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: 0.82 } : {}),
+    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: 0.45 } : {}),
   };
 
   const model = submitModel(input);
