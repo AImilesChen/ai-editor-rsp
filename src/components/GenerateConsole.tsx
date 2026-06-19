@@ -2,9 +2,10 @@
 
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { promptCards } from "@/lib/site";
+import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
 const styleChips = ["Editorial", "Portrait", "Fashion", "Product", "Abstract"];
-const ratios = ["1:1", "4:5", "16:9", "3:4"];
+const ratios = GENERATION_RATIOS;
 const stylePreviewImages: Record<string, string> = {
   Editorial: "/images/generated/double-exposure-travel-rishikesh.webp",
   Portrait: "/images/generated/horror-girlfriend-ai-photo.webp",
@@ -35,6 +36,9 @@ type SessionResponse = {
 type GenerateResponse = FalResult & {
   error?: string;
   creditsRemaining?: number;
+  creditsCharged?: number;
+  creditsRequired?: number;
+  pricing?: { creditsCharged?: number };
   job?: { requestId?: string };
 };
 
@@ -52,7 +56,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const isHero = variant === "hero";
   const [prompt, setPrompt] = useState(promptCards[0].text);
   const [style, setStyle] = useState(styleChips[0]);
-  const [ratio, setRatio] = useState(ratios[1]);
+  const [ratio, setRatio] = useState("4:5");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
   const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -71,6 +75,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     ][index];
   }, [prompt, style, ratio]);
   const previewImage = stylePreviewImages[style] || stylePreviewImages.Editorial;
+  const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: uploadedImage }), [ratio, uploadedImage]);
 
   useEffect(() => {
     fetch("/api/session")
@@ -206,23 +211,27 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <p className="mb-3 text-sm font-semibold text-rsp-text">Aspect ratio</p>
             <div className="flex flex-wrap gap-2">
               {ratios.map((item) => (
-                <button type="button" key={item} onClick={() => setRatio(item)} className={`border px-4 py-2 text-sm font-semibold ${ratio === item ? "border-[#D4A574] bg-[#D4A574] text-[#110B02]" : "border-rsp-border bg-white/55 text-rsp-muted"}`}>{item}</button>
+                <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`border px-4 py-2 text-left text-sm font-semibold ${ratio === item.ratio ? "border-[#D4A574] bg-[#D4A574] text-[#110B02]" : "border-rsp-border bg-white/55 text-rsp-muted"}`}>
+                  <span className="block">{item.label}</span>
+                  <span className="block font-mono text-[10px] uppercase tracking-[0.12em] opacity-75">{uploadedImage ? item.imageCredits : item.textCredits} credits</span>
+                </button>
               ))}
             </div>
+            <p className="mt-2 text-xs leading-5 text-rsp-muted">All sizes stay available. Larger square and landscape outputs use more credits because the image API bills by rounded megapixels.</p>
           </div>
         </div>}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
           {authenticated ? (
-            <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining <= 0} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">
-              {state === "processing" ? "Generating…" : uploadedImage ? "Generate from uploaded photo" : "Generate from prompt"}
+            <button type="button" onClick={runGenerate} disabled={state === "processing" || creditsRemaining < currentQuote.creditsCharged} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-60">
+              {state === "processing" ? "Generating…" : uploadedImage ? `Generate from uploaded photo (${currentQuote.creditsCharged} credits)` : `Generate from prompt (${currentQuote.creditsCharged} credits)`}
             </button>
           ) : (
             <a href="/login?next=/generate" className="rsp-button-primary text-center no-underline">Log in to generate</a>
           )}
           {uploadedImage && <button type="button" onClick={() => { setUploadedImage(null); setUploadedName(null); setGeneratedImage(null); }} className="rsp-button-secondary">Remove photo</button>}
         </div>
-        <p className="mt-3 text-sm text-rsp-muted">{!authenticated ? "Sign in first. New accounts get 3 one-time free credits; credits do not reset after logout or clearing cookies." : creditsRemaining <= 0 ? "Your credits are used up. Get more to continue." : "You can generate from text only, or upload a photo first and use the prompt as the edit direction."}</p>
+        <p className="mt-3 text-sm text-rsp-muted">{!authenticated ? "Sign in first. New accounts get 3 one-time free credits; credits do not reset after logout or clearing cookies." : creditsRemaining < currentQuote.creditsCharged ? `This ${uploadedImage ? "uploaded-photo" : "text"} request needs ${currentQuote.creditsCharged} credits. Choose a lower-cost size or get more credits.` : `This ${uploadedImage ? "uploaded-photo" : "text"} request will use ${currentQuote.creditsCharged} credits. Portrait sizes cost less; square and landscape remain available at higher credit cost.`}</p>
         <p className="mt-2 text-xs leading-5 text-rsp-muted">Safety checks block sexual, violent, deceptive, deepfake, minor-related, extremist, and rights-infringing requests before generation. Blocked safety requests do not use credits.</p>
       </div>
 

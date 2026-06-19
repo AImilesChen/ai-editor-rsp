@@ -1,5 +1,6 @@
 import type { AuthUser } from "@/lib/backend/auth";
 import { assetsBucket, billingDb } from "@/lib/backend/cloudflare";
+import type { GenerationQuote } from "@/lib/generation-pricing";
 
 const R2_BUCKET_NAME = "ai-editor-rsp-assets";
 
@@ -24,6 +25,7 @@ export type CreateGenerationJobInput = {
   style?: string;
   ratio?: string;
   creditsQuoted?: number;
+  pricing?: GenerationQuote;
 };
 
 export async function createGenerationJob(input: CreateGenerationJobInput) {
@@ -32,7 +34,7 @@ export async function createGenerationJob(input: CreateGenerationJobInput) {
   const now = Date.now();
   await db.prepare(`INSERT INTO generation_jobs (id, user_id, status, prompt, quality_tier, image_size, credits_quoted, credits_charged, provider, safety_status, provider_metadata_json, created_at, updated_at)
     VALUES (?, ?, 'created', ?, 'standard', ?, ?, 0, 'fal.ai', 'prompt_allowed', ?, ?, ?)`)
-    .bind(input.jobId, input.user.id, input.prompt, input.ratio || null, input.creditsQuoted || 1, JSON.stringify({ style: input.style || null }), now, now)
+    .bind(input.jobId, input.user.id, input.prompt, input.ratio || null, input.creditsQuoted || 1, JSON.stringify({ style: input.style || null, pricing: input.pricing || null }), now, now)
     .run();
   return { persisted: true };
 }

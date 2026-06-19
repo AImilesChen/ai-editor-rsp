@@ -5,6 +5,7 @@ import { accountForPublicUser, debitCreditForUser } from "@/lib/backend/billing-
 import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
 import { checkPromptSafety, logSafetyEvent, promptHash } from "@/lib/backend/safety";
 import { createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
+import { quoteGenerationCredits } from "@/lib/generation-pricing";
 
 type Body = {
   prompt?: string;
@@ -26,18 +27,12 @@ export async function POST(request: NextRequest) {
   const session = await getSession(request);
   const billingAccount = await accountForPublicUser(user);
   const availableCredits = billingAccount?.creditsRemaining ?? session.creditsRemaining;
+  const body = (await request.json().catch(() => ({}))) as Body;
   if (isSafetyLimited(session)) {
     const response = NextResponse.json({ ok: false, error: "Generation is temporarily limited because of repeated safety-rule violations. Please try again later.", code: "SAFETY_LIMITED" }, { status: 429 });
     await setSessionCookie(response, session);
     return response;
   }
-  if (availableCredits <= 0) {
-    const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
-    await setSessionCookie(response, session);
-    return response;
-  }
-
-  const body = (await request.json().catch(() => ({}))) as Body;
   if (body.imageDataUrl && !body.imageDataUrl.startsWith("data:image/")) {
     const response = NextResponse.json({ ok: false, error: "Uploaded image must be PNG, JPG, or WebP.", code: "INVALID_IMAGE" }, { status: 400 });
     await setSessionCookie(response, session);
@@ -45,6 +40,19 @@ export async function POST(request: NextRequest) {
   }
   if (body.imageDataUrl && body.imageDataUrl.length > 7_000_000) {
     const response = NextResponse.json({ ok: false, error: "Uploaded image is too large. Use an image under 5 MB.", code: "IMAGE_TOO_LARGE" }, { status: 413 });
+    await setSessionCookie(response, session);
+    return response;
+  }
+  const quote = quoteGenerationCredits({ ratio: body.ratio, imageDataUrl: body.imageDataUrl });
+  if (availableCredits < quote.creditsCharged) {
+    const response = NextResponse.json({
+      ok: false,
+      error: `This request needs ${quote.creditsCharged} credits. You have ${availableCredits} remaining.`,
+      code: "CREDITS_EXHAUSTED",
+      creditsRequired: quote.creditsCharged,
+      creditsRemaining: availableCredits,
+      pricing: quote,
+    }, { status: 402 });
     await setSessionCookie(response, session);
     return response;
   }
@@ -72,9 +80,9 @@ export async function POST(request: NextRequest) {
   }
 
   const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
-  if (user) await createGenerationJob({ jobId, user, prompt, style: body.style, ratio: body.ratio, creditsQuoted: 1 });
+  if (user) await createGenerationJob({ jobId, user, prompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
 
-  const result = await submitFalGeneration({ prompt, style: body.style, ratio: body.ratio, imageDataUrl: body.imageDataUrl });
+  const result = await submitFalGeneration({ prompt, style: body.style, ratio: quote.ratio, imageDataUrl: body.imageDataUrl });
   if (!result.ok) {
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });
@@ -82,7 +90,7 @@ export async function POST(request: NextRequest) {
     return response;
   }
 
-  const debit = user ? await debitCreditForUser(user, 1, jobId) : { creditsRemaining: Math.max(0, session.creditsRemaining - 1), insufficient: false };
+  const debit = user ? await debitCreditForUser(user, quote.creditsCharged, jobId) : { creditsRemaining: Math.max(0, session.creditsRemaining - quote.creditsCharged), insufficient: false };
   if (debit.insufficient) {
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "CREDITS_EXHAUSTED", message: "No credits remaining after provider submission." });
     const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
@@ -98,7 +106,7 @@ export async function POST(request: NextRequest) {
       requestId: result.requestId,
       statusUrl: result.statusUrl,
       responseUrl: result.responseUrl,
-      creditsCharged: 1,
+      creditsCharged: quote.creditsCharged,
       raw: result.raw,
     });
   }
@@ -115,6 +123,8 @@ export async function POST(request: NextRequest) {
       responseUrl: result.responseUrl,
     },
     creditsRemaining: nextSession.creditsRemaining,
+    creditsCharged: quote.creditsCharged,
+    pricing: quote,
   });
   await setSessionCookie(response, nextSession);
   return response;

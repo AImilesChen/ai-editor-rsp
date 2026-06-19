@@ -45,7 +45,7 @@ export default function TermsPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Credits and Plans</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>New users receive 3 free credits total as a one-time trial grant.</li>
-              <li>Generation cost can vary by mode. Current product copy uses Draft 1 credit, Standard 2 credits, and High Quality 4 credits where those modes are available.</li>
+              <li>Generation cost can vary by mode and image size. Text-to-image portrait requests use fewer credits; square, landscape, and uploaded-photo edits use more credits because provider cost is higher.</li>
               <li>Paid monthly plans are expected to grant credits at the start of each billing period. Paid credits do not roll over unless stated otherwise in the plan copy.</li>
               <li>Plans, credit amounts, queues, retention periods, and prices may change before or after billing launch. Changes will be shown before purchase where required.</li>
             </ul>

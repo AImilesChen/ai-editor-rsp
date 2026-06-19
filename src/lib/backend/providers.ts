@@ -1,4 +1,5 @@
 import { providerSafetyOptions, safePromptInstruction } from "@/lib/backend/safety";
+import { ratioToImageSize } from "@/lib/generation-pricing";
 
 const FAL_QUEUE_BASE = "https://queue.fal.run";
 
@@ -45,20 +46,6 @@ function falImageToImageModel() {
 
 function submitModel(input: GenerateRequest) {
   return input.imageDataUrl ? falImageToImageModel() : falModel();
-}
-
-function ratioToImageSize(ratio?: string) {
-  switch (ratio) {
-    case "1:1":
-      return "square_hd";
-    case "16:9":
-      return "landscape_16_9";
-    case "3:4":
-      return "portrait_4_3";
-    case "4:5":
-    default:
-      return "portrait_4_3";
-  }
 }
 
 type FalQueuePayload = {

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const pricingFaq = [
-  ["What is a credit?", "1 credit = 1 generation attempt. Each time you click Generate, 1 credit is deducted from your balance."],
+  ["What is a credit?", "Credits are usage units, not fixed generations. Text-to-image portrait requests use 1 credit, square or landscape text requests use 2 credits, uploaded-photo portrait edits use 2 credits, and uploaded-photo square or landscape edits use 4 credits."],
   ["How do I get free credits?", "New users receive 3 credits upon first registration. This is a one-time grant and does not refresh monthly."],
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
