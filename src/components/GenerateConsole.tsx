@@ -258,7 +258,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>Reference edit</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? "3 free cr" : "Log in for 3 credits"}
@@ -269,12 +269,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           <p className={`${isHero ? "sr-only" : "mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70"}`}>Mode</p>
           <div className={`grid gap-2 ${isHero ? "grid-cols-2 rounded-2xl border border-white/10 bg-black/20 p-1" : ""}`}>
             <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "p-3 text-center" : "p-3 text-left"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
-              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Reference Edit</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
-              {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Best for keeping the uploaded subject, pose, composition, and visual identity.</span>}
+              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Edit uploaded image</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
+              {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Upload a reference, keep the subject and composition, then change only what you describe.</span>}
             </button>
             <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border ${isHero ? "p-3 text-center" : "p-3 text-left"} transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
-              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Create from Text</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
-              {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Best for creating a new image from a prompt without using a reference photo.</span>}
+              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Create from prompt</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
+              {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Generate a new image from text only. No uploaded reference or before/after comparison.</span>}
             </button>
           </div>
         </div>
@@ -344,7 +344,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       <section className={`relative bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? "min-h-[500px] p-3 md:p-5" : "min-h-[520px] p-4 md:p-6"}`}>
         <div className={`${isHero ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           {!isHero && <span>Display History →</span>}
-          <span className="ml-auto">{mode === "edit" ? "Reference Edit" : "Text to Image"} · {currentQuote.sizeLabel}</span>
+          <span className="ml-auto">{mode === "edit" ? "Edit uploaded image" : "Create from prompt"} · {currentQuote.sizeLabel}</span>
         </div>
         <div className={`${isHero ? "mb-3" : "mb-5"}`}>
           {isHero ? (
@@ -353,7 +353,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-5xl">
                 AI Editor <span className="italic text-[#86EFAC]">RSP</span>
               </h1>
-              <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">An AI image editor for reference-based edits: upload a photo, describe the change, and compare the result instantly.</p>
+              <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">Upload a reference image, describe exactly what should change, then compare the original with the edited result.</p>
+              <a href="/reference-edit" className="mt-3 inline-flex rounded-full border border-[#86EFAC]/45 px-4 py-2 text-sm font-bold text-[#86EFAC] no-underline transition hover:bg-[#86EFAC]/10">How Reference Edit works →</a>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
@@ -400,12 +401,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
                 <img src={generatedImage || previewImage} alt="After edited result preview" className="h-full w-full object-cover brightness-105 contrast-110 saturate-125" draggable={false} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
               </div>
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before</span>
-              <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After</span>
+              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · uploaded image</span>
+              <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>{isHero ? "Drag to compare" : "Drag the handle to compare before and after. Upload a reference image, describe the edit, and the result appears here."}</div>}
+              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>{isHero ? "Before = upload. After = AI edit." : "Drag the handle to compare your uploaded image with the AI edited result."}</div>}
               <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
               <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
             </div>
