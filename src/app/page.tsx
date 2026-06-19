@@ -17,29 +17,8 @@ export default function HomePage() {
       <main className="pt-20">
         <section className="relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)] px-4 py-8 md:px-8 md:py-12">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
-          <div className="relative mx-auto grid max-w-screen-2xl items-start gap-6 xl:grid-cols-[minmax(280px,0.48fr)_minmax(0,1.52fr)]">
-            <div className="max-w-md rounded-[28px] border border-rsp-border/70 bg-white/45 p-5 shadow-[0_18px_60px_rgba(94,63,36,0.10)] backdrop-blur md:p-6">
-              <p className="eyebrow">Reference-first AI Image Editor</p>
-              <h1 className="mt-4 font-heading text-4xl font-normal leading-[1.04] tracking-[-0.04em] text-rsp-text md:text-5xl">
-                Upload a reference. <span className="italic text-rsp-secondary">Edit it with a prompt.</span>
-              </h1>
-              <p className="mt-4 text-base leading-7 text-rsp-muted">
-                Keep the subject clear, describe the change, and compare Reference vs Edited Result in the workspace.
-              </p>
-              <div className="mt-5 grid gap-2 text-sm text-rsp-muted">
-                <div className="flex items-center gap-3 border border-rsp-border bg-white/55 px-3 py-2"><span className="font-mono text-rsp-secondary">01</span><span>Upload reference image</span></div>
-                <div className="flex items-center gap-3 border border-rsp-border bg-white/55 px-3 py-2"><span className="font-mono text-rsp-secondary">02</span><span>Choose edit task + prompt</span></div>
-                <div className="flex items-center gap-3 border border-rsp-border bg-white/55 px-3 py-2"><span className="font-mono text-rsp-secondary">03</span><span>Generate and download</span></div>
-              </div>
-              <div className="mt-5 flex flex-wrap items-center gap-4 text-sm">
-                <span className="text-rsp-muted">3 free credits total.</span>
-                <Link href="/prompts" className="text-rsp-secondary no-underline">Browse prompts →</Link>
-              </div>
-            </div>
-
-            <div id="generator" className="relative scroll-mt-24">
-              <GenerateConsole headingLevel="h2" variant="hero" />
-            </div>
+          <div id="generator" className="relative mx-auto max-w-screen-2xl scroll-mt-24">
+            <GenerateConsole headingLevel="h2" variant="hero" />
           </div>
         </section>
 

@@ -326,10 +326,29 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           <span>Display History →</span>
           <span>{mode === "edit" ? "Reference Edit" : "Text to Image"} · {currentQuote.sizeLabel}</span>
         </div>
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
-          <h3 className={`${isHero ? "text-2xl" : "text-4xl md:text-5xl"} mt-2 font-heading font-normal tracking-[-0.04em] text-[#86EFAC]`}>AI Image Editor</h3>
-          <p className={`${isHero ? "mt-1 leading-5" : "mt-2 leading-6"} mx-auto max-w-2xl text-sm text-white/68`}>Edit reference images with text, or create new visuals from prompts. Keep the source image clear when you need consistency.</p>
+        <div className={`${isHero ? "mb-4 grid gap-4 xl:grid-cols-[1fr_auto] xl:items-end" : "mb-5"}`}>
+          {isHero ? (
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">Reference-first AI Image Editor</p>
+              <h1 className="mt-2 max-w-3xl font-heading text-3xl font-normal leading-[1.02] tracking-[-0.04em] text-white md:text-4xl">
+                Upload a reference. <span className="italic text-[#86EFAC]">Edit it with a prompt.</span>
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">Keep the subject clear, describe the change, then compare the reference with the edited result in one workspace.</p>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
+              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">AI Image Editor</h3>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">Edit reference images with text, or create new visuals from prompts. Keep the source image clear when you need consistency.</p>
+            </div>
+          )}
+          {isHero && (
+            <div className="grid min-w-[250px] gap-2 text-xs text-white/72 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2"><span className="font-mono text-[#86EFAC]">01</span> Upload reference image</div>
+              <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2"><span className="font-mono text-[#86EFAC]">02</span> Add a short prompt</div>
+              <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2"><span className="font-mono text-[#86EFAC]">03</span> Generate on this page</div>
+            </div>
+          )}
         </div>
 
         <div className={`${isHero ? "mt-4" : "mt-6"} mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-3 shadow-2xl`}>
