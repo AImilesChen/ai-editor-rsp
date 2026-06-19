@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, PointerEvent, useEffect, useMemo, useState } from "react";
 import { promptCards } from "@/lib/site";
 import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
@@ -90,6 +90,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedName, setUploadedName] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [comparePosition, setComparePosition] = useState(50);
+  const [isDraggingCompare, setIsDraggingCompare] = useState(false);
 
   const activeTasks = mode === "edit" ? editTasks : textTasks;
   const imageForRequest = mode === "edit" ? uploadedImage : null;
@@ -232,6 +234,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     if (mode === "edit") setState("idle");
   };
 
+  const updateComparePosition = (event: PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const next = ((event.clientX - rect.left) / rect.width) * 100;
+    setComparePosition(Math.min(88, Math.max(12, Math.round(next))));
+  };
+
+  const startCompareDrag = (event: PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsDraggingCompare(true);
+    updateComparePosition(event);
+  };
+
+  const stopCompareDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsDraggingCompare(false);
+  };
+
   return (
     <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid gap-0 xl:grid-cols-[350px_1fr]" : "grid gap-0 lg:grid-cols-[430px_1fr]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-3 md:p-4" : "p-4 md:p-5"}`}>
@@ -352,24 +371,37 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         </div>
 
         <div className={`${isHero ? "mt-4" : "mt-6"} mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-3 shadow-2xl`}>
-          <div className={`relative ${isHero ? "aspect-[16/8.6]" : "aspect-[16/10]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
-            <div className="absolute inset-0 grid grid-cols-2">
-              <div className="relative overflow-hidden bg-gradient-to-br from-[#4B3A2A] via-[#211810] to-[#0D0A07]">
-                {uploadedImage ? <img src={uploadedImage} alt="Reference image" className="h-full w-full object-cover" /> : <img src={previewImage} alt="Before reference example" className="h-full w-full object-cover opacity-80" />}
-                <span className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white">Before / Reference</span>
-              </div>
-              <div className="relative overflow-hidden bg-gradient-to-br from-[#102014] via-[#241B13] to-[#0D0A07]">
-                {generatedImage ? <img src={generatedImage} alt="Edited generated result" className="h-full w-full object-cover" /> : <img src={previewImage} alt="Generated result preview" className="h-full w-full object-cover opacity-55" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
-                <span className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white">After / Edited Result</span>
-                {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
-                {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
-                {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-                {state === "idle" && !generatedImage && <div className={`${isHero ? "inset-x-4 bottom-4 p-3 leading-5" : "inset-x-6 bottom-6 p-4 leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-sm text-white/72`}>{mode === "edit" ? "Upload a reference image, describe the exact edit, and the result appears here." : "Write a prompt and generate a new image. Upload a photo if you need reference consistency."}</div>}
-              </div>
+          <div
+            className={`relative ${isHero ? "aspect-[16/8.6]" : "aspect-[16/10]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
+            role="slider"
+            aria-label="Drag to compare before and after preview"
+            aria-valuemin={12}
+            aria-valuemax={88}
+            aria-valuenow={comparePosition}
+            tabIndex={0}
+            onPointerDown={startCompareDrag}
+            onPointerMove={(event) => { if (isDraggingCompare) updateComparePosition(event); }}
+            onPointerUp={stopCompareDrag}
+            onPointerCancel={stopCompareDrag}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft") setComparePosition((value) => Math.max(12, value - 4));
+              if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
+            }}
+          >
+            <img src={uploadedImage || previewImage} alt="Before reference preview" className="absolute inset-0 h-full w-full object-cover opacity-70 blur-[1.5px] saturate-75" draggable={false} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
+            <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
+              <img src={generatedImage || previewImage} alt="After edited result preview" className="h-full w-full object-cover brightness-105 contrast-110 saturate-125" draggable={false} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
             </div>
-            <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-white/70" />
-            <div className="pointer-events-none absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/70 text-sm text-white shadow-xl">↔</div>
+            <span className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white">Before / Reference</span>
+            <span className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white">After / Edited Result</span>
+            {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
+            {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
+            {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
+            {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 max-w-[340px] p-3 leading-5" : "right-6 bottom-6 max-w-sm p-4 leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-sm text-white/72`}>{mode === "edit" ? "Drag the handle to compare before and after. Upload a reference image, describe the edit, and the result appears here." : "Drag to compare preview styles. Write a prompt and generate a new image."}</div>}
+            <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
+            <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
           </div>
         </div>
 
