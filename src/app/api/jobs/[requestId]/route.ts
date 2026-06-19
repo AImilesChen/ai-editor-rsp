@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFalResult, getFalStatus } from "@/lib/backend/providers";
 import { getAuthUser } from "@/lib/backend/auth";
 import { refundCreditForUser } from "@/lib/backend/billing-store";
-import { archiveGenerationResult } from "@/lib/backend/generation-store";
+import { archiveGenerationResult, getGenerationCreditChargeByRequestId } from "@/lib/backend/generation-store";
 import { getSession, recordSafetyStrike, refundCreditOnce, setSessionCookie } from "@/lib/backend/session";
 import { checkOutputSafety, logSafetyEvent } from "@/lib/backend/safety";
 
@@ -22,7 +22,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (outputSafety.decision !== "allow") {
       const session = await getSession(request);
       const user = await getAuthUser(request);
-      const accountRefund = user ? await refundCreditForUser(user, 1, requestId) : null;
+      const creditsToRefund = await getGenerationCreditChargeByRequestId(requestId);
+      const accountRefund = user ? await refundCreditForUser(user, creditsToRefund, requestId) : null;
       const refundedSession = user
         ? { ...recordSafetyStrike(session, outputSafety.severity), creditsRemaining: accountRefund?.creditsRemaining ?? session.creditsRemaining }
         : refundCreditOnce(recordSafetyStrike(session, outputSafety.severity), requestId);

@@ -42,6 +42,11 @@ type GenerateResponse = FalResult & {
   job?: { requestId?: string };
 };
 
+function publishCreditBalance(creditsRemaining: number) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("rsp:credits-updated", { detail: { creditsRemaining } }));
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -120,7 +125,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       const response = await fetch(`/api/jobs/${encodeURIComponent(requestId)}${mode}`);
       const data = await response.json() as FalResult & { error?: string; creditsRemaining?: number };
       if (!response.ok || !data.ok) {
-        if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
+        if (typeof data.creditsRemaining === "number") {
+          setCreditsRemaining(data.creditsRemaining);
+          publishCreditBalance(data.creditsRemaining);
+        }
         if (response.status === 451) throw new Error(data.error || "The generated output was blocked by our safety checks. Your credit was returned.");
         continue;
       }
@@ -160,7 +168,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         }
         throw new Error(data.error || "Generation request failed.");
       }
-      if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
+      if (typeof data.creditsRemaining === "number") {
+        setCreditsRemaining(data.creditsRemaining);
+        publishCreditBalance(data.creditsRemaining);
+      }
       const requestId = data.job?.requestId || null;
       setJobId(requestId);
       if (requestId) {
@@ -198,15 +209,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         <label className="mb-2 block text-sm font-semibold text-rsp-text" htmlFor="prompt">Prompt</label>
         <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} className={`${isHero ? "min-h-[92px]" : "min-h-[150px]"} w-full border border-rsp-border bg-[#FBF7F0] p-4 font-mono text-sm text-rsp-text outline-none ring-[#B87333]/35 focus:ring-4`} />
 
-        {!isHero && <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div>
+        <div className={`mt-4 grid gap-4 ${isHero ? "" : "md:grid-cols-2"}`}>
+          {!isHero && <div>
             <p className="mb-3 text-sm font-semibold text-rsp-text">Style</p>
             <div className="flex flex-wrap gap-2">
               {styleChips.map((chip) => (
                 <button type="button" key={chip} onClick={() => setStyle(chip)} className={`border px-4 py-2 text-sm font-semibold ${style === chip ? "border-[#B87333] bg-[#B87333] text-[#110B02]" : "border-rsp-border bg-white/55 text-rsp-muted"}`}>{chip}</button>
               ))}
             </div>
-          </div>
+          </div>}
           <div>
             <p className="mb-3 text-sm font-semibold text-rsp-text">Aspect ratio</p>
             <div className="flex flex-wrap gap-2">
@@ -219,7 +230,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             </div>
             <p className="mt-2 text-xs leading-5 text-rsp-muted">All sizes stay available. Larger square and landscape outputs use more credits because the image API bills by rounded megapixels.</p>
           </div>
-        </div>}
+        </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
           {authenticated ? (
@@ -241,7 +252,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <p className="text-sm font-semibold text-rsp-text">Output preview</p>
             <p className="mt-1 text-xs text-rsp-muted">Result appears here after generation completes.</p>
           </div>
-          <span className="border border-rsp-border bg-white/55 px-3 py-1 text-xs font-semibold text-rsp-muted">{ratio}</span>
+          <label className="flex items-center gap-2 text-xs font-semibold text-rsp-muted">
+            Size
+            <select value={ratio} onChange={(event) => setRatio(event.target.value)} className="border border-rsp-border bg-white/80 px-3 py-1 text-xs font-semibold text-rsp-text outline-none ring-[#B87333]/30 focus:ring-2" aria-label="Output aspect ratio">
+              {ratios.map((item) => <option key={item.ratio} value={item.ratio}>{item.label} · {uploadedImage ? item.imageCredits : item.textCredits} credits</option>)}
+            </select>
+          </label>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="border border-rsp-border bg-[#EFE7DC]/55 p-2">
@@ -263,6 +279,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           </div>
         </div>
         <div className="mt-4 border border-rsp-border bg-white/60 p-4 text-sm text-rsp-muted"><strong className="text-rsp-text">Live generator:</strong> text generation and uploaded-photo generation submit to the image service, then poll the job result and render the generated image here.</div>
+        {generatedImage ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rsp-button-primary text-center no-underline">Download image</a>
+            <a href={generatedImage} target="_blank" rel="noreferrer" className="rsp-button-secondary text-center no-underline">Open full size</a>
+          </div>
+        ) : null}
       </div>
     </div>
   );

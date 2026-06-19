@@ -61,6 +61,15 @@ export async function markGenerationFailed(input: { jobId: string; userId?: stri
   return { persisted: true };
 }
 
+export async function getGenerationCreditChargeByRequestId(requestId: string) {
+  const db = await billingDb();
+  if (!db) return 1;
+  const row = await db.prepare("SELECT credits_charged, credits_quoted FROM generation_jobs WHERE provider_request_id = ? ORDER BY created_at DESC LIMIT 1")
+    .bind(requestId)
+    .first<{ credits_charged: number; credits_quoted: number }>();
+  return Math.max(1, row?.credits_charged || row?.credits_quoted || 1);
+}
+
 export async function archiveGenerationResult(input: { requestId: string; user?: AuthUser | null; raw: unknown; provider: string; model: string }) {
   const db = await billingDb();
   const bucket = await assetsBucket();

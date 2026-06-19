@@ -36,6 +36,18 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    const onCreditsUpdated = (event: Event) => {
+      const creditsRemaining = (event as CustomEvent<{ creditsRemaining?: number }>).detail?.creditsRemaining;
+      if (typeof creditsRemaining === "number") {
+        setAuthenticated(true);
+        setCredits(creditsRemaining);
+      }
+    };
+    window.addEventListener("rsp:credits-updated", onCreditsUpdated);
+    return () => window.removeEventListener("rsp:credits-updated", onCreditsUpdated);
+  }, []);
+
+  useEffect(() => {
     const onResize = () => {
       if (window.innerWidth >= 768) setMobileOpen(false);
     };
