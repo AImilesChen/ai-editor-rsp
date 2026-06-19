@@ -350,9 +350,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
               <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-5xl">
-                Upload. <span className="italic text-[#86EFAC]">Prompt.</span> Compare.
+                AI Editor <span className="italic text-[#86EFAC]">RSP</span>
               </h1>
-              <p className="mt-2 max-w-2xl text-base leading-6 text-white/70">Keep the subject. Change the scene. See before/after instantly.</p>
+              <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">An AI image editor for reference-based edits: upload a photo, describe the change, and compare the result instantly.</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
