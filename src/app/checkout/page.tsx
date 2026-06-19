@@ -6,7 +6,7 @@ import CheckoutStartButton from "@/components/CheckoutStartButton";
 import { pricingPlans, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Checkout Preview — AI Editor RSP",
+  title: "Checkout — AI Editor RSP",
   description: "Secure checkout entry for AI Editor RSP credits plans.",
   alternates: { canonical: `${SITE_URL}/checkout` },
   robots: { index: false, follow: true },
@@ -43,7 +43,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
               <p className="mt-5 text-sm leading-6 text-rsp-muted">Do not close the hosted checkout until Creem returns you to this site. Account credits update after the payment webhook confirms the transaction.</p>
             </section>
             <aside className="rsp-card p-6">
-              <h2 className="font-heading text-2xl font-normal text-rsp-text">State copy</h2>
+              <h2 className="font-heading text-2xl font-normal text-rsp-text">Checkout status</h2>
               <div className="mt-5 space-y-4 text-sm leading-6 text-rsp-muted">
                 <p><strong className="text-rsp-text">Success:</strong> Payment confirmation is checked through Creem webhooks. Credits appear after confirmation.</p>
                 <p><strong className="text-rsp-text">Cancel:</strong> Checkout canceled. No payment was taken.</p>
