@@ -97,7 +97,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const imageForRequest = mode === "edit" ? uploadedImage : null;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
   const previewImage = previewImages[task] || "/images/generated/lofi-girl-vibes.webp";
-  const promptPlaceholder = activeTasks.find((item) => item.label === task)?.prompt || (mode === "edit" ? "Describe the exact edit you want." : "Describe the new image you want to create.");
+  const promptPlaceholder = isHero
+    ? (mode === "edit" ? "Example: keep the subject, replace the background with a warm night-study loft." : "Example: cinematic product photo, warm studio light, clean background.")
+    : activeTasks.find((item) => item.label === task)?.prompt || (mode === "edit" ? "Describe the exact edit you want." : "Describe the new image you want to create.");
   const needsUpload = mode === "edit" && !uploadedImage;
   const canGenerate = Boolean(authenticated) && !needsUpload && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
 
