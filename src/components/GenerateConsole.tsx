@@ -79,7 +79,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const HeadingTag = headingLevel;
   const isHero = variant === "hero";
   const [mode, setMode] = useState<"edit" | "text">("edit");
-  const [prompt, setPrompt] = useState("Change only the background to a cozy lofi night-study room with warm lamp light, rain on the window, and soft grain.");
+  const [prompt, setPrompt] = useState("");
   const [task, setTask] = useState(editTasks[1].label);
   const [ratio, setRatio] = useState("auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
@@ -97,6 +97,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const imageForRequest = mode === "edit" ? uploadedImage : null;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
   const previewImage = previewImages[task] || "/images/generated/lofi-girl-vibes.webp";
+  const promptPlaceholder = activeTasks.find((item) => item.label === task)?.prompt || (mode === "edit" ? "Describe the exact edit you want." : "Describe the new image you want to create.");
   const needsUpload = mode === "edit" && !uploadedImage;
   const canGenerate = Boolean(authenticated) && !needsUpload && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
 
@@ -117,14 +118,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     setState("idle");
     const firstTask = nextMode === "edit" ? editTasks[1] : textTasks[0];
     setTask(firstTask.label);
-    setPrompt(nextMode === "edit" ? "Change only the background to a cozy lofi night-study room." : firstTask.prompt);
+    setPrompt("");
     if (nextMode === "edit") setRatio("auto");
     if (nextMode === "text" && ratio === "auto") setRatio("4:5");
   };
 
   const applyTask = (item: { label: string; prompt: string }) => {
     setTask(item.label);
-    setPrompt(isHero && item.label === "Change background" ? "Change only the background to a cozy lofi night-study room." : item.prompt);
+    setPrompt("");
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -293,8 +294,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           id="prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder={mode === "edit" ? "Describe what to change. Example: keep the kitten, turn the background into a cozy lofi study room." : "Describe the new image you want to create."}
-          className={`${isHero ? "min-h-[112px] p-3 text-base leading-6" : "min-h-[140px] p-4 text-sm leading-6"} w-full rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
+          placeholder={promptPlaceholder}
+          className={`${isHero ? "min-h-[112px] p-3 text-base leading-6" : "min-h-[140px] p-4 text-sm leading-6"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
         <div className={`${isHero ? "mt-2 gap-1.5" : "mt-3 gap-2"} flex flex-wrap`}>
@@ -305,7 +306,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
 
         <div className={isHero ? "mt-4" : "mt-5"}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Ratio</p>
-          <div className={`${isHero ? "grid-cols-5" : "grid-cols-4"} grid gap-2`}>
+          <div className={`${isHero ? "grid-cols-4" : "grid-cols-4"} grid gap-2`}>
             {GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto").map((item) => (
               <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 py-2 text-center ${isHero ? "text-sm" : "text-xs"} font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
                 <span className="block">{item.label}</span>
