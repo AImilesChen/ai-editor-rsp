@@ -2,7 +2,6 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GenerateConsole from "@/components/GenerateConsole";
-import ReferenceEditExplainer from "@/components/ReferenceEditExplainer";
 import CopyPromptButton from "@/components/CopyPromptButton";
 import { faqItems, pricingPlans, promptCards, site } from "@/lib/rsp-content";
 
@@ -23,9 +22,6 @@ export default function HomePage() {
             <GenerateConsole headingLevel="h2" variant="hero" />
           </div>
         </section>
-
-        <ReferenceEditExplainer compact />
-
 
         <section className="section-pad">
           <div className="mx-auto max-w-screen-2xl">
