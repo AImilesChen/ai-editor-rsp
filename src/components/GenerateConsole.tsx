@@ -13,11 +13,18 @@ const editTasks = [
 ];
 
 const textTasks = [
-  { label: "Editorial portrait", prompt: promptCards[0]?.text || "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
-  { label: "Lofi study", prompt: "A cozy lofi night-study desk scene with warm lamp light, rain outside the window, soft film grain, calm creator atmosphere, and editorial composition." },
-  { label: "Product shot", prompt: "A premium product photography scene with clean background, warm studio lighting, realistic shadows, refined composition, and commercial-ready detail." },
-  { label: "Social avatar", prompt: "A polished social avatar portrait with expressive eyes, soft background depth, natural skin tones, and high-end creator branding style." },
+  { label: "Portrait", prompt: promptCards[0]?.text || "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
+  { label: "Product photo", prompt: "A premium product photography scene with clean background, warm studio lighting, realistic shadows, refined composition, and commercial-ready detail." },
+  { label: "Social post", prompt: "A scroll-stopping social media visual with strong composition, bold focal point, clean negative space for text, and polished creator branding." },
+  { label: "Study room", prompt: "A cozy lofi night-study desk scene with warm lamp light, rain outside the window, soft film grain, calm creator atmosphere, and editorial composition." },
+  { label: "Anime", prompt: "A detailed anime illustration with expressive character design, atmospheric background, refined color palette, and cinematic composition." },
+  { label: "Logo poster", prompt: "A modern logo poster concept with clear brand mark, premium layout, strong contrast, clean typography space, and minimal visual clutter." },
+  { label: "Lifestyle scene", prompt: "A realistic lifestyle scene with natural human activity, beautiful environment, authentic details, and commercial editorial polish." },
 ];
+
+const styleOptions = ["Photorealistic", "Cinematic", "Anime", "3D", "Editorial", "Minimal", "Vintage", "Luxury"];
+const lightingOptions = ["Golden hour", "Soft studio light", "Neon light", "Dramatic shadow", "Natural daylight", "Film lighting"];
+const shotOptions = ["Close-up", "Half body", "Full body", "Wide shot", "Top view", "Product hero shot"];
 
 const previewImages: Record<string, string> = {
   "Remove background": "/images/generated/double-exposure-travel-rishikesh.webp",
@@ -34,6 +41,9 @@ const previewImages: Record<string, string> = {
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";
   variant?: "full" | "hero";
+  defaultMode?: "edit" | "text";
+  lockedMode?: "edit" | "text";
+  compactPromptBuilder?: boolean;
 };
 
 type EditRegion = {
@@ -95,13 +105,17 @@ function readImageAspect(src: string) {
   });
 }
 
-export default function GenerateConsole({ headingLevel = "h1", variant = "full" }: GenerateConsoleProps) {
+export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, compactPromptBuilder = false }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const isHero = variant === "hero";
-  const [mode, setMode] = useState<"edit" | "text">("edit");
-  const [prompt, setPrompt] = useState("");
-  const [task, setTask] = useState(editTasks[1].label);
-  const [ratio, setRatio] = useState("auto");
+  const initialMode = lockedMode || defaultMode;
+  const [mode, setMode] = useState<"edit" | "text">(initialMode);
+  const [prompt, setPrompt] = useState(initialMode === "text" && compactPromptBuilder ? textTasks[0].prompt : "");
+  const [task, setTask] = useState(initialMode === "edit" ? editTasks[1].label : textTasks[0].label);
+  const [selectedStyle, setSelectedStyle] = useState(styleOptions[0]);
+  const [selectedLighting, setSelectedLighting] = useState(lightingOptions[1]);
+  const [selectedShot, setSelectedShot] = useState(shotOptions[0]);
+  const [ratio, setRatio] = useState(initialMode === "text" ? "4:5" : "auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
   const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -140,13 +154,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   }, []);
 
   const switchMode = (nextMode: "edit" | "text") => {
+    if (lockedMode && nextMode !== lockedMode) return;
     setMode(nextMode);
     setGeneratedImage(null);
     setError(null);
     setState("idle");
     const firstTask = nextMode === "edit" ? editTasks[1] : textTasks[0];
     setTask(firstTask.label);
-    setPrompt("");
+    setPrompt(nextMode === "text" && compactPromptBuilder ? firstTask.prompt : "");
     if (nextMode === "edit") setRatio("auto");
     if (nextMode === "text" && ratio === "auto") setRatio("4:5");
   };
@@ -211,7 +226,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   };
 
   const runGenerate = async () => {
-    const trimmedPrompt = prompt.trim();
+    const basePrompt = prompt.trim();
+    const trimmedPrompt = mode === "text" && compactPromptBuilder
+      ? `${basePrompt}. Style: ${selectedStyle}. Lighting: ${selectedLighting}. Shot: ${selectedShot}.`
+      : basePrompt;
     if (!authenticated) {
       window.location.href = "/login?next=/generate";
       return;
@@ -369,7 +387,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           </div>
         </div>
 
-        <div className={`${isHero ? "mb-3" : "mb-4"}`}>
+        {!lockedMode && <div className={`${isHero ? "mb-3" : "mb-4"}`}>
           <p className={`${isHero ? "sr-only" : "mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70"}`}>Mode</p>
           <div className={`grid gap-2 ${isHero ? "grid-cols-2 rounded-2xl border border-white/10 bg-black/20 p-1" : ""}`}>
             <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "p-3 text-left"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
@@ -381,7 +399,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Generate a new image from text only. No uploaded reference or before/after comparison.</span>}
             </button>
           </div>
-        </div>
+        </div>}
 
         {mode === "edit" && (
           <>
@@ -440,10 +458,38 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         />
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
-          {(isHero ? activeTasks.slice(0, 3) : activeTasks).map((item) => (
+          {(isHero ? activeTasks : activeTasks).map((item) => (
             <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
         </div>}
+
+
+
+        {isHero && compactPromptBuilder && mode === "text" && (
+          <div className="mt-4 space-y-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+            {[
+              { label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle },
+              { label: "Lighting", options: lightingOptions, value: selectedLighting, setter: setSelectedLighting },
+              { label: "Shot", options: shotOptions, value: selectedShot, setter: setSelectedShot },
+            ].map((group) => (
+              <div key={group.label}>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">{group.label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.options.map((option) => (
+                    <button
+                      type="button"
+                      key={option}
+                      onClick={() => group.setter(option)}
+                      className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {(!isHero || mode === "text") && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Size" : "Ratio"}</p>
@@ -491,9 +537,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
               <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
-                {mode === "edit" ? "Edit your uploaded image with AI" : "Create images from ready prompts"}
+                {mode === "edit" ? "Edit your uploaded image with AI" : compactPromptBuilder ? "Generate images faster with ready prompts" : "Create images from ready prompts"}
               </h1>
-              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe what to change, and preview a clean AI edit before downloading." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
+              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe what to change, and preview a clean AI edit before downloading." : compactPromptBuilder ? "Choose a prompt, style, lighting, shot, and size. AI Editor RSP turns them into a polished image without making you write from scratch." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">

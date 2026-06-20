@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const links = [
-  { href: "/reference-edit", label: "Reference Edit" },
-  { href: "/generate", label: "Generate" },
+  { href: "/", label: "Generate" },
   { href: "/prompts", label: "Prompts" },
+  { href: "/image-editor", label: "Image Editor" },
   { href: "/pricing", label: "Pricing" },
   { href: "/ai-policy", label: "AI Policy" },
 ];
@@ -84,7 +84,7 @@ export default function Header() {
             </span>
           ) : null}
           <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
-            {authenticated ? "Account" : "Start editing free"}
+            {authenticated ? "Account" : "Start generating free"}
           </Link>
         </nav>
         <button
@@ -117,7 +117,7 @@ export default function Header() {
               </Link>
             ))}
             <Link href={authenticated ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
-              {authenticated ? "Account" : "Start editing free"}
+              {authenticated ? "Account" : "Start generating free"}
             </Link>
           </nav>
         </div>

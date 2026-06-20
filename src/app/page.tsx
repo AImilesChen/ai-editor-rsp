@@ -6,8 +6,8 @@ import CopyPromptButton from "@/components/CopyPromptButton";
 import { faqItems, pricingPlans, promptCards, site } from "@/lib/rsp-content";
 
 export const metadata = {
-  title: "AI Image Editor for Reference Edits and RSP Prompts",
-  description: "Upload a reference image, describe the edit, and generate polished AI image edits with transparent credits-based plans.",
+  title: "AI Image Generator with Ready Prompts — AI Editor RSP",
+  description: "Pick a ready prompt, choose style, lighting, shot, and size, then generate polished AI images without writing prompts from scratch.",
   alternates: { canonical: site.url },
 };
 
@@ -19,7 +19,17 @@ export default function HomePage() {
         <section className="relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)] px-4 py-8 md:px-8 md:py-12">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
           <div id="generator" className="relative mx-auto max-w-screen-2xl scroll-mt-24">
-            <GenerateConsole headingLevel="h2" variant="hero" />
+            <GenerateConsole headingLevel="h2" variant="hero" defaultMode="text" lockedMode="text" compactPromptBuilder />
+          </div>
+        </section>
+
+        <section className="border-y border-rsp-border bg-rsp-surface px-4 py-5 md:px-8">
+          <div className="mx-auto flex max-w-screen-2xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="eyebrow">Need to edit an uploaded image?</p>
+              <p className="mt-2 text-sm leading-6 text-rsp-muted">Reference image editing now lives on its own page with upload, selected-area redraw, before/after preview, and download actions.</p>
+            </div>
+            <Link href="/image-editor" className="rsp-button-secondary shrink-0 px-5 py-3 text-sm">Open Image Editor →</Link>
           </div>
         </section>
 
