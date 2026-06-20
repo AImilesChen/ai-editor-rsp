@@ -106,18 +106,34 @@ function readImageAspect(src: string) {
   });
 }
 
+function composeTextPrompt(basePrompt: string, style?: string | null, lighting?: string | null, shot?: string | null) {
+  const parts = [basePrompt.trim()];
+  if (style) parts.push(`Style: ${style}.`);
+  if (lighting) parts.push(`Lighting: ${lighting}.`);
+  if (shot) parts.push(`Shot: ${shot}.`);
+  return parts.filter(Boolean).join(" ");
+}
+
+function stripBuilderNotes(prompt: string) {
+  return prompt
+    .replace(/\s*Style:\s*[^.]+\./gi, "")
+    .replace(/\s*Lighting:\s*[^.]+\./gi, "")
+    .replace(/\s*Shot:\s*[^.]+\./gi, "")
+    .trim();
+}
+
 export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, compactPromptBuilder = false, previewHeadingLevel = "h1" }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const PreviewHeadingTag = previewHeadingLevel;
   const isHero = variant === "hero";
   const initialMode = lockedMode || defaultMode;
   const [mode, setMode] = useState<"edit" | "text">(initialMode);
-  const [prompt, setPrompt] = useState(initialMode === "text" && compactPromptBuilder ? textTasks[0].prompt : "");
-  const [task, setTask] = useState(initialMode === "edit" ? editTasks[1].label : textTasks[0].label);
-  const [selectedStyle, setSelectedStyle] = useState(styleOptions[0]);
-  const [selectedLighting, setSelectedLighting] = useState(lightingOptions[1]);
-  const [selectedShot, setSelectedShot] = useState(shotOptions[0]);
-  const [ratio, setRatio] = useState(initialMode === "text" ? "4:5" : "auto");
+  const [prompt, setPrompt] = useState("");
+  const [task, setTask] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+  const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
+  const [selectedShot, setSelectedShot] = useState<string | null>(null);
+  const [ratio, setRatio] = useState(initialMode === "text" ? "" : "auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
   const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -137,7 +153,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const activeTasks = mode === "edit" ? editTasks : textTasks;
   const imageForRequest = mode === "edit" ? uploadedImage : null;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
-  const previewImage = previewImages[task] || "/images/generated/lofi-girl-vibes.webp";
+  const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
   const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = mode === "edit"
     ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
@@ -146,9 +162,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const canGenerate = Boolean(authenticated) && !needsUpload && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
-    { label: "Style", options: styleOptions.slice(0, 5), value: selectedStyle, setter: setSelectedStyle },
-    { label: "Lighting", options: lightingOptions.slice(0, 4), value: selectedLighting, setter: setSelectedLighting },
-    { label: "Shot", options: shotOptions.slice(0, 4), value: selectedShot, setter: setSelectedShot },
+    { kind: "style" as const, label: "Style", options: styleOptions.slice(0, 5), value: selectedStyle, setter: setSelectedStyle },
+    { kind: "lighting" as const, label: "Lighting", options: lightingOptions.slice(0, 4), value: selectedLighting, setter: setSelectedLighting },
+    { kind: "shot" as const, label: "Shot", options: shotOptions.slice(0, 4), value: selectedShot, setter: setSelectedShot },
   ];
   const visibleRatios = isHero && compactPromptBuilder
     ? GENERATION_RATIOS.filter((item) => ["4:5", "16:9", "1:1", "9:16"].includes(item.ratio))
@@ -170,16 +186,38 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setGeneratedImage(null);
     setError(null);
     setState("idle");
-    const firstTask = nextMode === "edit" ? editTasks[1] : textTasks[0];
-    setTask(firstTask.label);
-    setPrompt(nextMode === "text" && compactPromptBuilder ? firstTask.prompt : "");
+    setTask(null);
+    setPrompt("");
+    setSelectedStyle(null);
+    setSelectedLighting(null);
+    setSelectedShot(null);
     if (nextMode === "edit") setRatio("auto");
-    if (nextMode === "text" && ratio === "auto") setRatio("4:5");
+    if (nextMode === "text") setRatio("");
   };
 
   const applyTask = (item: { label: string; prompt: string }) => {
     setTask(item.label);
-    setPrompt(item.prompt);
+    setPrompt(composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
+  };
+
+  const clearPromptChoices = () => {
+    setTask(null);
+    setSelectedStyle(null);
+    setSelectedLighting(null);
+    setSelectedShot(null);
+    if (mode === "text") setRatio("");
+    setPrompt("");
+  };
+
+  const applyPromptModifier = (kind: "style" | "lighting" | "shot", option: string, currentValue: string | null, setter: (value: string | null) => void) => {
+    const nextValue = currentValue === option ? null : option;
+    setter(nextValue);
+    if (mode !== "text") return;
+    const baseTask = task ? textTasks.find((item) => item.label === task)?.prompt || stripBuilderNotes(prompt) : stripBuilderNotes(prompt);
+    const nextStyle = kind === "style" ? nextValue : selectedStyle;
+    const nextLighting = kind === "lighting" ? nextValue : selectedLighting;
+    const nextShot = kind === "shot" ? nextValue : selectedShot;
+    if (baseTask || nextStyle || nextLighting || nextShot) setPrompt(composeTextPrompt(baseTask, nextStyle, nextLighting, nextShot));
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -237,10 +275,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   const runGenerate = async () => {
-    const basePrompt = prompt.trim();
-    const trimmedPrompt = mode === "text" && compactPromptBuilder
-      ? `${basePrompt}. Style: ${selectedStyle}. Lighting: ${selectedLighting}. Shot: ${selectedShot}.`
-      : basePrompt;
+    const trimmedPrompt = prompt.trim();
     if (!authenticated) {
       window.location.href = "/login?next=/generate";
       return;
@@ -459,16 +494,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Ready prompt") : "Prompt"}</label>
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Prompt") : "Prompt"}</label>
         <textarea
           id="prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder={promptPlaceholder}
+          placeholder={mode === "text" ? "Write your own prompt from scratch, or choose a ready prompt below." : promptPlaceholder}
           className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={clearPromptChoices} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>Write my own</button>
           {visiblePromptTasks.map((item) => (
             <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
@@ -487,7 +523,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                     <button
                       type="button"
                       key={option}
-                      onClick={() => group.setter(option)}
+                      onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
                       className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}
                     >
                       {option}
@@ -645,7 +681,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white/62 md:flex-row md:items-center md:justify-between`}>
           {!isHero && <p><strong className="text-white">Result ready:</strong> Preview the edited image, download it, open the full-size file, or keep editing from this result.</p>}
           <div className="flex flex-wrap gap-2">
-            <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download image</a>
+            <a href={generatedImage} download={`ai-editor-rsp-${(ratio || currentQuote.ratio).replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download image</a>
             <a href={generatedImage} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white no-underline">Open full size</a>
             <button type="button" onClick={editGeneratedResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white transition hover:border-white/35">Edit this result</button>
             <button type="button" onClick={clearResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white/70 transition hover:border-white/35">{mode === "text" ? "Try another prompt" : "Start over"}</button>
