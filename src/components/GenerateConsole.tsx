@@ -512,12 +512,30 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
               {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Generate one image from the prompt. No before/after comparison is needed for text-only creation.</div>}
             </div>
+          ) : uploadedImage ? (
+            <div
+              className={`relative ${isHero ? "max-h-[62vh] min-h-[260px]" : "max-h-[72vh] min-h-[320px]"} overflow-hidden rounded-[22px] bg-[#241B13]`}
+              style={{ aspectRatio: editPreviewAspect }}
+            >
+              <img src={generatedImage || uploadedImage} alt={generatedImage ? "AI edited result preview" : "Uploaded reference preview"} className="absolute inset-0 h-full w-full object-contain brightness-105 saturate-105" draggable={false} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
+              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "AI edit result" : "Uploaded image"}</span>
+              {!generatedImage && editScope === "selected" && editRegion && (
+                <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
+                  <span className="absolute -bottom-8 left-0 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-[#86EFAC]">selected redraw area</span>
+                </div>
+              )}
+              {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
+              {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
+              {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
+              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Uploaded image is shown as the full editing canvas. Use the left panel to choose whole-image or selected-area editing.</div>}
+            </div>
           ) : (
             <div
               className={`relative ${isHero ? "max-h-[62vh] min-h-[260px]" : "max-h-[72vh] min-h-[320px]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
               style={{ aspectRatio: editPreviewAspect }}
               role="slider"
-              aria-label="Drag to compare before and after preview"
+              aria-label="Drag to compare before and after demo"
               aria-valuemin={12}
               aria-valuemax={88}
               aria-valuenow={comparePosition}
@@ -531,23 +549,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
                 if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
               }}
             >
-              <img src={uploadedImage || previewImage} alt="Before reference preview" className="absolute inset-0 h-full w-full object-contain opacity-80 saturate-90" draggable={false} />
+              <img src={previewImage} alt="Before reference demo" className="absolute inset-0 h-full w-full object-contain opacity-80 saturate-90" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
               <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
-                <img src={generatedImage || previewImage} alt="After edited result preview" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
+                <img src={previewImage} alt="After edited result demo" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
               </div>
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · uploaded image</span>
+              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>
               <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
-              {editScope === "selected" && editRegion && (
-                <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
-                  <span className="absolute -bottom-8 left-0 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-[#86EFAC]">selected redraw area</span>
-                </div>
-              )}
-              {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
-              {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
-              {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>{isHero ? "Before = upload. After = AI edit." : "Drag the handle to compare your uploaded image with the AI edited result."}</div>}
+              {state === "idle" && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Before/after is a demo. After uploading, the editor shows your full image as the canvas.</div>}
               <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
               <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
             </div>
