@@ -180,8 +180,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       setMode("edit");
       setRatio("auto");
       setGeneratedImage(null);
-      setEditScope("whole");
-      setEditRegion(null);
+      setEditRegion(editScope === "selected" ? { x: 24, y: 24, width: 38, height: 34 } : null);
       setError(null);
       setState("idle");
     } catch (err) {
@@ -401,10 +400,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className="text-xs font-semibold text-white/55 hover:text-white">Clear</button>
             </div>
             <div className="mb-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setEditScope("whole")} disabled={!uploadedImage} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"} disabled:cursor-not-allowed disabled:opacity-65`}>Whole image</button>
-              <button type="button" onClick={() => { setEditScope("selected"); if (!editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} disabled={!uploadedImage} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"} disabled:cursor-not-allowed disabled:opacity-65`}>Selected area</button>
+              <button type="button" onClick={() => setEditScope("whole")} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
+              <button type="button" onClick={() => { setEditScope("selected"); if (uploadedImage && !editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Selected area</button>
             </div>
-            {!uploadedImage && <p className="text-xs leading-5 text-white/50">Upload first, then choose Selected area to draw a redraw box.</p>}
+            {!uploadedImage && <p className="text-xs leading-5 text-white/50">You can choose Selected area now. Upload an image next, then draw the redraw box.</p>}
             {uploadedImage && editScope === "selected" ? (
               <>
                 <div
