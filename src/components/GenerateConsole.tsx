@@ -488,7 +488,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
                 AI Editor <span className="italic text-[#86EFAC]">RSP</span>
               </h1>
-              <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">Upload a reference image, describe exactly what should change, then compare the original with the edited result.</p>
+              <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">Upload a reference image, describe exactly what should change, then preview and download the edited result.</p>
               <a href="/reference-edit" className="mt-3 inline-flex rounded-full border border-[#86EFAC]/45 px-4 py-2 text-sm font-bold text-[#86EFAC] no-underline transition hover:bg-[#86EFAC]/10">How Reference Edit works →</a>
             </div>
           ) : (
@@ -513,22 +513,24 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Generate one image from the prompt. No before/after comparison is needed for text-only creation.</div>}
             </div>
           ) : uploadedImage ? (
-            <div
-              className={`relative ${isHero ? "max-h-[62vh] min-h-[260px]" : "max-h-[72vh] min-h-[320px]"} overflow-hidden rounded-[22px] bg-[#241B13]`}
-              style={{ aspectRatio: editPreviewAspect }}
-            >
-              <img src={generatedImage || uploadedImage} alt={generatedImage ? "AI edited result preview" : "Uploaded reference preview"} className="absolute inset-0 h-full w-full object-contain brightness-105 saturate-105" draggable={false} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "AI edit result" : "Uploaded image"}</span>
-              {!generatedImage && editScope === "selected" && editRegion && (
-                <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
-                  <span className="absolute -bottom-8 left-0 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-[#86EFAC]">selected redraw area</span>
-                </div>
-              )}
-              {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
-              {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
-              {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Uploaded image is shown as the full editing canvas. Use the left panel to choose whole-image or selected-area editing.</div>}
+            <div className={`relative flex ${isHero ? "h-[min(62vh,620px)] min-h-[300px]" : "h-[min(72vh,720px)] min-h-[420px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-4 md:p-6`}>
+              <div
+                className="relative max-h-full max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)]"
+                style={{ aspectRatio: editPreviewAspect, height: "100%" }}
+              >
+                <img src={generatedImage || uploadedImage} alt={generatedImage ? "AI edited result preview" : "Uploaded reference preview"} className="absolute inset-0 h-full w-full object-contain brightness-105 saturate-105" draggable={false} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/16 via-transparent to-black/8" />
+                <span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">{generatedImage ? "AI edit result" : "Uploaded image"}</span>
+                {!generatedImage && editScope === "selected" && editRegion && (
+                  <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
+                    <span className="absolute -bottom-8 left-0 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-[#86EFAC]">selected redraw area</span>
+                  </div>
+                )}
+                {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
+                {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
+                {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
+                {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/60 text-left text-white/78 shadow-lg`}>Uploaded image is centered as the full editing canvas. Use the left panel to choose whole-image or selected-area editing.</div>}
+              </div>
             </div>
           ) : (
             <div
