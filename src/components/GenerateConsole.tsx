@@ -394,17 +394,18 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         </label>
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
 
-        {mode === "edit" && uploadedImage && (
+        {mode === "edit" && (uploadedImage || isHero) && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Edit area</p>
               <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className="text-xs font-semibold text-white/55 hover:text-white">Clear</button>
             </div>
             <div className="mb-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setEditScope("whole")} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
-              <button type="button" onClick={() => { setEditScope("selected"); if (!editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Selected area</button>
+              <button type="button" onClick={() => setEditScope("whole")} disabled={!uploadedImage} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"} disabled:cursor-not-allowed disabled:opacity-65`}>Whole image</button>
+              <button type="button" onClick={() => { setEditScope("selected"); if (!editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} disabled={!uploadedImage} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"} disabled:cursor-not-allowed disabled:opacity-65`}>Selected area</button>
             </div>
-            {editScope === "selected" ? (
+            {!uploadedImage && <p className="text-xs leading-5 text-white/50">Upload first, then choose Selected area to draw a redraw box.</p>}
+            {uploadedImage && editScope === "selected" ? (
               <>
                 <div
                   className="relative max-h-[220px] min-h-[150px] cursor-crosshair overflow-hidden rounded-xl border border-[#86EFAC]/45 bg-[#F3E8DA]/10"
@@ -555,26 +556,24 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
                 <img src={previewImage} alt="After edited result demo" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
               </div>
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>
-              <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
-              {state === "idle" && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Before/after is a demo. After uploading, the editor shows your full image as the canvas.</div>}
+              {!isHero && <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>}
+              {!isHero && <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>}
+              {state === "idle" && !isHero && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Before/after is a demo. After uploading, the editor shows your full image as the canvas.</div>}
               <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
               <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
             </div>
           )}
         </div>
 
-        {(!isHero || !uploadedImage || generatedImage) && (
+        {generatedImage && (
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white/62 md:flex-row md:items-center md:justify-between`}>
-          <p><strong className="text-white">Live generator:</strong> {mode === "edit" ? (editScope === "selected" && editRegion ? "Selected-area redraw applies your prompt to the marked region while keeping the uploaded image as the visual anchor." : "Reference Edit keeps the uploaded image as the visual anchor, then applies your prompt.") : "Text-to-image creates a new visual from the prompt without a reference image."}</p>
-          {generatedImage ? (
-            <div className="flex flex-wrap gap-2">
-              <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download</a>
-              <a href={generatedImage} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white no-underline">Open full size</a>
-              <button type="button" onClick={editGeneratedResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white transition hover:border-white/35">Edit this result</button>
-              <button type="button" onClick={clearResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white/70 transition hover:border-white/35">Start over</button>
-            </div>
-          ) : null}
+          {!isHero && <p><strong className="text-white">Result ready:</strong> Preview the edited image, download it, open the full-size file, or keep editing from this result.</p>}
+          <div className="flex flex-wrap gap-2">
+            <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download</a>
+            <a href={generatedImage} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white no-underline">Open full size</a>
+            <button type="button" onClick={editGeneratedResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white transition hover:border-white/35">Edit this result</button>
+            <button type="button" onClick={clearResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white/70 transition hover:border-white/35">Start over</button>
+          </div>
           </div>
         )}
       </section>
