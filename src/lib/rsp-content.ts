@@ -71,14 +71,14 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Claim 3 free credits", featured: false },
+  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Start editing free", featured: false },
   { name: "Starter", price: "$7.99", cadence: "/mo", generations: "Light creator use", cta: "View Starter", featured: false },
   { name: "Creator", price: "$14.99", cadence: "/mo", generations: "Best for weekly workflows", cta: "View Creator", featured: true },
   { name: "Studio", price: "$29.99", cadence: "/mo", generations: "High-volume generation", cta: "View Studio", featured: false },
 ];
 
 export const integrationStates = [
-  { label: "fal.ai image generation", state: "Connected", detail: "Generation requests run through the backend provider integration with safety and credit checks." },
+  { label: "AI image generation", state: "Connected", detail: "Generation requests run through secure image generation with safety and credit checks." },
   { label: "Creem subscription billing", state: "Connected", detail: "Checkout, customer portal, cancellation, webhook credit grants, and refund status are handled through Creem." },
   { label: "Login and library", state: "Connected", detail: "Google OAuth, email magic links, account credits, and billing status are available from signed-in accounts." },
   { label: "Credits", state: "Account-based", detail: "New accounts receive 3 one-time free credits. Paid credits are granted after payment confirmation." },

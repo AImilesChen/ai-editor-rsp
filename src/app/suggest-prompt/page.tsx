@@ -37,7 +37,7 @@ export default function SuggestPromptPage() {
                 “Upload a photo and get matching prompt suggestions” is planned for a future update. In the meantime, browse our curated prompt library or join the waitlist to be the first to try it.
               </p>
               <div className="mt-6 rounded-xl bg-warning-bg p-4 text-sm text-neutral-800">
-                This page collects feature interest and content requests. Use the live generator for current text or uploaded-photo generation; do not submit sensitive, private, or rights-infringing images or prompts.
+                This page collects feature interest and content requests. Use the editor for text prompts or uploaded-photo edits; do not submit sensitive, private, or rights-infringing images or prompts.
               </div>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {["Describe your editing goal", "Pick a matching style", "Get notified when ready"].map((step, index) => (
