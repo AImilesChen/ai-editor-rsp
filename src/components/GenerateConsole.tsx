@@ -38,6 +38,15 @@ type GenerateConsoleProps = {
   variant?: "full" | "hero";
 };
 
+type EditRegion = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type EditScope = "whole" | "selected";
+
 type FalResult = {
   ok?: boolean;
   data?: {
@@ -92,6 +101,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [comparePosition, setComparePosition] = useState(50);
   const [isDraggingCompare, setIsDraggingCompare] = useState(false);
+  const [editScope, setEditScope] = useState<EditScope>("whole");
+  const [editRegion, setEditRegion] = useState<EditRegion | null>(null);
+  const [regionStart, setRegionStart] = useState<{ x: number; y: number } | null>(null);
+  const [isSelectingRegion, setIsSelectingRegion] = useState(false);
 
   const activeTasks = mode === "edit" ? editTasks : textTasks;
   const imageForRequest = mode === "edit" ? uploadedImage : null;
@@ -150,6 +163,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       setMode("edit");
       setRatio("auto");
       setGeneratedImage(null);
+      setEditScope("whole");
+      setEditRegion(null);
       setError(null);
       setState("idle");
     } catch (err) {
@@ -203,7 +218,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmedPrompt, style: task, ratio, imageDataUrl: imageForRequest || undefined }),
+        body: JSON.stringify({
+          prompt: trimmedPrompt,
+          style: task,
+          ratio,
+          imageDataUrl: imageForRequest || undefined,
+          editRegion: mode === "edit" && editScope === "selected" && editRegion ? editRegion : undefined,
+        }),
       });
       const data = await response.json() as GenerateResponse;
       if (!response.ok || !data.ok) {
@@ -230,10 +251,73 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     }
   };
 
+  const pointFromRegionEvent = (event: PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return {
+      x: Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100)),
+      y: Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100)),
+    };
+  };
+
+  const beginRegionSelect = (event: PointerEvent<HTMLDivElement>) => {
+    if (!uploadedImage || editScope !== "selected") return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const start = pointFromRegionEvent(event);
+    setRegionStart(start);
+    setIsSelectingRegion(true);
+    setEditRegion({ x: start.x, y: start.y, width: 1, height: 1 });
+  };
+
+  const updateRegionSelect = (event: PointerEvent<HTMLDivElement>) => {
+    if (!isSelectingRegion || !regionStart) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const point = pointFromRegionEvent(event);
+    setEditRegion({
+      x: Math.min(regionStart.x, point.x),
+      y: Math.min(regionStart.y, point.y),
+      width: Math.max(1, Math.abs(point.x - regionStart.x)),
+      height: Math.max(1, Math.abs(point.y - regionStart.y)),
+    });
+  };
+
+  const endRegionSelect = (event: PointerEvent<HTMLDivElement>) => {
+    if (!isSelectingRegion) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsSelectingRegion(false);
+    setRegionStart(null);
+  };
+
+  const editGeneratedResult = () => {
+    if (!generatedImage) return;
+    setMode("edit");
+    setUploadedImage(generatedImage);
+    setUploadedName("Generated result");
+    setGeneratedImage(null);
+    setEditScope("whole");
+    setEditRegion(null);
+    setRatio("auto");
+    setState("idle");
+    setError(null);
+  };
+
+  const clearResult = () => {
+    setGeneratedImage(null);
+    setJobId(null);
+    setState("idle");
+    setError(null);
+  };
+
   const removePhoto = () => {
     setUploadedImage(null);
     setUploadedName(null);
     setGeneratedImage(null);
+    setEditScope("whole");
+    setEditRegion(null);
     if (mode === "edit") setState("idle");
   };
 
@@ -290,6 +374,35 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           {uploadedImage && <img src={uploadedImage} alt="Uploaded source preview" className="mt-3 h-24 w-24 rounded-xl border border-white/10 object-cover" />}
         </label>
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
+
+        {mode === "edit" && uploadedImage && (
+          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Edit area</p>
+              <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className="text-xs font-semibold text-white/55 hover:text-white">Clear</button>
+            </div>
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setEditScope("whole")} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
+              <button type="button" onClick={() => { setEditScope("selected"); if (!editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Selected area</button>
+            </div>
+            <div
+              className={`relative aspect-[4/3] overflow-hidden rounded-xl border ${editScope === "selected" ? "cursor-crosshair border-[#86EFAC]/45" : "border-white/10"}`}
+              onPointerDown={beginRegionSelect}
+              onPointerMove={updateRegionSelect}
+              onPointerUp={endRegionSelect}
+              onPointerCancel={endRegionSelect}
+            >
+              <img src={uploadedImage} alt="Select edit area on uploaded image" className="h-full w-full object-cover" draggable={false} />
+              {editScope === "selected" && <div className="absolute inset-0 bg-black/28" />}
+              {editScope === "selected" && editRegion && (
+                <div className="absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/14 shadow-[0_0_0_9999px_rgba(0,0,0,0.28)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
+                  <span className="absolute -top-7 left-0 rounded-full bg-[#86EFAC] px-2 py-1 text-[10px] font-bold text-[#102014]">redraw here</span>
+                </div>
+              )}
+            </div>
+            <p className="mt-2 text-xs leading-5 text-white/50">{editScope === "selected" ? "Drag on the preview to mark the area to redraw. The prompt will apply to this selected region first." : "Whole image edit keeps the full uploaded image as the reference."}</p>
+          </div>
+        )}
 
         <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">Prompt</label>
         <textarea
@@ -405,6 +518,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               </div>
               <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · uploaded image</span>
               <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
+              {editScope === "selected" && editRegion && (
+                <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
+                  <span className="absolute -bottom-8 left-0 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-[#86EFAC]">selected redraw area</span>
+                </div>
+              )}
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
@@ -415,12 +533,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           )}
         </div>
 
-        <div className={`${isHero ? "hidden" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white/62 md:flex-row md:items-center md:justify-between`}>
-          <p><strong className="text-white">Live generator:</strong> {mode === "edit" ? "Reference Edit keeps the uploaded image as the visual anchor, then applies your prompt." : "Text-to-image creates a new visual from the prompt without a reference image."}</p>
+        <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white/62 md:flex-row md:items-center md:justify-between`}>
+          <p><strong className="text-white">Live generator:</strong> {mode === "edit" ? (editScope === "selected" && editRegion ? "Selected-area redraw applies your prompt to the marked region while keeping the uploaded image as the visual anchor." : "Reference Edit keeps the uploaded image as the visual anchor, then applies your prompt.") : "Text-to-image creates a new visual from the prompt without a reference image."}</p>
           {generatedImage ? (
             <div className="flex flex-wrap gap-2">
-              <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download image</a>
+              <a href={generatedImage} download={`ai-editor-rsp-${ratio.replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download</a>
               <a href={generatedImage} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white no-underline">Open full size</a>
+              <button type="button" onClick={editGeneratedResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white transition hover:border-white/35">Edit this result</button>
+              <button type="button" onClick={clearResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white/70 transition hover:border-white/35">Start over</button>
             </div>
           ) : null}
         </div>

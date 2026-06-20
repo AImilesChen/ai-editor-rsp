@@ -8,6 +8,12 @@ export type GenerateRequest = {
   style?: string;
   ratio?: string;
   imageDataUrl?: string;
+  editRegion?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 };
 
 export function falConfigured() {
@@ -73,8 +79,12 @@ export async function submitFalGeneration(input: GenerateRequest) {
   const referenceInstruction = input.imageDataUrl
     ? "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
     : "Create a new image from the user-provided text prompt.";
+  const regionInstruction = input.imageDataUrl && input.editRegion
+    ? `The user selected a local redraw area on the uploaded image: left ${input.editRegion.x.toFixed(1)}%, top ${input.editRegion.y.toFixed(1)}%, width ${input.editRegion.width.toFixed(1)}%, height ${input.editRegion.height.toFixed(1)}%. Prioritize changes inside this selected rectangle and keep the unselected area as unchanged as possible.`
+    : "";
   const enrichedPrompt = [
     referenceInstruction,
+    regionInstruction,
     prompt,
     input.style ? `Style direction: ${input.style}.` : "",
     safePromptInstruction(),

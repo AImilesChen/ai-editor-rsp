@@ -12,7 +12,28 @@ type Body = {
   style?: string;
   ratio?: string;
   imageDataUrl?: string;
+  editRegion?: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+  };
 };
+
+function isSupportedImageReference(value: string) {
+  return value.startsWith("data:image/") || value.startsWith("https://");
+}
+
+function normalizeEditRegion(region: Body["editRegion"]) {
+  if (!region) return undefined;
+  const values = [region.x, region.y, region.width, region.height];
+  if (!values.every((value) => typeof value === "number" && Number.isFinite(value))) return undefined;
+  const x = Math.min(100, Math.max(0, Number(region.x)));
+  const y = Math.min(100, Math.max(0, Number(region.y)));
+  const width = Math.min(100 - x, Math.max(1, Number(region.width)));
+  const height = Math.min(100 - y, Math.max(1, Number(region.height)));
+  return { x, y, width, height };
+}
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request);
@@ -33,8 +54,8 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
-  if (body.imageDataUrl && !body.imageDataUrl.startsWith("data:image/")) {
-    const response = NextResponse.json({ ok: false, error: "Uploaded image must be PNG, JPG, or WebP.", code: "INVALID_IMAGE" }, { status: 400 });
+  if (body.imageDataUrl && !isSupportedImageReference(body.imageDataUrl)) {
+    const response = NextResponse.json({ ok: false, error: "Uploaded image must be PNG, JPG, WebP, or a secure generated image URL.", code: "INVALID_IMAGE" }, { status: 400 });
     await setSessionCookie(response, session);
     return response;
   }
@@ -44,6 +65,7 @@ export async function POST(request: NextRequest) {
     return response;
   }
   const quote = quoteGenerationCredits({ ratio: body.ratio, imageDataUrl: body.imageDataUrl });
+  const editRegion = normalizeEditRegion(body.editRegion);
   if (availableCredits < quote.creditsCharged) {
     const response = NextResponse.json({
       ok: false,
@@ -82,7 +104,7 @@ export async function POST(request: NextRequest) {
   const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
   if (user) await createGenerationJob({ jobId, user, prompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
 
-  const result = await submitFalGeneration({ prompt, style: body.style, ratio: quote.ratio, imageDataUrl: body.imageDataUrl });
+  const result = await submitFalGeneration({ prompt, style: body.style, ratio: quote.ratio, imageDataUrl: body.imageDataUrl, editRegion });
   if (!result.ok) {
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });
