@@ -153,7 +153,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
 
   const applyTask = (item: { label: string; prompt: string }) => {
     setTask(item.label);
-    setPrompt("");
+    setPrompt(item.prompt);
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -362,26 +362,26 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? "Upload image" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? "Upload image" : "Pick a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? "3 free credits" : "Log in for 3 credits"}
           </div>
         </div>
 
-        {!isHero && <div className="mb-4">
+        <div className={`${isHero ? "mb-3" : "mb-4"}`}>
           <p className={`${isHero ? "sr-only" : "mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70"}`}>Mode</p>
           <div className={`grid gap-2 ${isHero ? "grid-cols-2 rounded-2xl border border-white/10 bg-black/20 p-1" : ""}`}>
-            <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "p-3 text-center" : "p-3 text-left"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
-              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Edit uploaded image</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
+            <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "p-3 text-left"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
+              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>{isHero ? "Edit image" : "Edit uploaded image"}</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
               {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Upload a reference, keep the subject and composition, then change only what you describe.</span>}
             </button>
-            <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border ${isHero ? "p-3 text-center" : "p-3 text-left"} transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
-              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Create from prompt</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
+            <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "p-3 text-left"} transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
+              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>{isHero ? "Use prompt" : "Create from prompt"}</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
               {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Generate a new image from text only. No uploaded reference or before/after comparison.</span>}
             </button>
           </div>
-        </div>}
+        </div>
 
         {mode === "edit" && (
           <>
@@ -430,7 +430,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           </div>
         )}
 
-        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? "Describe the edit" : "Prompt"}</label>
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Ready prompt") : "Prompt"}</label>
         <textarea
           id="prompt"
           value={prompt}
@@ -439,9 +439,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
-        {!isHero && <div className="mt-3 flex flex-wrap gap-2">
-          {(isHero ? activeTasks.slice(0, 2) : activeTasks).map((item) => (
-            <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2" : "px-3 py-2"} text-sm font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
+        {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
+          {(isHero ? activeTasks.slice(0, 3) : activeTasks).map((item) => (
+            <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
         </div>}
 
@@ -464,7 +464,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {state === "processing" ? "Generating…" : needsUpload ? "Upload image to start" : mode === "edit" && editScope === "selected" ? `Redraw selected area (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
             </button>
           ) : (
-            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">Start editing free</a>
+            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Start generating free" : "Start editing free"}</a>
           )}
           {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
         </div>
@@ -491,9 +491,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
               <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
-                Edit your uploaded image with AI
+                {mode === "edit" ? "Edit your uploaded image with AI" : "Create images from ready prompts"}
               </h1>
-              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">Upload a photo, describe what to change, and preview a clean AI edit before downloading.</p>
+              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe what to change, and preview a clean AI edit before downloading." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
