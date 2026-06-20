@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-screen-2xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <div className="font-heading text-2xl font-normal text-rsp-text">AI Editor RSP</div>
-          <p className="max-w-md text-sm leading-6">Upload-first image generation and curated RSP-style prompts for creator workflows.</p>
+          <p className="max-w-md text-sm leading-6">Ready-prompt image generation with a dedicated editor for uploaded images.</p>
           <p className="text-xs uppercase tracking-[0.16em] text-rsp-secondary">Independent tool. Not affiliated with RSP Editing.</p>
           <p className="max-w-md text-xs leading-5 text-rsp-muted">Legal pages cover account access, credits, AI generation, billing, refunds, and content safety.</p>
         </div>

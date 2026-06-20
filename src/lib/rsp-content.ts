@@ -71,7 +71,7 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Start editing free", featured: false },
+  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Start generating free", featured: false },
   { name: "Starter", price: "$7.99", cadence: "/mo", generations: "Light creator use", cta: "View Starter", featured: false },
   { name: "Creator", price: "$14.99", cadence: "/mo", generations: "Best for weekly workflows", cta: "View Creator", featured: true },
   { name: "Studio", price: "$29.99", cadence: "/mo", generations: "High-volume generation", cta: "View Studio", featured: false },
@@ -85,7 +85,7 @@ export const integrationStates = [
 ];
 
 export const faqItems = [
-  { q: "Can I generate images here today?", a: "Yes. Sign in to claim 3 one-time free credits, then upload a reference image or create from a prompt." },
+  { q: "Can I generate images here today?", a: "Yes. Sign in to claim 3 one-time free credits, then create from a prompt or open Image Editor to edit a reference image." },
   { q: "How do credits work?", a: "Credits are usage units. Portrait text-to-image uses 1 credit; larger text images use 2 credits; uploaded-photo edits use 2 to 4 credits depending on size." },
   { q: "Is this affiliated with RSP Editing?", a: "No. This is an independent creator tool and prompt hub." },
   { q: "How are payments handled?", a: "Paid plans use secure Creem checkout after sign-in. Credits are added after payment is confirmed, and eligible refunds can be requested from Account → Billing." },
