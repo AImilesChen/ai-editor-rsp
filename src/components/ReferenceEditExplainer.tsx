@@ -80,7 +80,7 @@ export default function ReferenceEditExplainer({ compact = false }: ReferenceEdi
             <span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
             <div className="absolute inset-y-0 left-[52%] w-px bg-white/85 shadow-[0_0_18px_rgba(255,255,255,0.55)]" />
             <div className="absolute left-[52%] top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl">↔</div>
-            <div className="absolute bottom-4 right-4 rounded-2xl border border-white/10 bg-black/60 p-3 text-sm font-semibold text-white/85">Drag to verify the edit</div>
+            <div className="absolute bottom-4 right-4 rounded-2xl border border-white/10 bg-black/60 p-3 text-sm font-semibold text-white/85">Drag to compare</div>
           </div>
           <p className="mt-4 rounded-2xl border border-[#86EFAC]/25 bg-[#86EFAC]/10 p-4 text-sm leading-6 text-[#D8FFE7]">
             Use this when consistency matters. Create from prompt makes a new image; Reference Edit keeps your uploaded image as the visual anchor.

@@ -36,8 +36,6 @@ type GenerateConsoleProps = {
   variant?: "full" | "hero";
 };
 
-const workflowSteps = ["Upload image", "Choose edit area", "Describe edit", "Generate / Preview / Download"];
-
 type EditRegion = {
   x: number;
   y: number;
@@ -359,25 +357,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   };
 
   return (
-    <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[320px_1fr] ${uploadedImage ? "max-h-[620px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[430px_1fr]"}`}>
+    <div className={`overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[360px_1fr] ${uploadedImage ? "max-h-[620px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[430px_1fr]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? `p-3 ${uploadedImage ? "max-h-[620px] overflow-y-auto" : ""}` : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? "Upload image" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] text-[#F4DFC8]">
-            {authenticated ? `${creditsRemaining} credits` : isHero ? "3 free" : "Log in for 3 credits"}
+            {authenticated ? `${creditsRemaining} credits` : isHero ? "3 free credits" : "Log in for 3 credits"}
           </div>
         </div>
 
-        <div className={`${isHero ? "mb-3" : "mb-4"} grid grid-cols-2 gap-2 text-[11px] font-bold text-white/68 md:grid-cols-4`}>
-          {["Upload image", "Choose area", "Describe edit", "Preview / Download"].map((step, index) => (
-            <div key={step} className="rounded-xl border border-white/10 bg-black/18 px-2 py-2"><span className="text-[#86EFAC]">Step {index + 1}</span><span className="mt-0.5 block">{step}</span></div>
-          ))}
-        </div>
-
-        <div className={isHero ? "mb-3" : "mb-4"}>
+        {!isHero && <div className="mb-4">
           <p className={`${isHero ? "sr-only" : "mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70"}`}>Mode</p>
           <div className={`grid gap-2 ${isHero ? "grid-cols-2 rounded-2xl border border-white/10 bg-black/20 p-1" : ""}`}>
             <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "p-3 text-center" : "p-3 text-left"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
@@ -389,7 +381,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Generate a new image from text only. No uploaded reference or before/after comparison.</span>}
             </button>
           </div>
-        </div>
+        </div>}
 
         {mode === "edit" && (
           <>
@@ -405,7 +397,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           </>
         )}
 
-        {mode === "edit" && (uploadedImage || isHero) && (
+        {mode === "edit" && (uploadedImage || !isHero) && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Edit area</p>
@@ -438,7 +430,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           </div>
         )}
 
-        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">Prompt</label>
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? "Describe the edit" : "Prompt"}</label>
         <textarea
           id="prompt"
           value={prompt}
@@ -447,13 +439,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
-        <div className={`${isHero ? "mt-2 gap-1.5" : "mt-3 gap-2"} flex flex-wrap`}>
+        {!isHero && <div className="mt-3 flex flex-wrap gap-2">
           {(isHero ? activeTasks.slice(0, 2) : activeTasks).map((item) => (
             <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2" : "px-3 py-2"} text-sm font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
-        </div>
+        </div>}
 
-        <div className={isHero ? "mt-4" : "mt-5"}>
+        {!isHero && <div className="mt-5">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Ratio</p>
           <div className={`${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"} grid`}>
             {GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto").map((item) => (
@@ -464,7 +456,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             ))}
           </div>
           {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
-        </div>
+        </div>}
 
         <div className={`${isHero ? "mt-4" : "mt-5"} flex flex-col gap-2`}>
           {authenticated ? (
@@ -499,17 +491,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
               <h1 className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
-                Edit images with a simple prompt
+                Edit your uploaded image with AI
               </h1>
-              <p className="mt-2 max-w-3xl text-base leading-6 text-white/70">Upload a photo, select the area you want to change, and let AI generate a clean edited result you can preview and download.</p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-4">
-                {workflowSteps.map((step, index) => (
-                  <div key={step} className="rounded-2xl border border-white/10 bg-white/[0.045] p-3">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#86EFAC]">Step {index + 1}</span>
-                    <p className="mt-1 text-sm font-bold text-white">{step}</p>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">Upload a photo, describe what to change, and preview a clean AI edit before downloading.</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
@@ -596,7 +580,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               </div>
               <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>
               <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
-              {state === "idle" && <div className={`${isHero ? "right-4 bottom-4 max-w-xs p-3 text-sm leading-5" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Demo preview. Upload your image, choose whole image or selected area, then generate to preview and download.</div>}
+              {state === "idle" && !isHero && <div className="absolute bottom-6 right-6 max-w-sm rounded-2xl border border-white/10 bg-black/55 p-4 text-left text-sm leading-6 text-white/78">Demo preview. Upload your image, choose whole image or selected area, then generate to preview and download.</div>}
               <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
               <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
             </div>

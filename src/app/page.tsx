@@ -26,28 +26,6 @@ export default function HomePage() {
 
         <ReferenceEditExplainer compact />
 
-        <section className="section-pad bg-rsp-bg">
-          <div className="mx-auto max-w-screen-2xl">
-            <div className="mb-8 max-w-3xl">
-              <p className="eyebrow">Simple workflow</p>
-              <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em]">From upload to download in four clear steps</h2>
-            </div>
-            <div className="grid gap-4 md:grid-cols-4">
-              {[
-                ["1", "Upload image", "Start with a PNG, JPG, or WebP photo you want to edit."],
-                ["2", "Choose edit area", "Use Whole image or draw a Selected area for local redraw."],
-                ["3", "Describe the edit", "Type the change you want or use a common task chip."],
-                ["4", "Preview / Download", "Compare the result, open full size, download, or edit again."],
-              ].map(([step, title, text]) => (
-                <article key={title} className="glass-card p-5">
-                  <span className="font-mono text-xs font-bold text-rsp-secondary">Step {step}</span>
-                  <h3 className="mt-3 font-heading text-2xl font-normal tracking-[-0.02em]">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-rsp-muted">{text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
 
         <section className="section-pad">
           <div className="mx-auto max-w-screen-2xl">
