@@ -84,6 +84,19 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
+function readImageAspect(src: string) {
+  return new Promise<number>((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const width = image.naturalWidth || 1;
+      const height = image.naturalHeight || 1;
+      resolve(width / height);
+    };
+    image.onerror = () => resolve(4 / 3);
+    image.src = src;
+  });
+}
+
 export default function GenerateConsole({ headingLevel = "h1", variant = "full" }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const isHero = variant === "hero";
@@ -98,6 +111,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const [error, setError] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedName, setUploadedName] = useState<string | null>(null);
+  const [uploadedAspect, setUploadedAspect] = useState<number | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [comparePosition, setComparePosition] = useState(50);
   const [isDraggingCompare, setIsDraggingCompare] = useState(false);
@@ -110,6 +124,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const imageForRequest = mode === "edit" ? uploadedImage : null;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
   const previewImage = previewImages[task] || "/images/generated/lofi-girl-vibes.webp";
+  const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = isHero
     ? (mode === "edit" ? "Example: keep the subject, replace the background with a warm night-study loft." : "Example: cinematic product photo, warm studio light, clean background.")
     : activeTasks.find((item) => item.label === task)?.prompt || (mode === "edit" ? "Describe the exact edit you want." : "Describe the new image you want to create.");
@@ -158,7 +173,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     }
     try {
       const dataUrl = await readFileAsDataUrl(file);
+      const aspect = await readImageAspect(dataUrl);
       setUploadedImage(dataUrl);
+      setUploadedAspect(aspect);
       setUploadedName(file.name);
       setMode("edit");
       setRatio("auto");
@@ -296,6 +313,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
     if (!generatedImage) return;
     setMode("edit");
     setUploadedImage(generatedImage);
+    readImageAspect(generatedImage).then(setUploadedAspect);
     setUploadedName("Generated result");
     setGeneratedImage(null);
     setEditScope("whole");
@@ -315,6 +333,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
   const removePhoto = () => {
     setUploadedImage(null);
     setUploadedName(null);
+    setUploadedAspect(null);
     setGeneratedImage(null);
     setEditScope("whole");
     setEditRegion(null);
@@ -371,7 +390,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
           <span className={`${isHero ? "text-base" : "text-sm"} block font-semibold text-white`}>{uploadedName ? "Image uploaded" : "Upload image"}</span>
           <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "PNG/JPG · 5 MB" : "PNG, JPG, or WebP under 5 MB. Upload when you want the edit to keep subject and composition.")}</span>
           </span>
-          {uploadedImage && <img src={uploadedImage} alt="Uploaded source preview" className="mt-3 h-24 w-24 rounded-xl border border-white/10 object-cover" />}
+          {uploadedImage && <span className="mt-3 flex h-24 w-24 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
         </label>
         <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
 
@@ -386,13 +405,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
               <button type="button" onClick={() => { setEditScope("selected"); if (!editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Selected area</button>
             </div>
             <div
-              className={`relative aspect-[4/3] overflow-hidden rounded-xl border ${editScope === "selected" ? "cursor-crosshair border-[#86EFAC]/45" : "border-white/10"}`}
+              className={`relative max-h-[320px] min-h-[180px] overflow-hidden rounded-xl border bg-[#F3E8DA]/10 ${editScope === "selected" ? "cursor-crosshair border-[#86EFAC]/45" : "border-white/10"}`}
+              style={{ aspectRatio: editPreviewAspect }}
               onPointerDown={beginRegionSelect}
               onPointerMove={updateRegionSelect}
               onPointerUp={endRegionSelect}
               onPointerCancel={endRegionSelect}
             >
-              <img src={uploadedImage} alt="Select edit area on uploaded image" className="h-full w-full object-cover" draggable={false} />
+              <img src={uploadedImage} alt="Select edit area on uploaded image" className="h-full w-full object-contain" draggable={false} />
               {editScope === "selected" && <div className="absolute inset-0 bg-black/28" />}
               {editScope === "selected" && editRegion && (
                 <div className="absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/14 shadow-[0_0_0_9999px_rgba(0,0,0,0.28)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }}>
@@ -494,7 +514,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
             </div>
           ) : (
             <div
-              className={`relative ${isHero ? "aspect-[16/7.5]" : "aspect-[16/10]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
+              className={`relative ${isHero ? "max-h-[62vh] min-h-[260px]" : "max-h-[72vh] min-h-[320px]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
+              style={{ aspectRatio: editPreviewAspect }}
               role="slider"
               aria-label="Drag to compare before and after preview"
               aria-valuemin={12}
@@ -510,10 +531,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full" 
                 if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
               }}
             >
-              <img src={uploadedImage || previewImage} alt="Before reference preview" className="absolute inset-0 h-full w-full object-cover opacity-70 blur-[1.5px] saturate-75" draggable={false} />
+              <img src={uploadedImage || previewImage} alt="Before reference preview" className="absolute inset-0 h-full w-full object-contain opacity-80 saturate-90" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
               <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
-                <img src={generatedImage || previewImage} alt="After edited result preview" className="h-full w-full object-cover brightness-105 contrast-110 saturate-125" draggable={false} />
+                <img src={generatedImage || previewImage} alt="After edited result preview" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
               </div>
               <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · uploaded image</span>
