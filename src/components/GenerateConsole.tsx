@@ -168,7 +168,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     { kind: "shot" as const, label: "Shot", options: shotOptions.slice(0, 4), value: selectedShot, setter: setSelectedShot },
   ];
   const visibleRatios = isHero && compactPromptBuilder
-    ? GENERATION_RATIOS.filter((item) => ["4:5", "16:9", "1:1", "9:16"].includes(item.ratio))
+    ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
     : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
 
   useEffect(() => {
@@ -434,7 +434,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   return (
-    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[340px_minmax(0,1fr)] ${uploadedImage ? "max-h-[620px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[430px_minmax(0,1fr)]"}`}>
+    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[390px_minmax(0,1fr)] ${uploadedImage ? "max-h-[620px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? `p-3 ${uploadedImage ? "max-h-[620px] overflow-y-auto" : ""}` : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
@@ -550,7 +550,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         {(!isHero || mode === "text") && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Choose image size" : "Ratio"}</p>
-          <div className={`${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"} grid`}>
+          <div className={`${isHero ? "grid-cols-4 gap-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
             {visibleRatios.map((item) => (
               <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
                 <span className="block">{item.label}</span>
@@ -610,14 +610,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         <div className={`${isHero ? "mt-2" : "mt-6"} mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
-            <div className={`relative ${isHero ? "aspect-[16/7.5]" : "aspect-[16/10]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
-              <img src={generatedImage || previewImage} alt="Generated image preview" className="h-full w-full object-cover brightness-105 contrast-105 saturate-110" draggable={false} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/12" />
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Example result"}</span>
+            <div className={`relative ${isHero ? "aspect-[16/6.8]" : "aspect-[16/8.5]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
+              <img src={generatedImage || previewImage} alt="Generated image preview" className={`h-full w-full object-cover transition ${generatedImage ? "brightness-105 contrast-105 saturate-110" : "scale-[1.02] opacity-45 brightness-75 saturate-75"}`} draggable={false} />
+              <div className={`absolute inset-0 ${generatedImage ? "bg-gradient-to-t from-black/30 via-transparent to-black/12" : "bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(0,0,0,0.58)_54%,rgba(0,0,0,0.78))]"}`} />
+              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Preview reference"}</span>
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Example result. Generate an image to enable download.</div>}
+              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Your generated image will appear here</p><p className="mt-2 text-sm leading-6 text-white/68">Choose a prompt and size, then generate your result. The background is only a muted example.</p></div></div>}
             </div>
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[260px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
@@ -703,7 +703,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
         {!generatedImage && (
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.035] text-xs text-white/52 md:flex-row md:items-center md:justify-between`}>
-            <span>{mode === "edit" ? "Generate an edit before downloading." : "Generate an image to enable download."}</span>
+            <span>{mode === "edit" ? "Generate an edit before downloading." : "Your generated image will appear here after you choose a prompt and size."}</span>
             <span className="rounded-full border border-white/10 px-4 py-2 font-bold text-white/35">Download result</span>
           </div>
         )}
