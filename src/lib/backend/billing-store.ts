@@ -41,6 +41,19 @@ type FreeCreditRefundBalance = {
   freeCreditsRemaining: number;
 };
 
+type RefundEligibility = {
+  eligible: boolean;
+  code?: string;
+  message?: string;
+  paidGranted: number;
+  paidCreditsConsumed: number;
+  paidCreditsUsagePercent: number;
+  latestPaymentId?: string;
+  latestPaymentAt?: number;
+  amountCents?: number;
+  currency?: string;
+};
+
 export type CreditGrantInput = {
   eventId: string;
   eventType: string;
@@ -502,17 +515,48 @@ async function updateSubscriptionStateD1(db: D1Database, input: {
 async function submitRefundRequestD1(db: D1Database, user: AuthUser, reason?: string) {
   const account = await ensureD1BillingAccount(db, user);
   if (account.plan === "free") return { ok: false, reason: "No paid plan on this account" };
+  if (account.subscriptionStatus === "refunded") return { ok: false, reason: "This account has already been refunded" };
   if (account.subscriptionStatus === "refund_requested" && account.lastRefundRequestId) return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account };
+
+  const eligibility = await evaluateRefundEligibilityD1(db, user.id);
+  if (!eligibility.eligible) return { ok: false, reason: eligibility.message || "This payment is not eligible for an automatic refund request", code: eligibility.code, eligibility };
 
   const now = Date.now();
   const requestId = `refund_${now}_${crypto.randomUUID()}`;
   const subscription = await db.prepare("SELECT id FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1").bind(user.id).first<{ id: string }>();
-  await db.prepare("INSERT INTO refund_requests (id, user_id, subscription_id, status, reason, credits_at_request, requested_at, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-    .bind(requestId, user.id, subscription?.id || null, "submitted", reason?.trim().slice(0, 1000) || null, account.creditsRemaining, now, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus }))
+  await db.prepare("INSERT INTO refund_requests (id, user_id, payment_id, subscription_id, status, reason, credits_at_request, amount_cents, currency, requested_at, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .bind(requestId, user.id, eligibility.latestPaymentId || null, subscription?.id || null, "submitted", reason?.trim().slice(0, 1000) || null, account.creditsRemaining, eligibility.amountCents || null, eligibility.currency || "USD", now, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus, eligibility }))
     .run();
   await db.prepare("UPDATE users SET status = 'refund_requested', updated_at = ? WHERE id = ?").bind(now, user.id).run();
-  await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund", { reason: reason?.trim().slice(0, 1000) || null });
+  await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund", { reason: reason?.trim().slice(0, 1000) || null, eligibility });
   return { ok: true, duplicate: false, requestId, account: { ...account, subscriptionStatus: "refund_requested" as const, lastRefundRequestId: requestId, updatedAt: now } };
+}
+
+async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Promise<RefundEligibility> {
+  const balance = await calculateFreeCreditRefundBalanceD1(db, userId);
+  const payment = await db.prepare("SELECT id, amount_cents, currency, paid_at, created_at FROM payments WHERE user_id = ? AND status = 'paid' ORDER BY COALESCE(paid_at, created_at) DESC LIMIT 1")
+    .bind(userId)
+    .first<{ id: string; amount_cents: number; currency: string; paid_at: number | null; created_at: number }>();
+  const base: RefundEligibility = {
+    eligible: false,
+    paidGranted: balance.paidGranted,
+    paidCreditsConsumed: balance.paidCreditsConsumedFirst,
+    paidCreditsUsagePercent: balance.paidGranted > 0 ? Math.round((balance.paidCreditsConsumedFirst / balance.paidGranted) * 10000) / 100 : 0,
+    latestPaymentId: payment?.id,
+    latestPaymentAt: payment ? Number(payment.paid_at || payment.created_at) : undefined,
+    amountCents: payment ? Number(payment.amount_cents || 0) : undefined,
+    currency: payment?.currency || "USD",
+  };
+  if (!payment) return { ...base, code: "NO_PAID_PAYMENT", message: "No paid payment record was found for this account." };
+  if (!payment.amount_cents || Number(payment.amount_cents) <= 0) return { ...base, code: "PAYMENT_AMOUNT_UNVERIFIED", message: "Payment amount is not verified yet. Please contact support for manual review." };
+  const paymentAt = Number(payment.paid_at || payment.created_at || 0);
+  const ageDays = paymentAt > 0 ? (Date.now() - paymentAt) / (1000 * 60 * 60 * 24) : Number.POSITIVE_INFINITY;
+  if (ageDays > 14) return { ...base, code: "REFUND_WINDOW_EXPIRED", message: "Refund requests are available within 14 days of payment." };
+  if (balance.paidGranted <= 0) return { ...base, code: "NO_PAID_CREDITS", message: "No paid credits were found for this billing period." };
+  if (balance.paidCreditsConsumedFirst > balance.paidGranted * 0.5) {
+    return { ...base, code: "PAID_CREDITS_OVER_50_PERCENT_USED", message: "Refund requests are available only when no more than 50% of paid credits have been used." };
+  }
+  return { ...base, eligible: true };
 }
 
 async function markRefundedAccountD1(db: D1Database, input: {
@@ -526,6 +570,7 @@ async function markRefundedAccountD1(db: D1Database, input: {
   const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, account.creditsRemaining, freeBalance.freeCreditsRemaining));
   const revoked = Math.max(0, account.creditsRemaining - preservedFreeCredits);
   await db.prepare("UPDATE users SET status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, account.userId).run();
+  await db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE user_id = ? AND status = 'paid'").bind(now, account.userId).run();
   await db.prepare("UPDATE refund_requests SET status = 'refunded', creem_refund_id = COALESCE(?, creem_refund_id), resolved_at = ?, metadata_json = COALESCE(metadata_json, ?) WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested')")
     .bind(input.refundId || null, now, JSON.stringify({ eventId: input.eventId }), account.userId)
     .run();
@@ -594,7 +639,17 @@ async function upsertPayment(db: D1Database, userId: string, input: CreditGrantI
   const paymentId = input.transactionId || input.checkoutId || `${input.eventId}_payment`;
   await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, creem_checkout_id, creem_transaction_id, creem_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET status = 'paid', raw_event_id = excluded.raw_event_id, updated_at = excluded.updated_at`)
+    ON CONFLICT(id) DO UPDATE SET
+      status = 'paid',
+      subscription_id = COALESCE(excluded.subscription_id, payments.subscription_id),
+      creem_checkout_id = COALESCE(excluded.creem_checkout_id, payments.creem_checkout_id),
+      creem_transaction_id = COALESCE(excluded.creem_transaction_id, payments.creem_transaction_id),
+      creem_invoice_id = COALESCE(excluded.creem_invoice_id, payments.creem_invoice_id),
+      currency = COALESCE(excluded.currency, payments.currency),
+      amount_cents = CASE WHEN excluded.amount_cents > 0 THEN excluded.amount_cents ELSE payments.amount_cents END,
+      raw_event_id = excluded.raw_event_id,
+      paid_at = COALESCE(payments.paid_at, excluded.paid_at),
+      updated_at = excluded.updated_at`)
     .bind(paymentId, userId, input.subscriptionId || null, input.checkoutId || null, input.transactionId || null, input.invoiceId || null, input.plan, input.currency || "USD", input.amountCents || 0, input.eventId, now, now, now)
     .run();
 }

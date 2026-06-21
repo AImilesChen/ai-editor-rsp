@@ -21,11 +21,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <section>
             <p className="eyebrow">Account access</p>
             <h1 className="mt-4 font-heading text-5xl font-normal tracking-[-0.04em] text-rsp-text md:text-6xl">Log in to continue</h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-rsp-muted">New users get 3 free credits total. Sign in to manage credits, generation history, and billing once account access is enabled for public launch.</p>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-rsp-muted">New users get 3 free credits total. Sign in to manage credits, generation history, billing, and refund requests from your account.</p>
             <div className="mt-8 grid gap-3 text-sm text-rsp-muted">
-              <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Google OAuth</strong><br />Primary login path for test users.</div>
+              <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Google OAuth</strong><br />Primary login path for account access.</div>
               <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Email Magic Link</strong><br />Passwordless fallback via Resend.</div>
-              <div className="border border-rsp-secondary/35 bg-rsp-secondary/10 p-4"><strong className="text-rsp-text">Credits</strong><br />Draft 1 / Standard 2 / High Quality 4. Creem paid checkout stays closed until product IDs are configured.</div>
+              <div className="border border-rsp-secondary/35 bg-rsp-secondary/10 p-4"><strong className="text-rsp-text">Credits</strong><br />Draft 1 / Standard 2 / High Quality 4. Paid plans use secure Creem checkout and account billing records.</div>
             </div>
           </section>
           <LoginPanel error={params.error} />

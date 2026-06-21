@@ -16,8 +16,14 @@ export async function POST(request: NextRequest) {
 
   const result = await submitRefundRequestForUser(user, reason);
   if (!result.ok) {
-    const status = result.reason === "No paid plan on this account" ? 400 : 503;
-    return NextResponse.json({ ok: false, code: "REFUND_REQUEST_UNAVAILABLE", message: result.reason }, { status });
+    const clientErrorReasons = new Set([
+      "No paid plan on this account",
+      "This account has already been refunded",
+      "Refund requests are available within 14 days of payment.",
+      "Refund requests are available only when no more than 50% of paid credits have been used.",
+    ]);
+    const status = clientErrorReasons.has(result.reason || "") || result.code ? 400 : 503;
+    return NextResponse.json({ ok: false, code: result.code || "REFUND_REQUEST_UNAVAILABLE", message: result.reason }, { status });
   }
 
   return NextResponse.json({

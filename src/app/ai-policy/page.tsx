@@ -43,7 +43,7 @@ export default function AiPolicyPage() {
       <main className="rsp-container py-14 md:py-20">
         <div className="max-w-3xl">
           <p className="rsp-chip mb-4 border-rsp-secondary/35 bg-white/70 text-rsp-secondary">AI Policy</p>
-          <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Clear AI usage policy before launch.</h1>
+          <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Clear AI usage policy for image generation.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">{legalDisclaimer}</p>
           <p className="mt-5 max-w-2xl text-base leading-7 text-rsp-text">
             Our safety rules are aligned with widely used AI usage-policy principles, including the types of content OpenAI and major AI providers prohibit. This page is not an official OpenAI policy page; it is AI Editor RSP&apos;s own user-facing safety summary.
@@ -64,7 +64,7 @@ export default function AiPolicyPage() {
           <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-7 text-rsp-muted">
             <li>We may block prompts, refuse generation, remove outputs, suspend access, or request additional review when content creates safety, legal, or rights risk.</li>
             <li>Prompt and output moderation runs before and after generation. AI image/video payment review may also require Creem moderation controls or an equivalent documented moderation process.</li>
-            <li>Provider terms still apply. Generation uses third-party AI model providers such as {AI_PROVIDER} after backend integration.</li>
+            <li>Provider terms still apply. Generation uses third-party AI model providers such as {AI_PROVIDER} for image generation and editing requests.</li>
             <li>Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.</li>
           </ul>
         </section>

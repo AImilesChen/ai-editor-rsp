@@ -123,7 +123,7 @@ function extractIdentity(event: unknown) {
 
 function extractBillingIds(event: unknown) {
   const candidates: unknown[] = [];
-  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction", "invoice", "payment", "refund"], candidates);
+  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction", "invoice", "payment", "refund", "order", "product", "items"], candidates);
   let subscriptionId: string | null = null;
   let customerId: string | null = null;
   let checkoutId: string | null = null;
@@ -131,25 +131,52 @@ function extractBillingIds(event: unknown) {
   let invoiceId: string | null = null;
   let refundId: string | null = null;
   let amountCents: number | null = null;
+  let productPriceCents: number | null = null;
   let currency: string | null = null;
   for (const candidate of candidates) {
     if (!candidate || typeof candidate !== "object") continue;
     const record = candidate as Record<string, unknown>;
+    const objectType = stringValue(record.object)?.toLowerCase() || null;
     subscriptionId ||= stringValue(record.subscription_id || record.subscriptionId || record.subscription);
     customerId ||= stringValue(record.customer_id || record.customerId || record.customer);
     checkoutId ||= stringValue(record.checkout_id || record.checkoutId || record.checkout);
     transactionId ||= stringValue(record.transaction_id || record.transactionId || record.transaction || record.payment_id || record.paymentId);
     invoiceId ||= stringValue(record.invoice_id || record.invoiceId || record.invoice);
     refundId ||= stringValue(record.refund_id || record.refundId || record.refund);
-    amountCents ||= numberValue(record.amount_cents || record.amountCents || record.amount_total || record.amountTotal || record.amount);
+    if (objectType === "subscription") subscriptionId ||= stringValue(record.id);
+    if (objectType === "customer") customerId ||= stringValue(record.id);
+    if (objectType === "checkout") checkoutId ||= stringValue(record.id);
+    if (objectType === "order" || objectType === "transaction" || objectType === "payment") transactionId ||= stringValue(record.id);
+    if (objectType === "invoice") invoiceId ||= stringValue(record.id);
+    if (objectType === "refund") refundId ||= stringValue(record.id);
+    if (objectType !== "product") {
+      amountCents ||= moneyCentsValue(record.amount_cents, "amount_cents")
+        || moneyCentsValue(record.amountCents, "amountCents")
+        || moneyCentsValue(record.amount_paid, "amount_paid")
+        || moneyCentsValue(record.amountPaid, "amountPaid")
+        || moneyCentsValue(record.amount_total, "amount_total")
+        || moneyCentsValue(record.amountTotal, "amountTotal")
+        || moneyCentsValue(record.amount_due, "amount_due")
+        || moneyCentsValue(record.amountDue, "amountDue")
+        || moneyCentsValue(record.total_amount, "total_amount")
+        || moneyCentsValue(record.totalAmount, "totalAmount")
+        || moneyCentsValue(record.total, "total")
+        || moneyCentsValue(record.amount, "amount");
+    } else {
+      productPriceCents ||= moneyCentsValue(record.price, "price");
+    }
     currency ||= stringValue(record.currency);
   }
-  return { subscriptionId, customerId, checkoutId, transactionId, invoiceId, refundId, amountCents, currency };
+  return { subscriptionId, customerId, checkoutId, transactionId, invoiceId, refundId, amountCents: amountCents ?? productPriceCents, currency };
 }
 
 function collectFields(value: unknown, keys: string[], out: unknown[], depth = 0) {
-  if (!value || typeof value !== "object" || depth > 5) return;
+  if (!value || typeof value !== "object" || depth > 7) return;
   out.push(value);
+  if (Array.isArray(value)) {
+    for (const item of value) collectFields(item, keys, out, depth + 1);
+    return;
+  }
   const record = value as Record<string, unknown>;
   for (const key of keys) collectFields(record[key], keys, out, depth + 1);
 }
@@ -162,4 +189,14 @@ function numberValue(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
   if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Math.round(Number(value));
   return null;
+}
+
+function moneyCentsValue(value: unknown, fieldName: string) {
+  const raw = numberValue(value);
+  if (raw === null) return null;
+  const text = typeof value === "string" ? value.trim() : String(value);
+  const isExplicitCents = /cents?|amount_(total|paid|due)|amount(total|paid|due)|total_amount|totalAmount|price|amount/i.test(fieldName);
+  if (isExplicitCents && !text.includes(".")) return raw;
+  if (Math.abs(Number(text)) > 0 && Math.abs(Number(text)) < 100 && text.includes(".")) return Math.round(Number(text) * 100);
+  return raw;
 }
