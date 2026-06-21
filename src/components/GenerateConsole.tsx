@@ -46,6 +46,7 @@ type GenerateConsoleProps = {
   lockedMode?: "edit" | "text";
   compactPromptBuilder?: boolean;
   previewHeadingLevel?: "h1" | "h2" | "h3";
+  hidePreviewIntro?: boolean;
 };
 
 type EditRegion = {
@@ -123,7 +124,7 @@ function stripBuilderNotes(prompt: string) {
     .trim();
 }
 
-export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, compactPromptBuilder = false, previewHeadingLevel = "h1" }: GenerateConsoleProps) {
+export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const PreviewHeadingTag = previewHeadingLevel;
   const isHero = variant === "hero";
@@ -439,7 +440,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? "Upload image to start" : "Choose or write a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? "Start your edit" : "Choose or write a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
@@ -589,7 +590,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
-        <div className={`${isHero ? "mb-3" : "mb-5"}`}>
+        {!hidePreviewIntro && <div className={`${isHero ? "mb-3" : "mb-5"}`}>
           {isHero ? (
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
@@ -606,7 +607,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             </div>
           )}
 
-        </div>
+        </div>}
 
         <div className={`${isHero ? "mt-2" : "mt-6"} mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
