@@ -1,7 +1,8 @@
 "use client";
 
 import { ChangeEvent, PointerEvent, useEffect, useMemo, useState } from "react";
-import { promptCards } from "@/lib/site";
+import { promptCards as builderPromptCards } from "@/lib/site";
+import { promptCards as libraryPromptCards } from "@/lib/rsp-content";
 import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
 const editTasks = [
@@ -13,7 +14,7 @@ const editTasks = [
 ];
 
 const textTasks = [
-  { label: "Portrait", prompt: promptCards[0]?.text || "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
+  { label: "Portrait", prompt: builderPromptCards[0]?.text || "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
   { label: "Product photo", prompt: "A premium product photography scene with clean background, warm studio lighting, realistic shadows, refined composition, and commercial-ready detail." },
   { label: "Social post", prompt: "A scroll-stopping social media visual with strong composition, bold focal point, clean negative space for text, and polished creator branding." },
   { label: "Study room", prompt: "A cozy lofi night-study desk scene with warm lamp light, rain outside the window, soft film grain, calm creator atmosphere, and editorial composition." },
@@ -157,7 +158,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = mode === "edit"
     ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
-    : "Example: create a cinematic product photo of a matte black coffee mug on a marble table, warm window light, realistic shadows.";
+    : "Describe the image you want to create, or start from a ready prompt below.";
   const needsUpload = mode === "edit" && !uploadedImage;
   const canGenerate = Boolean(authenticated) && !needsUpload && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
@@ -179,6 +180,18 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       })
       .catch(() => setAuthenticated(false));
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || lockedMode === "edit") return;
+    const promptSlug = new URLSearchParams(window.location.search).get("prompt");
+    if (!promptSlug) return;
+    const matchedPrompt = libraryPromptCards.find((item) => item.slug === promptSlug);
+    if (!matchedPrompt) return;
+    setMode("text");
+    setTask(matchedPrompt.title);
+    setPrompt(matchedPrompt.prompt);
+    setRatio(matchedPrompt.ratio || "4:5");
+  }, [lockedMode]);
 
   const switchMode = (nextMode: "edit" | "text") => {
     if (lockedMode && nextMode !== lockedMode) return;
@@ -426,7 +439,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? "Upload image" : "Pick a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? "Upload image to start" : "Choose or write a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
@@ -453,7 +466,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
               <span className="min-w-0">
                 <span className={`${isHero ? "text-base" : "text-sm"} block font-semibold text-white`}>{uploadedName ? "Image uploaded" : "Upload image to start"}</span>
-                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "PNG/JPG/WebP · 5 MB" : "PNG, JPG, or WebP under 5 MB. Upload first, then choose whole image or draw a selected area.")}</span>
+                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Drag and drop an image here, or browse files. PNG, JPG, or WebP under 5 MB.")}</span>
               </span>
               {uploadedImage && <span className="mt-3 flex h-24 w-24 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
             </label>
@@ -464,14 +477,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         {mode === "edit" && (uploadedImage || !isHero || lockedMode === "edit") && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Edit area</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose edit area</p>
               <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className="text-xs font-semibold text-white/55 hover:text-white">Clear selection</button>
             </div>
             <div className="mb-3 grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setEditScope("whole")} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
               <button type="button" onClick={() => { setEditScope("selected"); if (uploadedImage && !editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Select area to edit</button>
             </div>
-            {!uploadedImage && <p className="text-xs leading-5 text-white/50">Upload an image first. Then choose whole image or drag a box around the area you want AI to redraw.</p>}
+            {!uploadedImage && <p className="text-xs leading-5 text-white/50">Upload an image first to choose an edit area.</p>}
             {uploadedImage && editScope === "selected" ? (
               <>
                 <div
@@ -494,12 +507,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Prompt") : "Prompt"}</label>
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
         <textarea
           id="prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder={mode === "text" ? "Write your own prompt from scratch, or choose a ready prompt below." : promptPlaceholder}
+          placeholder={promptPlaceholder}
           className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
         />
 
@@ -536,7 +549,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         {(!isHero || mode === "text") && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Size" : "Ratio"}</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Choose image size" : "Ratio"}</p>
           <div className={`${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"} grid`}>
             {visibleRatios.map((item) => (
               <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
@@ -551,17 +564,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "mt-4" : "mt-5"} flex flex-col gap-2`}>
           {authenticated ? (
             <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-              {state === "processing" ? "Generating…" : needsUpload ? "Upload image to start" : mode === "edit" && editScope === "selected" ? `Redraw selected area (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
+              {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload image to start" : prompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && editScope === "selected" ? `Generate edit (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
             </button>
           ) : (
-            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Start generating free" : "Sign in to start editing"}</a>
+            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : "Sign in to edit free"}</a>
           )}
           {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
         </div>
 
         <p className="mt-3 text-xs leading-5 text-white/55">
           {!authenticated
-            ? "3 free credits after login. No payment required to try; credits do not reset after logout or clearing cookies."
+            ? "3 free credits after sign-in. No payment required. Credits are used only when you generate or edit an image."
             : needsUpload
               ? "Upload a reference image first, or switch to Create from Text."
               : creditsRemaining < currentQuote.creditsCharged
@@ -581,15 +594,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
               <PreviewHeadingTag className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
-                {mode === "edit" ? "Edit your uploaded image with AI" : compactPromptBuilder ? "Generate images faster with ready prompts" : "Create images from ready prompts"}
+                {mode === "edit" ? "Edit uploaded images with AI" : compactPromptBuilder ? "Generate AI images with ready-made prompts" : "Create AI images from ready prompts"}
               </PreviewHeadingTag>
-              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe what to change, and preview a clean AI edit before downloading." : compactPromptBuilder ? "Choose a prompt, style, lighting, shot, and size. AI Editor RSP turns them into a polished image without making you write from scratch." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
+              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe the change you want, and compare the before-and-after result before downloading." : compactPromptBuilder ? "Pick a prompt, customize the style, lighting, shot, and size, then create a polished AI image in seconds." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
-              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">AI Image Editor</h3>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result.</p>
+              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{mode === "edit" ? "Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
             </div>
           )}
 
@@ -600,11 +613,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div className={`relative ${isHero ? "aspect-[16/7.5]" : "aspect-[16/10]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
               <img src={generatedImage || previewImage} alt="Generated image preview" className="h-full w-full object-cover brightness-105 contrast-105 saturate-110" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/12" />
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Prompt preview"}</span>
+              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Example result"}</span>
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Generate one image from the prompt. No before/after comparison is needed for text-only creation.</div>}
+              {state === "idle" && !generatedImage && <div className={`${isHero ? "right-4 bottom-4 p-3 text-base leading-6" : "right-6 bottom-6 max-w-sm p-4 text-sm leading-6"} absolute rounded-2xl border border-white/10 bg-black/55 text-left text-white/78`}>Example result. Generate an image to enable download.</div>}
             </div>
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[260px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
@@ -681,7 +694,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-sm text-white/62 md:flex-row md:items-center md:justify-between`}>
           {!isHero && <p><strong className="text-white">Result ready:</strong> Preview the edited image, download it, open the full-size file, or keep editing from this result.</p>}
           <div className="flex flex-wrap gap-2">
-            <a href={generatedImage} download={`ai-editor-rsp-${(ratio || currentQuote.ratio).replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">Download image</a>
+            <a href={generatedImage} download={`ai-editor-rsp-${(ratio || currentQuote.ratio).replace(":", "x")}.jpg`} className="rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-bold text-[#102014] no-underline">{mode === "edit" ? "Download edited image" : "Download image"}</a>
             <a href={generatedImage} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white no-underline">Open full size</a>
             <button type="button" onClick={editGeneratedResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white transition hover:border-white/35">Edit this result</button>
             <button type="button" onClick={clearResult} className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold text-white/70 transition hover:border-white/35">{mode === "text" ? "Try another prompt" : "Start over"}</button>
@@ -690,7 +703,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
         {!generatedImage && (
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.035] text-xs text-white/52 md:flex-row md:items-center md:justify-between`}>
-            <span>{mode === "edit" ? "After generation, compare before/after and download the edited result here." : "After generation, download or open the full-size image here."}</span>
+            <span>{mode === "edit" ? "Generate an edit before downloading." : "Generate an image to enable download."}</span>
             <span className="rounded-full border border-white/10 px-4 py-2 font-bold text-white/35">Download result</span>
           </div>
         )}

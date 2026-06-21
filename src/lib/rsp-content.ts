@@ -4,7 +4,7 @@ export const site = {
   url: "https://aieditorrspediting.org",
   support: "support@aieditorrspediting.org",
   description:
-    "Upload a photo, add a short prompt, and generate polished reference-based AI image edits with credits-based plans.",
+    "Generate AI images and edit uploaded photos with ready-made prompts, starter credits, and simple credit-based plans.",
 };
 
 export const promptCards = [
@@ -71,10 +71,10 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Start generating free", featured: false },
-  { name: "Starter", price: "$7.99", cadence: "/mo", generations: "Light creator use", cta: "View Starter", featured: false },
-  { name: "Creator", price: "$14.99", cadence: "/mo", generations: "Best for weekly workflows", cta: "View Creator", featured: true },
-  { name: "Studio", price: "$29.99", cadence: "/mo", generations: "High-volume generation", cta: "View Studio", featured: false },
+  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Start free", featured: false },
+  { name: "Starter", price: "$7.99", cadence: "/mo", generations: "Occasional image generation", cta: "Choose Starter", featured: false },
+  { name: "Creator", price: "$14.99", cadence: "/mo", generations: "Best for weekly creators", cta: "Choose Creator", featured: true },
+  { name: "Studio", price: "$29.99", cadence: "/mo", generations: "Frequent creative testing", cta: "Choose Studio", featured: false },
 ];
 
 export const integrationStates = [
@@ -85,8 +85,11 @@ export const integrationStates = [
 ];
 
 export const faqItems = [
-  { q: "Can I generate images here today?", a: "Yes. Sign in to claim 3 one-time free credits, then create from a prompt or open Image Editor to edit a reference image." },
-  { q: "How do credits work?", a: "Credits are usage units. Portrait text-to-image uses 1 credit; larger text images use 2 credits; uploaded-photo edits use 2 to 4 credits depending on size." },
+  { q: "Can I generate images here today?", a: "Yes. Sign in to claim 3 free credits, then create from a ready prompt or open Image Editor to edit an uploaded image." },
+  { q: "How do credits work?", a: "Credits are used when you generate or edit an image. Portrait text-to-image starts at 1 credit; square, landscape, and uploaded-image edits may use more credits." },
   { q: "Is this affiliated with RSP Editing?", a: "No. This is an independent creator tool and prompt hub." },
-  { q: "How are payments handled?", a: "Paid plans use secure Creem checkout after sign-in. Credits are added after payment is confirmed, and eligible refunds can be requested from Account → Billing." },
+  { q: "Do I need a card to start?", a: "No. You can sign in and use your free credits before choosing a paid plan." },
+  { q: "Can I use uploaded images for editing?", a: "Yes. Upload a PNG, JPG, or WebP image, describe the edit, compare before and after, then download the result." },
+  { q: "Can I use generated images commercially?", a: "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use." },
+  { q: "How are payments handled?", a: "Paid plans use secure Creem checkout after sign-in. AI Editor RSP does not store your payment details. Eligible refunds can be requested from Account → Billing." },
 ];

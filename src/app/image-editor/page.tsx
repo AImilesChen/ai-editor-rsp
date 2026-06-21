@@ -7,8 +7,8 @@ import ReferenceEditExplainer from "@/components/ReferenceEditExplainer";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Reference Image Editor — AI Editor RSP",
-  description: "Upload a reference image, describe what should change, and compare the AI edited result with the original using a before and after slider.",
+  title: "AI Image Editor — AI Editor RSP",
+  description: "Upload a photo, describe the change you want, and compare the before-and-after AI edit before downloading.",
   alternates: { canonical: `${SITE_URL}/image-editor` },
 };
 
@@ -29,10 +29,10 @@ export default function ReferenceEditPage() {
             <div className="rounded-[30px] border border-rsp-border bg-white/72 p-5 shadow-[0_18px_60px_rgba(46,32,18,0.12)] backdrop-blur md:p-7">
               <p className="eyebrow">AI Reference Image Editor</p>
               <h1 className="mt-4 font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-rsp-text md:text-6xl">
-                Upload image. Select area. Edit with AI.
+                Edit uploaded images with AI
               </h1>
               <p className="mt-5 text-base leading-7 text-rsp-muted">
-                Start from your own image: upload a photo, choose whole image or the exact area to redraw, describe only the change, then compare and download the result.
+                Upload a photo, describe the change you want, and compare the before-and-after result before downloading.
               </p>
               <div className="mt-6 grid gap-3">
                 {benefits.map((item) => (
@@ -46,7 +46,7 @@ export default function ReferenceEditPage() {
                 <Link href="#try-reference-edit" className="rsp-button px-5 py-3 text-sm">Upload image to start</Link>
                 <Link href="/" className="rsp-button-secondary px-5 py-3 text-sm">Use ready prompts instead</Link>
               </div>
-              <p className="mt-4 text-xs leading-5 text-rsp-muted">3 free credits after login · No payment required to try.</p>
+              <p className="mt-4 text-xs leading-5 text-rsp-muted">3 free credits after sign-in · No payment required. Uploaded images are processed to create your requested edit; review our Privacy Policy and AI Policy for details.</p>
             </div>
             <GenerateConsole headingLevel="h2" previewHeadingLevel="h2" variant="hero" defaultMode="edit" lockedMode="edit" />
           </div>
