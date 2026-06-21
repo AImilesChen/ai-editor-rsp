@@ -1,0 +1,79 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+type AuthResponse = {
+  ok?: boolean;
+  authenticated?: boolean;
+  user?: {
+    plan?: string;
+    subscriptionStatus?: string;
+  } | null;
+};
+
+const currentPlanStatuses = new Set(["active", "trialing", "scheduled_cancel", "past_due", "paused"]);
+
+function normalize(value?: string) {
+  return (value || "").trim().toLowerCase();
+}
+
+function userHasCurrentPlan(planName: string, data: AuthResponse | null) {
+  const userPlan = normalize(data?.user?.plan);
+  const status = normalize(data?.user?.subscriptionStatus);
+  return userPlan === normalize(planName) && currentPlanStatuses.has(status);
+}
+
+export default function PricingPlanAction({ planName, cta }: { planName: string; cta: string }) {
+  const [auth, setAuth] = useState<AuthResponse | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let canceled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((response) => response.json() as Promise<AuthResponse>)
+      .then((data) => {
+        if (!canceled) setAuth(data);
+      })
+      .catch(() => {
+        if (!canceled) setAuth(null);
+      })
+      .finally(() => {
+        if (!canceled) setLoaded(true);
+      });
+    return () => {
+      canceled = true;
+    };
+  }, []);
+
+  const planSlug = normalize(planName);
+  const isFree = planSlug === "free";
+  const currentPlan = useMemo(() => userHasCurrentPlan(planName, auth), [auth, planName]);
+  const signedIn = Boolean(auth?.authenticated);
+  const hasPaidPlan = Boolean(signedIn && auth?.user?.plan && normalize(auth.user.plan) !== "free" && currentPlanStatuses.has(normalize(auth.user.subscriptionStatus)));
+
+  if (currentPlan) {
+    return (
+      <div className="mt-7">
+        <button type="button" disabled className="w-full cursor-default rounded-full border border-rsp-secondary bg-rsp-secondary/12 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-secondary">
+          Current plan
+        </button>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">You are already subscribed to {planName}. Manage or cancel it from Account → Billing.</p>
+      </div>
+    );
+  }
+
+  if (hasPaidPlan && !isFree) {
+    return (
+      <div className="mt-7">
+        <Link href="/account/billing" className="rsp-button-primary w-full text-center">Manage billing</Link>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">You already have an active plan. Use Account → Billing before changing plans so you do not start a second subscription by mistake.</p>
+      </div>
+    );
+  }
+
+  const href = isFree ? "/generate" : `/checkout?plan=${planSlug}`;
+  const label = !loaded ? cta : cta;
+
+  return <Link href={href} className="rsp-button-primary mt-7 w-full text-center">{label}</Link>;
+}

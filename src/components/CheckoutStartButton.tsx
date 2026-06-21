@@ -1,10 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type CheckoutResponse = { ok?: boolean; checkoutUrl?: string; code?: string; error?: string; missing?: string[] };
+type AuthResponse = {
+  authenticated?: boolean;
+  user?: { plan?: string; subscriptionStatus?: string } | null;
+};
+
+const currentPlanStatuses = new Set(["active", "trialing", "scheduled_cancel", "past_due", "paused"]);
+
+function normalize(value?: string) {
+  return (value || "").trim().toLowerCase();
+}
 
 export default function CheckoutStartButton({ plan }: { plan: string }) {
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [auth, setAuth] = useState<AuthResponse | null>(null);
+
+  useEffect(() => {
+    let canceled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((response) => response.json() as Promise<AuthResponse>)
+      .then((data) => {
+        if (!canceled) setAuth(data);
+      })
+      .catch(() => {
+        if (!canceled) setAuth(null);
+      });
+    return () => {
+      canceled = true;
+    };
+  }, []);
+
+  const signedIn = Boolean(auth?.authenticated);
+  const userPlan = normalize(auth?.user?.plan);
+  const subscriptionStatus = normalize(auth?.user?.subscriptionStatus);
+  const hasCurrentPlan = signedIn && userPlan === normalize(plan) && currentPlanStatuses.has(subscriptionStatus);
+  const hasAnotherActivePlan = signedIn && userPlan && userPlan !== "free" && userPlan !== normalize(plan) && currentPlanStatuses.has(subscriptionStatus);
 
   async function startCheckout() {
     setState("loading");
@@ -15,11 +50,14 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ plan }),
       });
-      const data = await response.json() as { ok?: boolean; checkoutUrl?: string; code?: string; error?: string; missing?: string[] };
+      const data = await response.json() as CheckoutResponse;
       if (response.status === 401) {
         const next = encodeURIComponent(`/checkout?plan=${plan}`);
         window.location.href = `/login?next=${next}`;
         return;
+      }
+      if (response.status === 409) {
+        throw new Error(data.error || "You already have an active subscription. Manage it from Account → Billing.");
       }
       if (!response.ok || !data.ok || !data.checkoutUrl) {
         const missing = data.missing?.length ? ` Missing: ${data.missing.join(", ")}.` : "";
@@ -30,6 +68,27 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
       setError(err instanceof Error ? err.message : "Checkout is not available yet.");
       setState("error");
     }
+  }
+
+  if (hasCurrentPlan) {
+    return (
+      <div className="mt-6">
+        <button type="button" disabled className="w-full cursor-default rounded-full border border-rsp-secondary bg-rsp-secondary/12 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-secondary">
+          Current plan
+        </button>
+        <p className="mt-3 text-sm leading-6 text-rsp-secondary">You are already subscribed to this plan. Manage or cancel it from Account → Billing.</p>
+        <Link href="/account/billing" className="mt-3 inline-block text-sm font-semibold text-rsp-secondary underline">Go to billing</Link>
+      </div>
+    );
+  }
+
+  if (hasAnotherActivePlan) {
+    return (
+      <div className="mt-6">
+        <Link href="/account/billing" className="rsp-button-primary w-full text-center">Manage billing</Link>
+        <p className="mt-3 text-sm leading-6 text-rsp-muted">You already have an active subscription. Use Account → Billing before changing plans.</p>
+      </div>
+    );
   }
 
   return (

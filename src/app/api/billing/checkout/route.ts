@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/backend/auth";
+import { accountForPublicUser } from "@/lib/backend/billing-store";
 import {
   creemApiBase,
   creemMode,
@@ -20,6 +21,28 @@ export async function POST(request: NextRequest) {
   const plan = typeof body.plan === "string" ? body.plan.toLowerCase() : "";
   if (!isBillingPlan(plan)) {
     return NextResponse.json({ ok: false, code: "INVALID_PLAN", error: "Plan must be starter, creator, or studio." }, { status: 400 });
+  }
+
+  const account = await accountForPublicUser(user);
+  const currentStatuses = new Set(["active", "trialing", "scheduled_cancel", "past_due", "paused"]);
+  if (account.plan === plan && currentStatuses.has(account.subscriptionStatus)) {
+    return NextResponse.json({
+      ok: false,
+      code: "CURRENT_PLAN",
+      error: "You are already subscribed to this plan. Manage it from Account → Billing.",
+      currentPlan: account.plan,
+      subscriptionStatus: account.subscriptionStatus,
+    }, { status: 409 });
+  }
+
+  if (account.plan !== "free" && currentStatuses.has(account.subscriptionStatus)) {
+    return NextResponse.json({
+      ok: false,
+      code: "ACTIVE_PLAN_EXISTS",
+      error: "You already have an active subscription. Use Account → Billing before changing plans.",
+      currentPlan: account.plan,
+      subscriptionStatus: account.subscriptionStatus,
+    }, { status: 409 });
   }
 
   const missing = missingCreemConfig();

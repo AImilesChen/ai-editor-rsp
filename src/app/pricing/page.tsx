@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PricingPlanAction from "@/components/PricingPlanAction";
 import { legalDisclaimer, pricingPlans, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -55,7 +55,7 @@ export default function PricingPage() {
                 {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
                 {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
                 <ul className="mt-6 flex-1 space-y-3 text-sm leading-6 text-rsp-muted">{plan.features.map((f) => <li key={f}>• {f}</li>)}</ul>
-                <Link href={plan.name === "Free" ? "/generate" : `/checkout?plan=${plan.name.toLowerCase()}`} className="rsp-button-primary mt-7 w-full">{plan.cta}</Link>
+                <PricingPlanAction planName={plan.name} cta={plan.cta} />
               </article>
             ))}
           </div>
