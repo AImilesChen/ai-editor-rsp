@@ -24,22 +24,23 @@ export async function POST(request: NextRequest) {
   }
 
   const account = await accountForPublicUser(user);
-  const currentStatuses = new Set(["active", "trialing", "scheduled_cancel", "past_due", "paused"]);
-  if (account.plan === plan && currentStatuses.has(account.subscriptionStatus)) {
+  const endedPlanStatuses = new Set(["canceled", "expired", "refunded", "disputed"]);
+  const hasBlockingPaidPlan = account.plan !== "free" && !endedPlanStatuses.has(account.subscriptionStatus);
+  if (account.plan === plan && hasBlockingPaidPlan) {
     return NextResponse.json({
       ok: false,
       code: "CURRENT_PLAN",
-      error: "You are already subscribed to this plan. Manage it from Account → Billing.",
+      error: "You already have this plan on your account. Manage it from Account → Billing.",
       currentPlan: account.plan,
       subscriptionStatus: account.subscriptionStatus,
     }, { status: 409 });
   }
 
-  if (account.plan !== "free" && currentStatuses.has(account.subscriptionStatus)) {
+  if (hasBlockingPaidPlan) {
     return NextResponse.json({
       ok: false,
       code: "ACTIVE_PLAN_EXISTS",
-      error: "You already have an active subscription. Use Account → Billing before changing plans.",
+      error: "You already have a paid plan on your account. Use Account → Billing before changing plans.",
       currentPlan: account.plan,
       subscriptionStatus: account.subscriptionStatus,
     }, { status: 409 });

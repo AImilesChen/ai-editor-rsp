@@ -9,7 +9,7 @@ type AuthResponse = {
   user?: { plan?: string; subscriptionStatus?: string } | null;
 };
 
-const currentPlanStatuses = new Set(["active", "trialing", "scheduled_cancel", "past_due", "paused"]);
+const endedPlanStatuses = new Set(["canceled", "expired", "refunded", "disputed"]);
 
 function normalize(value?: string) {
   return (value || "").trim().toLowerCase();
@@ -19,6 +19,7 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [auth, setAuth] = useState<AuthResponse | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
 
   useEffect(() => {
     let canceled = false;
@@ -29,6 +30,9 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
       })
       .catch(() => {
         if (!canceled) setAuth(null);
+      })
+      .finally(() => {
+        if (!canceled) setAuthLoaded(true);
       });
     return () => {
       canceled = true;
@@ -38,8 +42,9 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
   const signedIn = Boolean(auth?.authenticated);
   const userPlan = normalize(auth?.user?.plan);
   const subscriptionStatus = normalize(auth?.user?.subscriptionStatus);
-  const hasCurrentPlan = signedIn && userPlan === normalize(plan) && currentPlanStatuses.has(subscriptionStatus);
-  const hasAnotherActivePlan = signedIn && userPlan && userPlan !== "free" && userPlan !== normalize(plan) && currentPlanStatuses.has(subscriptionStatus);
+  const hasBlockingPaidPlan = signedIn && userPlan && userPlan !== "free" && !endedPlanStatuses.has(subscriptionStatus);
+  const hasCurrentPlan = Boolean(hasBlockingPaidPlan && userPlan === normalize(plan));
+  const hasAnotherActivePlan = Boolean(hasBlockingPaidPlan && userPlan !== normalize(plan));
 
   async function startCheckout() {
     setState("loading");
@@ -68,6 +73,16 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
       setError(err instanceof Error ? err.message : "Checkout is not available yet.");
       setState("error");
     }
+  }
+
+  if (!authLoaded) {
+    return (
+      <div className="mt-6">
+        <button type="button" disabled className="w-full cursor-wait rounded-full border border-rsp-border bg-rsp-surface px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-muted">
+          Checking plan…
+        </button>
+      </div>
+    );
   }
 
   if (hasCurrentPlan) {

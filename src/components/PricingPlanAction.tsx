@@ -12,16 +12,31 @@ type AuthResponse = {
   } | null;
 };
 
-const currentPlanStatuses = new Set(["active", "trialing", "scheduled_cancel", "past_due", "paused"]);
+const endedPlanStatuses = new Set(["canceled", "expired", "refunded", "disputed"]);
 
 function normalize(value?: string) {
   return (value || "").trim().toLowerCase();
 }
 
-function userHasCurrentPlan(planName: string, data: AuthResponse | null) {
+function isPaidPlan(plan?: string) {
+  const value = normalize(plan);
+  return Boolean(value && value !== "free");
+}
+
+function shouldTreatAsCurrentPaidPlan(planName: string, data: AuthResponse | null) {
   const userPlan = normalize(data?.user?.plan);
   const status = normalize(data?.user?.subscriptionStatus);
-  return userPlan === normalize(planName) && currentPlanStatuses.has(status);
+  if (userPlan !== normalize(planName) || !isPaidPlan(userPlan)) return false;
+  // Avoid misleading paid users into starting a duplicate checkout when the account
+  // already carries a paid plan but the subscription status is temporarily missing,
+  // delayed, or not one of the active-like Creem states yet.
+  return !endedPlanStatuses.has(status);
+}
+
+function hasAnyBlockingPaidPlan(data: AuthResponse | null) {
+  const userPlan = normalize(data?.user?.plan);
+  const status = normalize(data?.user?.subscriptionStatus);
+  return isPaidPlan(userPlan) && !endedPlanStatuses.has(status);
 }
 
 export default function PricingPlanAction({ planName, cta }: { planName: string; cta: string }) {
@@ -48,9 +63,19 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
 
   const planSlug = normalize(planName);
   const isFree = planSlug === "free";
-  const currentPlan = useMemo(() => userHasCurrentPlan(planName, auth), [auth, planName]);
+  const currentPlan = useMemo(() => shouldTreatAsCurrentPaidPlan(planName, auth), [auth, planName]);
   const signedIn = Boolean(auth?.authenticated);
-  const hasPaidPlan = Boolean(signedIn && auth?.user?.plan && normalize(auth.user.plan) !== "free" && currentPlanStatuses.has(normalize(auth.user.subscriptionStatus)));
+  const hasPaidPlan = Boolean(signedIn && hasAnyBlockingPaidPlan(auth));
+
+  if (!loaded) {
+    return (
+      <div className="mt-7">
+        <button type="button" disabled className="w-full cursor-wait rounded-full border border-rsp-border bg-rsp-surface px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-muted">
+          Checking plan…
+        </button>
+      </div>
+    );
+  }
 
   if (currentPlan) {
     return (
