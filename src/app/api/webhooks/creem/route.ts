@@ -81,7 +81,20 @@ export async function POST(request: NextRequest) {
   } else if (eventType === "subscription.paused") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "paused", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "refund.created") {
-    persistence = await markRefundedAccount({ eventId, eventType, userId: identity.userId, email: identity.email, plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId, refundId: ids.refundId, rawEvent: event });
+    persistence = await markRefundedAccount({
+      eventId,
+      eventType,
+      userId: identity.userId,
+      email: identity.email,
+      plan,
+      subscriptionId: ids.subscriptionId,
+      customerId: ids.customerId,
+      checkoutId: ids.checkoutId,
+      transactionId: ids.transactionId,
+      invoiceId: ids.invoiceId,
+      refundId: ids.refundId,
+      rawEvent: event,
+    });
   } else if (eventType === "dispute.created") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "disputed", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   }

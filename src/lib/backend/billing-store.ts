@@ -83,6 +83,25 @@ export type CreditGrantInput = {
   rawEvent?: unknown;
 };
 
+type SubscriptionStateInput = {
+  eventId: string;
+  eventType: string;
+  userId?: string | null;
+  email?: string | null;
+  status: BillingAccount["subscriptionStatus"];
+  plan?: BillingPlan | null;
+  subscriptionId?: string | null;
+  customerId?: string | null;
+  checkoutId?: string | null;
+  transactionId?: string | null;
+  invoiceId?: string | null;
+  rawEvent?: unknown;
+};
+
+type RefundStateInput = Omit<SubscriptionStateInput, "status"> & {
+  refundId?: string | null;
+};
+
 type KV = {
   get(key: string): Promise<string | null>;
   put(key: string, value: string, options?: { expirationTtl?: number; metadata?: unknown }): Promise<void>;
@@ -375,17 +394,7 @@ export async function submitSubscriptionCancellationForUser(user: AuthUser) {
   return { ok: true, duplicate: false, account: updated, creem: creemResult.payload };
 }
 
-export async function markRefundedAccount(input: {
-  eventId: string;
-  eventType: string;
-  userId?: string | null;
-  email?: string | null;
-  plan?: BillingPlan | null;
-  subscriptionId?: string | null;
-  customerId?: string | null;
-  refundId?: string | null;
-  rawEvent?: unknown;
-}) {
+export async function markRefundedAccount(input: RefundStateInput) {
   const db = await billingDb();
   if (db) return markRefundedAccountD1(db, input);
 
@@ -455,7 +464,7 @@ async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) 
     return { persisted: true, duplicate: true, account };
   }
 
-  const userId = await resolveD1UserId(db, input.userId, input.email, input.customerId);
+  const userId = await resolveD1UserId(db, input);
   if (!userId) {
     await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, null, "failed", "Missing user_id/email/customer mapping", true);
     return { persisted: false, duplicate: false, reason: "Missing user_id/email/customer mapping" };
@@ -507,14 +516,12 @@ async function debitCreditForUserD1(db: D1Database, user: AuthUser, amount: numb
   return { persisted: true, creditsRemaining: nextBalance, insufficient: false };
 }
 
-async function updateSubscriptionStateD1(db: D1Database, input: {
-  eventId: string; eventType: string; userId?: string | null; email?: string | null; status: BillingAccount["subscriptionStatus"]; plan?: BillingPlan | null; subscriptionId?: string | null; customerId?: string | null; rawEvent?: unknown;
-}) {
+async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStateInput) {
   const dedupeKey = webhookDedupeKey(input.eventId);
   const existing = await db.prepare("SELECT processed_status, related_user_id FROM webhook_events WHERE dedupe_key = ?").bind(dedupeKey).first<WebhookRow>();
   if (existing?.processed_status === "processed") return { persisted: true, duplicate: true, account: existing.related_user_id ? await readD1Account(db, existing.related_user_id) : null };
 
-  const userId = await resolveD1UserId(db, input.userId, input.email, input.customerId);
+  const userId = await resolveD1UserId(db, input);
   if (!userId) {
     await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, null, "failed", "Missing user_id/email/customer mapping", true);
     return { persisted: false, reason: "Missing user_id/email/customer mapping" };
@@ -611,9 +618,7 @@ async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Prom
   return { ...base, eligible: true };
 }
 
-async function markRefundedAccountD1(db: D1Database, input: {
-  eventId: string; eventType: string; userId?: string | null; email?: string | null; plan?: BillingPlan | null; subscriptionId?: string | null; customerId?: string | null; refundId?: string | null; rawEvent?: unknown;
-}) {
+async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
   const state = await updateSubscriptionStateD1(db, { ...input, status: "refunded" });
   if (!state.persisted || !state.account) return state;
   const account = state.account;
@@ -658,14 +663,35 @@ async function calculateFreeCreditRefundBalanceD1(db: D1Database, userId: string
   };
 }
 
-async function resolveD1UserId(db: D1Database, userId?: string | null, email?: string | null, customerId?: string | null) {
-  if (userId) return userId;
-  if (email) {
-    const row = await db.prepare("SELECT id FROM users WHERE email = ?").bind(email.trim().toLowerCase()).first<{ id: string }>();
+async function resolveD1UserId(db: D1Database, input: {
+  userId?: string | null;
+  email?: string | null;
+  customerId?: string | null;
+  subscriptionId?: string | null;
+  checkoutId?: string | null;
+  transactionId?: string | null;
+  invoiceId?: string | null;
+}) {
+  if (input.userId) return input.userId;
+  if (input.email) {
+    const row = await db.prepare("SELECT id FROM users WHERE email = ?").bind(input.email.trim().toLowerCase()).first<{ id: string }>();
     if (row?.id) return row.id;
   }
-  if (customerId) {
-    const row = await db.prepare("SELECT id FROM users WHERE creem_customer_id = ?").bind(customerId).first<{ id: string }>();
+  if (input.customerId) {
+    const row = await db.prepare("SELECT id FROM users WHERE creem_customer_id = ?").bind(input.customerId).first<{ id: string }>();
+    if (row?.id) return row.id;
+  }
+  if (input.subscriptionId) {
+    const row = await db.prepare("SELECT user_id AS id FROM subscriptions WHERE id = ? OR creem_subscription_id = ? ORDER BY updated_at DESC LIMIT 1")
+      .bind(input.subscriptionId, input.subscriptionId)
+      .first<{ id: string }>();
+    if (row?.id) return row.id;
+  }
+  const paymentIds = [input.transactionId, input.checkoutId, input.invoiceId].filter((value): value is string => Boolean(value));
+  for (const paymentId of paymentIds) {
+    const row = await db.prepare("SELECT user_id AS id FROM payments WHERE id = ? OR creem_transaction_id = ? OR creem_checkout_id = ? OR creem_invoice_id = ? ORDER BY updated_at DESC LIMIT 1")
+      .bind(paymentId, paymentId, paymentId, paymentId)
+      .first<{ id: string }>();
     if (row?.id) return row.id;
   }
   return null;
