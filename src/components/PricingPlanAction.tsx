@@ -13,6 +13,7 @@ type AuthResponse = {
 };
 
 const endedPlanStatuses = new Set(["canceled", "expired", "refunded", "disputed"]);
+const refundPendingStatuses = new Set(["refund_requested"]);
 
 function normalize(value?: string) {
   return (value || "").trim().toLowerCase();
@@ -27,6 +28,7 @@ function shouldTreatAsCurrentPaidPlan(planName: string, data: AuthResponse | nul
   const userPlan = normalize(data?.user?.plan);
   const status = normalize(data?.user?.subscriptionStatus);
   if (userPlan !== normalize(planName) || !isPaidPlan(userPlan)) return false;
+  if (refundPendingStatuses.has(status)) return false;
   // Avoid misleading paid users into starting a duplicate checkout when the account
   // already carries a paid plan but the subscription status is temporarily missing,
   // delayed, or not one of the active-like Creem states yet.
@@ -36,7 +38,19 @@ function shouldTreatAsCurrentPaidPlan(planName: string, data: AuthResponse | nul
 function hasAnyBlockingPaidPlan(data: AuthResponse | null) {
   const userPlan = normalize(data?.user?.plan);
   const status = normalize(data?.user?.subscriptionStatus);
-  return isPaidPlan(userPlan) && !endedPlanStatuses.has(status);
+  return isPaidPlan(userPlan) && !endedPlanStatuses.has(status) && !refundPendingStatuses.has(status);
+}
+
+function hasRefundPendingForPlan(planName: string, data: AuthResponse | null) {
+  const userPlan = normalize(data?.user?.plan);
+  const status = normalize(data?.user?.subscriptionStatus);
+  return userPlan === normalize(planName) && isPaidPlan(userPlan) && refundPendingStatuses.has(status);
+}
+
+function hasAnyRefundPending(data: AuthResponse | null) {
+  const userPlan = normalize(data?.user?.plan);
+  const status = normalize(data?.user?.subscriptionStatus);
+  return isPaidPlan(userPlan) && refundPendingStatuses.has(status);
 }
 
 export default function PricingPlanAction({ planName, cta }: { planName: string; cta: string }) {
@@ -66,6 +80,8 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
   const currentPlan = useMemo(() => shouldTreatAsCurrentPaidPlan(planName, auth), [auth, planName]);
   const signedIn = Boolean(auth?.authenticated);
   const hasPaidPlan = Boolean(signedIn && hasAnyBlockingPaidPlan(auth));
+  const refundPendingForPlan = Boolean(signedIn && hasRefundPendingForPlan(planName, auth));
+  const hasRefundPending = Boolean(signedIn && hasAnyRefundPending(auth));
 
   if (!loaded) {
     return (
@@ -84,6 +100,26 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
           Current plan
         </button>
         <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">You are already subscribed to {planName}. Manage or cancel it from Account → Billing.</p>
+      </div>
+    );
+  }
+
+  if (refundPendingForPlan) {
+    return (
+      <div className="mt-7">
+        <Link href="/account/billing" className="w-full rounded-full border border-rsp-secondary bg-rsp-secondary/12 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-secondary">
+          Refund pending
+        </Link>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">Your {planName} credits are locked while Creem refund confirmation is pending. Check Account → Billing for status.</p>
+      </div>
+    );
+  }
+
+  if (hasRefundPending && !isFree) {
+    return (
+      <div className="mt-7">
+        <Link href="/account/billing" className="rsp-button-primary w-full text-center">Refund pending</Link>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">A refund review is already in progress. Paid credits are locked until provider confirmation, so new checkout is paused.</p>
       </div>
     );
   }
