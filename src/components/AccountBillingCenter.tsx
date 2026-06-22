@@ -53,7 +53,7 @@ export default function AccountBillingCenter() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.json() as Promise<AuthMeResponse>)
       .then((data) => {
         if (data.authenticated && data.user) setUser(data.user);
