@@ -22,7 +22,7 @@ export default function Header() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => response.json() as Promise<AuthMeResponse>)
       .then((authData) => {
         if (authData?.authenticated && authData.user) {
@@ -84,7 +84,7 @@ export default function Header() {
             </span>
           ) : null}
           <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
-            {authenticated ? "Account" : "Claim 3 free credits"}
+            {authenticated ? "Account" : "Log in"}
           </Link>
         </nav>
         <button
@@ -117,7 +117,7 @@ export default function Header() {
               </Link>
             ))}
             <Link href={authenticated ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
-              {authenticated ? "Account" : "Claim 3 free credits"}
+              {authenticated ? "Account" : "Log in"}
             </Link>
           </nav>
         </div>
