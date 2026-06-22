@@ -4,6 +4,9 @@ import Footer from "@/components/Footer";
 import PricingPlanAction from "@/components/PricingPlanAction";
 import { legalDisclaimer, pricingPlans, SITE_URL } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Pricing — AI Editor RSP",
   description: "Simple credit plans for AI image generation, uploaded-image editing, and ready-made prompt workflows.",

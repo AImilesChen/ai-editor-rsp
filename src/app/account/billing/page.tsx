@@ -4,6 +4,9 @@ import Footer from "@/components/Footer";
 import AccountBillingCenter from "@/components/AccountBillingCenter";
 import { SITE_URL } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Billing — AI Editor RSP",
   description: "Manage AI Editor RSP billing status, credits, plan actions, and refund requests.",

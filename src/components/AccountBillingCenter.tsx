@@ -38,9 +38,26 @@ function refundLabel(status?: string) {
 }
 
 function cancelLabel(status?: string) {
+  if (status === "refund_requested") return "Subscription canceled";
   if (status === "scheduled_cancel") return "Cancellation scheduled";
   if (status === "canceled" || status === "expired") return "Subscription canceled";
   return "Cancel subscription";
+}
+
+function planLabel(user: User | null, loading: boolean) {
+  if (loading) return "Loading…";
+  if (!user) return "Not signed in";
+  if (pendingRefundStatuses.has(user.subscriptionStatus || "")) return `${user.plan} · refund pending`;
+  return user.plan;
+}
+
+function statusLabel(status?: string) {
+  if (!status) return "none";
+  if (status === "refund_requested") return "Refund pending";
+  if (status === "refunded") return "Refund completed";
+  if (status === "canceled") return "Subscription canceled";
+  if (status === "scheduled_cancel") return "Cancellation scheduled";
+  return status;
 }
 
 export default function AccountBillingCenter() {
@@ -177,7 +194,7 @@ export default function AccountBillingCenter() {
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Plan</strong><br />
-          <span className="text-rsp-muted">{loading ? "Loading…" : user?.plan || "Not signed in"}</span>
+          <span className="text-rsp-muted">{planLabel(user, loading)}</span>
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Credits</strong><br />
@@ -193,7 +210,7 @@ export default function AccountBillingCenter() {
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Status</strong><br />
-          <span className="text-rsp-secondary">{loading ? "Loading…" : user?.subscriptionStatus || "none"}</span>
+          <span className="text-rsp-secondary">{loading ? "Loading…" : statusLabel(user?.subscriptionStatus)}</span>
         </div>
       </div>
 
