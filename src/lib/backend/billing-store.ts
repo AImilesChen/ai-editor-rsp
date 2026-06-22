@@ -24,6 +24,14 @@ const SELF_SERVICE_REFUND_WINDOW_DAYS = 7;
 const SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE = 0.2;
 
 function publicBillingAccount(account: BillingAccount): BillingAccount {
+  if (account.subscriptionStatus === "refunded") {
+    return {
+      ...account,
+      plan: "free",
+      creditsHeld: undefined,
+      creditsRemaining: 0,
+    };
+  }
   if (!creditLockedStatuses.has(account.subscriptionStatus)) return account;
   return {
     ...account,
@@ -718,7 +726,7 @@ async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
   const freeBalance = await calculateFreeCreditRefundBalanceD1(db, account.userId);
   const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, account.creditsRemaining, freeBalance.freeCreditsRemaining));
   const revoked = Math.max(0, account.creditsRemaining - preservedFreeCredits);
-  await db.prepare("UPDATE users SET status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, account.userId).run();
+  await db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, account.userId).run();
   await db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE user_id = ? AND status = 'paid'").bind(now, account.userId).run();
   await db.prepare("UPDATE refund_requests SET status = 'refunded', creem_refund_id = COALESCE(?, creem_refund_id), resolved_at = ?, metadata_json = COALESCE(metadata_json, ?) WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested')")
     .bind(input.refundId || null, now, JSON.stringify({ eventId: input.eventId }), account.userId)

@@ -22,7 +22,7 @@ export default function Header() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/me", { cache: "no-store" })
+    fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
       .then((response) => response.json() as Promise<AuthMeResponse>)
       .then((authData) => {
         if (authData?.authenticated && authData.user) {
