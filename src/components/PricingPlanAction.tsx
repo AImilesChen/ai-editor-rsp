@@ -45,7 +45,7 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
 
   useEffect(() => {
     let canceled = false;
-    fetch("/api/auth/me", { cache: "no-store" })
+    fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
       .then((response) => response.json() as Promise<AuthResponse>)
       .then((data) => {
         if (!canceled) setAuth(data);
