@@ -9,6 +9,7 @@ type User = {
   provider: "google" | "email";
   plan: string;
   creditsRemaining: number;
+  creditsHeld?: number;
   subscriptionStatus?: string;
 };
 
@@ -165,7 +166,7 @@ export default function AccountBillingCenter() {
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
-      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: the request has been saved. Cash refund is not completed until Creem confirms it in the dashboard/provider flow. If refund processing fails in Creem, click Retry refund prep to cancel an active subscription again, then retry the paid transaction refund in Creem.</div> : null}
+      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are locked while cash refund is waiting for Creem dashboard/provider confirmation. If refund processing fails in Creem, click Retry refund prep to cancel an active subscription again, then retry the paid transaction refund in Creem.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: Creem has confirmed the refund. Paid credits are no longer available.</div> : null}
       {subscriptionCanceled ? <div className="mt-5 border border-rsp-border bg-white/70 p-4 text-sm font-semibold text-rsp-text">Subscription status: recurring billing is no longer active for this account.</div> : null}
 
@@ -180,7 +181,15 @@ export default function AccountBillingCenter() {
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Credits</strong><br />
-          <span className="text-rsp-muted">{loading ? "Loading…" : user ? `${user.creditsRemaining} remaining` : "Log in to claim"}</span>
+          <span className="text-rsp-muted">
+            {loading
+              ? "Loading…"
+              : user
+                ? refundPending && user.creditsHeld
+                  ? `0 available · ${user.creditsHeld} held during refund review`
+                  : `${user.creditsRemaining} remaining`
+                : "Log in to claim"}
+          </span>
         </div>
         <div className="border border-rsp-border bg-white/55 p-4">
           <strong>Status</strong><br />

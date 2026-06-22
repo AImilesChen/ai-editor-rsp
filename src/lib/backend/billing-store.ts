@@ -9,6 +9,7 @@ export type BillingAccount = {
   email?: string;
   plan: "free" | BillingPlan;
   creditsRemaining: number;
+  creditsHeld?: number;
   subscriptionStatus: "none" | "active" | "trialing" | "paused" | "scheduled_cancel" | "canceled" | "past_due" | "expired" | "refund_requested" | "refunded" | "disputed";
   subscriptionId?: string;
   customerId?: string;
@@ -17,6 +18,17 @@ export type BillingAccount = {
   updatedAt: number;
   createdAt: number;
 };
+
+const creditLockedStatuses = new Set<BillingAccount["subscriptionStatus"]>(["refund_requested", "refunded", "disputed"]);
+
+function publicBillingAccount(account: BillingAccount): BillingAccount {
+  if (!creditLockedStatuses.has(account.subscriptionStatus)) return account;
+  return {
+    ...account,
+    creditsHeld: account.creditsRemaining,
+    creditsRemaining: 0,
+  };
+}
 
 export type RefundRequest = {
   requestId: string;
@@ -136,11 +148,12 @@ export async function ensureBillingAccount(user: AuthUser): Promise<BillingAccou
 
 export async function accountForPublicUser(user: AuthUser) {
   const account = await ensureBillingAccount(user);
-  return account || {
+  return account ? publicBillingAccount(account) : {
     userId: user.id,
     email: user.email,
     plan: user.plan,
     creditsRemaining: user.creditsRemaining,
+    creditsHeld: undefined,
     subscriptionStatus: "none" as const,
   };
 }
@@ -200,6 +213,9 @@ export async function debitCreditForUser(user: AuthUser, amount = 1, sourceId?: 
   const kv = await billingKv();
   if (!kv) return { persisted: false, creditsRemaining: user.creditsRemaining, insufficient: user.creditsRemaining < amount };
   const account = (await ensureBillingAccount(user)) || null;
+  if (account && creditLockedStatuses.has(account.subscriptionStatus)) {
+    return { persisted: true, creditsRemaining: 0, insufficient: true, code: "CREDITS_LOCKED_FOR_REFUND" };
+  }
   const currentCredits = account?.creditsRemaining ?? user.creditsRemaining;
   if (currentCredits < amount) return { persisted: true, creditsRemaining: currentCredits, insufficient: true };
   const now = Date.now();
@@ -477,6 +493,9 @@ async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) 
 
 async function debitCreditForUserD1(db: D1Database, user: AuthUser, amount: number, sourceId?: string) {
   const account = await ensureD1BillingAccount(db, user);
+  if (creditLockedStatuses.has(account.subscriptionStatus)) {
+    return { persisted: true, creditsRemaining: 0, insufficient: true, code: "CREDITS_LOCKED_FOR_REFUND" };
+  }
   if (account.creditsRemaining < amount) return { persisted: true, creditsRemaining: account.creditsRemaining, insufficient: true };
   const nextBalance = account.creditsRemaining - amount;
   const now = Date.now();

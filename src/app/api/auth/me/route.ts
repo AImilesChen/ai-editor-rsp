@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
       ...publicUser(user),
       plan: account.plan,
       creditsRemaining: account.creditsRemaining,
+      creditsHeld: account.creditsHeld,
       subscriptionStatus: account.subscriptionStatus,
     },
   });

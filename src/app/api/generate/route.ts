@@ -65,6 +65,17 @@ export async function POST(request: NextRequest) {
     return response;
   }
   const quote = quoteGenerationCredits({ ratio: body.ratio, imageDataUrl: body.imageDataUrl });
+  if (["refund_requested", "refunded", "disputed"].includes(billingAccount.subscriptionStatus)) {
+    const response = NextResponse.json({
+      ok: false,
+      error: "Credits are locked while your refund is being reviewed. Please wait for Creem refund confirmation or contact support.",
+      code: "CREDITS_LOCKED_FOR_REFUND",
+      creditsRemaining: 0,
+      pricing: quote,
+    }, { status: 403 });
+    await setSessionCookie(response, { ...session, creditsRemaining: 0 });
+    return response;
+  }
   const editRegion = normalizeEditRegion(body.editRegion);
   if (availableCredits < quote.creditsCharged) {
     const response = NextResponse.json({
