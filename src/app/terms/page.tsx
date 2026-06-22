@@ -56,7 +56,7 @@ export default function TermsPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Refunds and Failed Generations</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li>Refunds are available within 14 days of purchase if no more than 50% of the granted credits have been used, unless applicable law requires otherwise.</li>
+              <li>Self-service refunds are available within 7 days of purchase if no more than 20% of the granted paid credits have been used, unless applicable law requires otherwise.</li>
               <li>If a prompt is blocked before generation, credits are not charged.</li>
               <li>If the AI provider rejects a request, times out, or returns no usable result due to a system/provider failure, we may avoid charging or return the affected credit according to product logic.</li>
               <li>Subjective dissatisfaction with AI output style, composition, or quality does not automatically qualify for a refund or extra credits.</li>

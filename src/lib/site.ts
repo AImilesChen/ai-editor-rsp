@@ -61,4 +61,4 @@ export const promptCards = [
   { title: "Creator thumbnail", style: "Social", ratio: "16:9", text: "A bold creator thumbnail background with neon cyan accents, dynamic composition, realistic desk setup, space for headline text." },
 ];
 
-export const legalDisclaimer = "Images are generated through third-party AI model providers. Upload only images you have rights to use. Usage rights and limitations may depend on provider and model terms. Refunds are available within 14 days if no more than 50% of paid credits from that billing period have been used.";
+export const legalDisclaimer = "Images are generated through third-party AI model providers. Upload only images you have rights to use. Usage rights and limitations may depend on provider and model terms. Self-service refunds are available within 7 days if no more than 20% of paid credits from that billing period have been used.";

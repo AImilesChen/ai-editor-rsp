@@ -48,7 +48,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
                 <p><strong className="text-rsp-text">Success:</strong> Payment confirmation is checked through Creem webhooks. Credits appear after confirmation.</p>
                 <p><strong className="text-rsp-text">Cancel:</strong> Checkout canceled. No payment was taken.</p>
                 <p><strong className="text-rsp-text">Failed:</strong> Payment failed. Please try another payment method or contact support.</p>
-                <p><strong className="text-rsp-text">Refund:</strong> Refunds available within 14 days if no more than 50% of credits have been used.</p>
+                <p><strong className="text-rsp-text">Refund:</strong> Self-service refunds available within 7 days if no more than 20% of paid credits have been used.</p>
               </div>
               <Link href="/pricing" className="mt-6 inline-block text-rsp-secondary no-underline">Back to pricing →</Link>
             </aside>

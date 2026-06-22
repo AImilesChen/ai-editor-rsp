@@ -165,7 +165,7 @@ export default function AccountBillingCenter() {
           <p className="eyebrow">Billing status</p>
           <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Plan, credits, and subscription actions</h2>
           <p className="mt-3 max-w-2xl leading-7 text-rsp-muted">
-            Manage billing from the signed-in account. You can open the Creem billing portal, cancel recurring billing from the product, or request a refund review. Refund completion is shown only after Creem/payment-provider confirmation.
+            Manage billing from the signed-in account. You can open the Creem billing portal, cancel recurring billing from the product, or request a refund review. Self-service refund review is limited to 7 days after payment and 20% or less paid-credit usage. Refund completion is shown only after Creem/payment-provider confirmation.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-3">
@@ -227,7 +227,7 @@ export default function AccountBillingCenter() {
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund lifecycle</h3>
           <ol className="mt-4 list-decimal space-y-2 pl-5 leading-7 text-rsp-muted">
             <li>Click <strong className="text-rsp-text">Request refund review</strong> from the paid account.</li>
-            <li>The site validates eligibility, cancels an active Creem subscription when possible, and records the action as <strong className="text-rsp-text">refund_requested</strong>.</li>
+            <li>The site validates the 7-day / 20%-usage eligibility gate, cancels an active Creem subscription when possible, and records the action as <strong className="text-rsp-text">refund_requested</strong>.</li>
             <li>Creem confirms the cash refund with <strong className="text-rsp-text">refund.created</strong> or a verified dashboard action.</li>
             <li>The account changes to <strong className="text-rsp-text">refunded</strong> and paid credits are removed.</li>
           </ol>

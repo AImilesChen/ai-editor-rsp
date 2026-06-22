@@ -20,6 +20,8 @@ export type BillingAccount = {
 };
 
 const creditLockedStatuses = new Set<BillingAccount["subscriptionStatus"]>(["refund_requested", "refunded", "disputed"]);
+const SELF_SERVICE_REFUND_WINDOW_DAYS = 7;
+const SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE = 0.2;
 
 function publicBillingAccount(account: BillingAccount): BillingAccount {
   if (!creditLockedStatuses.has(account.subscriptionStatus)) return account;
@@ -700,10 +702,10 @@ async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Prom
   if (!payment.amount_cents || Number(payment.amount_cents) <= 0) return { ...base, code: "PAYMENT_AMOUNT_UNVERIFIED", message: "Payment amount is not verified yet. Please contact support for manual review." };
   const paymentAt = Number(payment.paid_at || payment.created_at || 0);
   const ageDays = paymentAt > 0 ? (Date.now() - paymentAt) / (1000 * 60 * 60 * 24) : Number.POSITIVE_INFINITY;
-  if (ageDays > 14) return { ...base, code: "REFUND_WINDOW_EXPIRED", message: "Refund requests are available within 14 days of payment." };
+  if (ageDays > SELF_SERVICE_REFUND_WINDOW_DAYS) return { ...base, code: "REFUND_WINDOW_EXPIRED", message: "Self-service refund requests are available within 7 days of payment." };
   if (balance.paidGranted <= 0) return { ...base, code: "NO_PAID_CREDITS", message: "No paid credits were found for this billing period." };
-  if (balance.paidCreditsConsumedFirst > balance.paidGranted * 0.5) {
-    return { ...base, code: "PAID_CREDITS_OVER_50_PERCENT_USED", message: "Refund requests are available only when no more than 50% of paid credits have been used." };
+  if (balance.paidCreditsConsumedFirst > balance.paidGranted * SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE) {
+    return { ...base, code: "PAID_CREDITS_OVER_20_PERCENT_USED", message: "Self-service refund requests are available only when no more than 20% of paid credits have been used." };
   }
   return { ...base, eligible: true };
 }
