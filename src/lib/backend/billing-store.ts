@@ -181,7 +181,7 @@ export async function accountForPublicUser(user: AuthUser) {
   };
 }
 
-async function reconcilePendingCreemRefund(userId: string) {
+export async function reconcilePendingCreemRefund(userId: string) {
   const db = await billingDb();
   if (!db || !process.env.CREEM_API_KEY) return null;
   const pending = await db.prepare(`SELECT
@@ -226,6 +226,32 @@ async function reconcilePendingCreemRefund(userId: string) {
     await recordWebhookEvent(db, eventId, "creem.reconcile_refund", { source: "creem_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } }, userId, "processed", null, true);
   }
   return result.account || null;
+}
+
+export async function reconcileAllPendingCreemRefunds(limit = 20) {
+  const db = await billingDb();
+  if (!db || !process.env.CREEM_API_KEY) return { ok: false, reason: "missing_db_or_creem_api_key", checked: 0, reconciled: 0 };
+  const rows = await db.prepare(`SELECT DISTINCT user_id
+    FROM refund_requests
+    WHERE status IN ('submitted', 'pending', 'refund_requested')
+    ORDER BY requested_at ASC
+    LIMIT ?`)
+    .bind(Math.max(1, Math.min(50, limit)))
+    .all<{ user_id: string }>();
+  let checked = 0;
+  let reconciled = 0;
+  const errors: Array<{ userId: string; message: string }> = [];
+  for (const row of rows.results || []) {
+    if (!row.user_id) continue;
+    checked += 1;
+    try {
+      const result = await reconcilePendingCreemRefund(row.user_id);
+      if (result?.subscriptionStatus === "refunded") reconciled += 1;
+    } catch (error) {
+      errors.push({ userId: row.user_id, message: error instanceof Error ? error.message : String(error) });
+    }
+  }
+  return { ok: true, checked, reconciled, errors };
 }
 
 export async function grantCreditsFromCreem(input: CreditGrantInput) {
