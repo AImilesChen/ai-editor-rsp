@@ -80,6 +80,45 @@ export async function cancelCreemSubscription(subscriptionId: string) {
   return creemJsonRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}/cancel`, {});
 }
 
+export type CreemRefundLookupResult = {
+  ok: boolean;
+  refunded: boolean;
+  source?: string;
+  resourceId?: string;
+  status?: string | null;
+  refundId?: string | null;
+  payload?: unknown;
+  error?: string;
+};
+
+export async function lookupCreemRefundStatus(input: { paymentId?: string | null; transactionId?: string | null; checkoutId?: string | null; invoiceId?: string | null }) {
+  const ids = uniqueTruthy([input.transactionId, input.paymentId, input.checkoutId, input.invoiceId]);
+  const paths: Array<{ path: string; id: string }> = [];
+  for (const id of ids) {
+    paths.push({ path: `/transactions/${encodeURIComponent(id)}`, id });
+    paths.push({ path: `/payments/${encodeURIComponent(id)}`, id });
+    paths.push({ path: `/orders/${encodeURIComponent(id)}`, id });
+    paths.push({ path: `/checkouts/${encodeURIComponent(id)}`, id });
+  }
+
+  let lastError: string | undefined;
+  for (const candidate of paths) {
+    const response = await creemGetRequest(candidate.path);
+    if (!response.ok) {
+      lastError = `${candidate.path}: ${response.status || "error"} ${response.message || ""}`.trim();
+      continue;
+    }
+    const status = extractRefundStatus(response.payload);
+    if (status.refunded) {
+      return { ok: true, refunded: true, source: candidate.path, resourceId: candidate.id, status: status.status, refundId: status.refundId, payload: response.payload } satisfies CreemRefundLookupResult;
+    }
+    if (status.status) {
+      lastError = `${candidate.path}: status=${status.status}`;
+    }
+  }
+  return { ok: Boolean(paths.length), refunded: false, error: lastError || (paths.length ? "No refundable Creem resource reported refunded." : "No Creem resource id to inspect.") } satisfies CreemRefundLookupResult;
+}
+
 async function creemJsonRequest(path: string, body: Record<string, unknown>) {
   if (!process.env.CREEM_API_KEY) return { ok: false as const, status: 503, message: "CREEM_API_KEY is not configured." };
   const response = await fetch(`${creemApiBase()}${path}`, {
@@ -90,6 +129,21 @@ async function creemJsonRequest(path: string, body: Record<string, unknown>) {
     },
     body: JSON.stringify(body),
   });
+  return parseCreemResponse(response);
+}
+
+async function creemGetRequest(path: string) {
+  if (!process.env.CREEM_API_KEY) return { ok: false as const, status: 503, message: "CREEM_API_KEY is not configured." };
+  const response = await fetch(`${creemApiBase()}${path}`, {
+    method: "GET",
+    headers: {
+      "x-api-key": process.env.CREEM_API_KEY,
+    },
+  });
+  return parseCreemResponse(response);
+}
+
+async function parseCreemResponse(response: Response) {
   const text = await response.text();
   let payload: unknown = null;
   try {
@@ -102,6 +156,38 @@ async function creemJsonRequest(path: string, body: Record<string, unknown>) {
     return { ok: false as const, status: response.status, message, payload };
   }
   return { ok: true as const, status: response.status, payload };
+}
+
+function extractRefundStatus(payload: unknown) {
+  const statuses: string[] = [];
+  const refundIds: string[] = [];
+  let refunded = false;
+  function visit(value: unknown, depth = 0) {
+    if (!value || depth > 5) return;
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item, depth + 1);
+      return;
+    }
+    if (typeof value !== "object") return;
+    const record = value as Record<string, unknown>;
+    for (const [rawKey, rawValue] of Object.entries(record)) {
+      const key = rawKey.toLowerCase();
+      if (key === "refunded" && rawValue === true) refunded = true;
+      if ((key === "refunded_at" || key === "refundedat") && rawValue) refunded = true;
+      if ((key === "amount_refunded" || key === "amountrefunded" || key === "refunded_amount" || key === "refundedamount") && Number(rawValue) > 0) refunded = true;
+      if ((key === "status" || key === "payment_status" || key === "refund_status" || key === "refundstatus") && typeof rawValue === "string") statuses.push(rawValue.toLowerCase());
+      if ((key === "refund_id" || key === "refundid" || key === "id") && typeof rawValue === "string" && rawValue.toLowerCase().includes("refund")) refundIds.push(rawValue);
+      if (typeof rawValue === "object") visit(rawValue, depth + 1);
+    }
+  }
+  visit(payload);
+  const status = statuses.find(Boolean) || null;
+  if (statuses.some((item) => item === "refunded" || item === "refund_succeeded" || item === "refund.success" || item === "refund_created")) refunded = true;
+  return { refunded, status, refundId: refundIds[0] || null };
+}
+
+function uniqueTruthy(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))));
 }
 
 export function extractPortalUrl(payload: unknown): string | null {

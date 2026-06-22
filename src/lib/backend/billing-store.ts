@@ -1,7 +1,7 @@
 import type { AuthUser } from "@/lib/backend/auth";
 import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/creem";
-import { cancelCreemSubscription } from "@/lib/backend/creem";
+import { cancelCreemSubscription, lookupCreemRefundStatus } from "@/lib/backend/creem";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
 
 export type BillingAccount = {
@@ -167,6 +167,10 @@ export async function ensureBillingAccount(user: AuthUser): Promise<BillingAccou
 
 export async function accountForPublicUser(user: AuthUser) {
   const account = await ensureBillingAccount(user);
+  if (account?.subscriptionStatus === "refund_requested") {
+    const reconciled = await reconcilePendingCreemRefund(user.id);
+    if (reconciled) return publicBillingAccount(reconciled);
+  }
   return account ? publicBillingAccount(account) : {
     userId: user.id,
     email: user.email,
@@ -175,6 +179,53 @@ export async function accountForPublicUser(user: AuthUser) {
     creditsHeld: undefined,
     subscriptionStatus: "none" as const,
   };
+}
+
+async function reconcilePendingCreemRefund(userId: string) {
+  const db = await billingDb();
+  if (!db || !process.env.CREEM_API_KEY) return null;
+  const pending = await db.prepare(`SELECT
+      rr.id AS refund_request_id,
+      rr.payment_id AS refund_payment_id,
+      rr.subscription_id AS refund_subscription_id,
+      p.id AS payment_id,
+      p.creem_transaction_id,
+      p.creem_checkout_id,
+      p.creem_invoice_id,
+      p.subscription_id AS payment_subscription_id
+    FROM refund_requests rr
+    LEFT JOIN payments p ON p.user_id = rr.user_id AND (p.id = rr.payment_id OR p.creem_transaction_id = rr.payment_id OR p.subscription_id = rr.subscription_id)
+    WHERE rr.user_id = ? AND rr.status IN ('submitted', 'pending', 'refund_requested')
+    ORDER BY rr.requested_at DESC, p.created_at DESC
+    LIMIT 1`)
+    .bind(userId)
+    .first<{ refund_request_id: string; refund_payment_id: string | null; refund_subscription_id: string | null; payment_id: string | null; creem_transaction_id: string | null; creem_checkout_id: string | null; creem_invoice_id: string | null; payment_subscription_id: string | null }>();
+  if (!pending?.refund_request_id) return null;
+
+  const lookup = await lookupCreemRefundStatus({
+    paymentId: pending.refund_payment_id || pending.payment_id,
+    transactionId: pending.creem_transaction_id || pending.refund_payment_id,
+    checkoutId: pending.creem_checkout_id,
+    invoiceId: pending.creem_invoice_id,
+  });
+  if (!lookup.refunded) return null;
+
+  const eventId = `creem_reconcile_refund_${Date.now()}_${pending.refund_request_id}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  const result = await markRefundedAccountD1(db, {
+    eventId,
+    eventType: "refund.created",
+    userId,
+    subscriptionId: pending.refund_subscription_id || pending.payment_subscription_id,
+    transactionId: pending.creem_transaction_id || pending.refund_payment_id || pending.payment_id,
+    checkoutId: pending.creem_checkout_id,
+    invoiceId: pending.creem_invoice_id,
+    refundId: lookup.refundId || eventId,
+    rawEvent: { source: "creem_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } },
+  });
+  if (result.persisted) {
+    await recordWebhookEvent(db, eventId, "creem.reconcile_refund", { source: "creem_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } }, userId, "processed", null, true);
+  }
+  return result.account || null;
 }
 
 export async function grantCreditsFromCreem(input: CreditGrantInput) {
