@@ -15,22 +15,33 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await submitRefundRequestForUser(user, reason);
-  if (!result.ok) {
+  const refundResult = result as {
+    ok?: boolean;
+    reason?: string;
+    code?: string;
+    status?: number;
+    requestId?: string;
+    duplicate?: boolean;
+    account?: { subscriptionStatus?: string };
+    subscriptionCanceled?: boolean;
+  };
+  if (!refundResult.ok) {
     const clientErrorReasons = new Set([
       "No paid plan on this account",
       "This account has already been refunded",
       "Refund requests are available within 14 days of payment.",
       "Refund requests are available only when no more than 50% of paid credits have been used.",
     ]);
-    const status = clientErrorReasons.has(result.reason || "") || result.code ? 400 : 503;
-    return NextResponse.json({ ok: false, code: result.code || "REFUND_REQUEST_UNAVAILABLE", message: result.reason }, { status });
+    const status = clientErrorReasons.has(refundResult.reason || "") || refundResult.code ? 400 : 503;
+    return NextResponse.json({ ok: false, code: refundResult.code || "REFUND_REQUEST_UNAVAILABLE", message: refundResult.reason }, { status });
   }
 
   return NextResponse.json({
     ok: true,
-    requestId: result.requestId,
-    duplicate: result.duplicate,
-    status: result.account?.subscriptionStatus,
-    message: result.duplicate ? "Refund request already submitted." : "Refund request submitted.",
+    requestId: refundResult.requestId,
+    duplicate: refundResult.duplicate,
+    status: refundResult.account?.subscriptionStatus,
+    subscriptionCanceled: refundResult.subscriptionCanceled,
+    message: refundResult.duplicate ? "Refund request already submitted." : refundResult.subscriptionCanceled ? "Refund request submitted. Active subscription canceled before provider refund handling." : "Refund request submitted.",
   });
 }

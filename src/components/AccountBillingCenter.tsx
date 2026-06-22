@@ -23,6 +23,7 @@ type ActionResponse = {
   duplicate?: boolean;
   status?: string;
   url?: string;
+  subscriptionCanceled?: boolean;
 };
 
 const completedRefundStatuses = new Set(["refunded"]);
@@ -31,8 +32,8 @@ const canceledStatuses = new Set(["canceled", "scheduled_cancel", "expired"]);
 
 function refundLabel(status?: string) {
   if (completedRefundStatuses.has(status || "")) return "Refund completed";
-  if (pendingRefundStatuses.has(status || "")) return "Refund pending";
-  return "Refund now";
+  if (pendingRefundStatuses.has(status || "")) return "Retry refund prep";
+  return "Request refund review";
 }
 
 function cancelLabel(status?: string) {
@@ -64,7 +65,7 @@ export default function AccountBillingCenter() {
   const refundCompleted = completedRefundStatuses.has(user?.subscriptionStatus || "");
   const subscriptionCanceled = canceledStatuses.has(user?.subscriptionStatus || "");
   const busy = refundSubmitting || cancelSubmitting || portalSubmitting;
-  const refundDisabled = loading || busy || !hasPaidPlan || refundPending || refundCompleted;
+  const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted;
   const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted;
   const portalDisabled = loading || busy || !hasPaidPlan;
 
@@ -87,7 +88,12 @@ export default function AccountBillingCenter() {
         setError(data?.message || "Refund could not be started. Please check your account status.");
         return;
       }
-      setMessage(data.duplicate ? "Refund is already pending with the payment provider." : "Refund request saved. Creem confirmation is required before the account shows refunded.");
+      const nextMessage = data.duplicate
+        ? "Refund review is already pending. If a paid subscription is still active, the product will try to cancel it before provider/manual refund handling."
+        : data.subscriptionCanceled
+          ? "Refund review saved and the active subscription was canceled first. Cash refund still requires Creem dashboard/provider confirmation."
+          : "Refund review saved. Cash refund still requires Creem dashboard/provider confirmation.";
+      setMessage(nextMessage);
       setUser((current) => current ? { ...current, subscriptionStatus: data.status || "refund_requested" } : current);
     } catch {
       setError("Refund could not be started. Please try again.");
@@ -141,7 +147,7 @@ export default function AccountBillingCenter() {
           <p className="eyebrow">Billing status</p>
           <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Plan, credits, and subscription actions</h2>
           <p className="mt-3 max-w-2xl leading-7 text-rsp-muted">
-            Manage billing from the signed-in account. You can open the Creem billing portal, cancel recurring billing from the product, or start a refund request. Refund completion is shown only after Creem/payment-provider confirmation.
+            Manage billing from the signed-in account. You can open the Creem billing portal, cancel recurring billing from the product, or request a refund review. Refund completion is shown only after Creem/payment-provider confirmation.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-3">
@@ -159,7 +165,7 @@ export default function AccountBillingCenter() {
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
-      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund pending: the request has been saved, but the cash refund is not completed yet. Completion requires Creem/payment-provider confirmation.</div> : null}
+      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: the request has been saved. Cash refund is not completed until Creem confirms it in the dashboard/provider flow. If refund processing fails in Creem, click Retry refund prep to cancel an active subscription again, then retry the paid transaction refund in Creem.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: Creem has confirmed the refund. Paid credits are no longer available.</div> : null}
       {subscriptionCanceled ? <div className="mt-5 border border-rsp-border bg-white/70 p-4 text-sm font-semibold text-rsp-text">Subscription status: recurring billing is no longer active for this account.</div> : null}
 
@@ -194,9 +200,9 @@ export default function AccountBillingCenter() {
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund lifecycle</h3>
           <ol className="mt-4 list-decimal space-y-2 pl-5 leading-7 text-rsp-muted">
-            <li>Click <strong className="text-rsp-text">Refund now</strong> from the paid account.</li>
-            <li>The site records the action as <strong className="text-rsp-text">refund_requested</strong>.</li>
-            <li>Creem confirms the refund with <strong className="text-rsp-text">refund.created</strong>.</li>
+            <li>Click <strong className="text-rsp-text">Request refund review</strong> from the paid account.</li>
+            <li>The site validates eligibility, cancels an active Creem subscription when possible, and records the action as <strong className="text-rsp-text">refund_requested</strong>.</li>
+            <li>Creem confirms the cash refund with <strong className="text-rsp-text">refund.created</strong> or a verified dashboard action.</li>
             <li>The account changes to <strong className="text-rsp-text">refunded</strong> and paid credits are removed.</li>
           </ol>
         </article>

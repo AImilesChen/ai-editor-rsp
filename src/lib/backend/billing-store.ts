@@ -516,20 +516,53 @@ async function submitRefundRequestD1(db: D1Database, user: AuthUser, reason?: st
   const account = await ensureD1BillingAccount(db, user);
   if (account.plan === "free") return { ok: false, reason: "No paid plan on this account" };
   if (account.subscriptionStatus === "refunded") return { ok: false, reason: "This account has already been refunded" };
-  if (account.subscriptionStatus === "refund_requested" && account.lastRefundRequestId) return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account };
+  if (account.subscriptionStatus === "refund_requested" && account.lastRefundRequestId) {
+    const cancellation = await cancelActiveSubscriptionForRefundD1(db, account, user.id);
+    if (!cancellation.ok) return { ok: false, reason: cancellation.reason, code: cancellation.code, status: cancellation.status };
+    return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account: { ...account, subscriptionStatus: "refund_requested" as const }, subscriptionCanceled: cancellation.canceled };
+  }
 
   const eligibility = await evaluateRefundEligibilityD1(db, user.id);
   if (!eligibility.eligible) return { ok: false, reason: eligibility.message || "This payment is not eligible for an automatic refund request", code: eligibility.code, eligibility };
+
+  const cancellation = await cancelActiveSubscriptionForRefundD1(db, account, user.id);
+  if (!cancellation.ok) return { ok: false, reason: cancellation.reason, code: cancellation.code, status: cancellation.status };
 
   const now = Date.now();
   const requestId = `refund_${now}_${crypto.randomUUID()}`;
   const subscription = await db.prepare("SELECT id FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1").bind(user.id).first<{ id: string }>();
   await db.prepare("INSERT INTO refund_requests (id, user_id, payment_id, subscription_id, status, reason, credits_at_request, amount_cents, currency, requested_at, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    .bind(requestId, user.id, eligibility.latestPaymentId || null, subscription?.id || null, "submitted", reason?.trim().slice(0, 1000) || null, account.creditsRemaining, eligibility.amountCents || null, eligibility.currency || "USD", now, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus, eligibility }))
+    .bind(requestId, user.id, eligibility.latestPaymentId || null, subscription?.id || null, "submitted", reason?.trim().slice(0, 1000) || null, account.creditsRemaining, eligibility.amountCents || null, eligibility.currency || "USD", now, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus, eligibility, subscriptionCancellation: cancellation }))
     .run();
   await db.prepare("UPDATE users SET status = 'refund_requested', updated_at = ? WHERE id = ?").bind(now, user.id).run();
-  await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund", { reason: reason?.trim().slice(0, 1000) || null, eligibility });
-  return { ok: true, duplicate: false, requestId, account: { ...account, subscriptionStatus: "refund_requested" as const, lastRefundRequestId: requestId, updatedAt: now } };
+  await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund; active subscription cancellation attempted before manual/provider refund", { reason: reason?.trim().slice(0, 1000) || null, eligibility, subscriptionCancellation: cancellation });
+  return { ok: true, duplicate: false, requestId, account: { ...account, subscriptionStatus: "refund_requested" as const, lastRefundRequestId: requestId, updatedAt: now }, subscriptionCanceled: cancellation.canceled };
+}
+
+async function cancelActiveSubscriptionForRefundD1(db: D1Database, account: BillingAccount, userId: string) {
+  const activeStatuses = new Set(["active", "trialing", "past_due", "paused", "refund_requested"]);
+  const subscription = await db.prepare("SELECT id, creem_subscription_id, creem_customer_id, status FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+    .bind(userId)
+    .first<SubscriptionRow>();
+  const subscriptionId = account.subscriptionId || subscription?.creem_subscription_id;
+  const currentStatus = account.subscriptionStatus || subscription?.status;
+  if (!subscriptionId || !activeStatuses.has(currentStatus || "")) return { ok: true as const, canceled: false, reason: "No active Creem subscription to cancel" };
+
+  const creemResult = await cancelCreemSubscription(subscriptionId);
+  if (!creemResult.ok) {
+    return {
+      ok: false as const,
+      canceled: false,
+      code: "CREEM_SUBSCRIPTION_CANCEL_FAILED",
+      status: creemResult.status,
+      reason: creemResult.message || "Creem subscription cancellation failed before refund request. Please use Manage billing or contact support.",
+    };
+  }
+
+  const now = Date.now();
+  await upsertSubscription(db, userId, account.plan === "free" ? "starter" : account.plan, "canceled", subscriptionId, account.customerId || subscription?.creem_customer_id, now);
+  await insertCreditLedger(db, userId, "subscription_cancel_for_refund", `cancel_for_refund_${now}`, 0, account.creditsRemaining, "Active subscription canceled before refund request", { creem: creemResult.payload, subscriptionId });
+  return { ok: true as const, canceled: true, creem: creemResult.payload };
 }
 
 async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Promise<RefundEligibility> {
