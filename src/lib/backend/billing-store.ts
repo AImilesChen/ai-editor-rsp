@@ -528,9 +528,22 @@ async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStat
   }
   const current = await readD1Account(db, userId);
   const now = Date.now();
+  let accountStatus = input.status;
+  if (input.status === "canceled" && current?.subscriptionStatus === "refund_requested") {
+    accountStatus = "refund_requested";
+  }
+  if (input.status === "canceled") {
+    const pendingRefund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
+      .bind(userId)
+      .first<{ id: string }>();
+    if (pendingRefund?.id) accountStatus = "refund_requested";
+  }
+  if (current?.subscriptionStatus === "refunded" && input.status !== "refunded") {
+    accountStatus = "refunded";
+  }
   if (current) {
     await db.prepare("UPDATE users SET plan = COALESCE(?, plan), status = ?, creem_customer_id = COALESCE(?, creem_customer_id), updated_at = ? WHERE id = ?")
-      .bind(input.plan || null, input.status, input.customerId || null, now, userId)
+      .bind(input.plan || null, accountStatus, input.customerId || null, now, userId)
       .run();
   }
   await upsertSubscription(db, userId, input.plan || (current?.plan === "free" ? "starter" : current?.plan) || "starter", input.status, input.subscriptionId, input.customerId, now);
