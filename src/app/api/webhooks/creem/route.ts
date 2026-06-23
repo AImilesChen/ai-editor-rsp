@@ -20,6 +20,12 @@ const BILLING_EVENTS = new Set([
   "subscription.paused",
   "subscription.update",
   "refund.created",
+  "refund.succeeded",
+  "refund.completed",
+  "payment.refunded",
+  "transaction.refunded",
+  "order.refunded",
+  "subscription.refunded",
   "dispute.created",
 ]);
 
@@ -80,7 +86,7 @@ export async function POST(request: NextRequest) {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "trialing", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.paused") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "paused", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
-  } else if (eventType === "refund.created") {
+  } else if (isRefundEvent(eventType)) {
     persistence = await markRefundedAccount({
       eventId,
       eventType,
@@ -112,6 +118,18 @@ export async function POST(request: NextRequest) {
     billingIdsFound: ids,
     persistence,
   });
+}
+
+function isRefundEvent(eventType: string) {
+  const value = eventType.trim().toLowerCase();
+  return value === "refund.created"
+    || value === "refund.succeeded"
+    || value === "refund.completed"
+    || value === "payment.refunded"
+    || value === "transaction.refunded"
+    || value === "order.refunded"
+    || value === "subscription.refunded"
+    || (value.includes("refund") && !value.includes("request"));
 }
 
 function extractIdentity(event: unknown) {
