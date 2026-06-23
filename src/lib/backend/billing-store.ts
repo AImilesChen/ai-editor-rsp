@@ -218,7 +218,21 @@ export async function hasRecentPendingCheckout(userId: string, windowMs = 30 * 6
   const db = await billingDb();
   if (!db) return false;
   const since = Date.now() - windowMs;
-  const row = await db.prepare("SELECT id FROM payments WHERE user_id = ? AND status = 'checkout_pending' AND created_at >= ? ORDER BY created_at DESC LIMIT 1")
+  const row = await db.prepare(`SELECT pending.id
+    FROM payments pending
+    WHERE pending.user_id = ?
+      AND pending.status = 'checkout_pending'
+      AND pending.created_at >= ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM payments completed
+        WHERE completed.user_id = pending.user_id
+          AND completed.id != pending.id
+          AND completed.creem_checkout_id = pending.creem_checkout_id
+          AND completed.status IN ('paid', 'refunded', 'canceled', 'expired', 'disputed')
+      )
+    ORDER BY pending.created_at DESC
+    LIMIT 1`)
     .bind(userId, since)
     .first<{ id: string }>();
   return Boolean(row?.id);
