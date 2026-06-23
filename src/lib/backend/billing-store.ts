@@ -658,8 +658,9 @@ async function submitRefundRequestD1(db: D1Database, user: AuthUser, reason?: st
   const now = Date.now();
   const requestId = `refund_${now}_${crypto.randomUUID()}`;
   const subscription = await db.prepare("SELECT id FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1").bind(user.id).first<{ id: string }>();
+  const refundPaymentId = extractCancellationTransactionId(cancellation) || eligibility.latestPaymentId || null;
   await db.prepare("INSERT INTO refund_requests (id, user_id, payment_id, subscription_id, status, reason, credits_at_request, amount_cents, currency, requested_at, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    .bind(requestId, user.id, eligibility.latestPaymentId || null, subscription?.id || null, "submitted", reason?.trim().slice(0, 1000) || null, account.creditsRemaining, eligibility.amountCents || null, eligibility.currency || "USD", now, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus, eligibility, subscriptionCancellation: cancellation }))
+    .bind(requestId, user.id, refundPaymentId, subscription?.id || null, "submitted", reason?.trim().slice(0, 1000) || null, account.creditsRemaining, eligibility.amountCents || null, eligibility.currency || "USD", now, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus, eligibility, refundPaymentId, subscriptionCancellation: cancellation }))
     .run();
   await db.prepare("UPDATE users SET status = 'refund_requested', updated_at = ? WHERE id = ?").bind(now, user.id).run();
   await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund; active subscription cancellation attempted before manual/provider refund", { reason: reason?.trim().slice(0, 1000) || null, eligibility, subscriptionCancellation: cancellation });
@@ -690,6 +691,24 @@ async function cancelActiveSubscriptionForRefundD1(db: D1Database, account: Bill
   await upsertSubscription(db, userId, account.plan === "free" ? "starter" : account.plan, "canceled", subscriptionId, account.customerId || subscription?.creem_customer_id, now);
   await insertCreditLedger(db, userId, "subscription_cancel_for_refund", `cancel_for_refund_${now}`, 0, account.creditsRemaining, "Active subscription canceled before refund request", { creem: creemResult.payload, subscriptionId });
   return { ok: true as const, canceled: true, creem: creemResult.payload };
+}
+
+function extractCancellationTransactionId(cancellation: { creem?: unknown }) {
+  const payload = cancellation.creem;
+  if (!payload || typeof payload !== "object") return null;
+  const record = payload as Record<string, unknown>;
+  const direct = stringRecordValue(record.last_transaction_id || record.lastTransactionId || record.transaction_id || record.transactionId || record.transaction);
+  if (direct) return direct;
+  const last = record.last_transaction || record.lastTransaction;
+  if (last && typeof last === "object") {
+    const lastRecord = last as Record<string, unknown>;
+    return stringRecordValue(lastRecord.id || lastRecord.transaction_id || lastRecord.transactionId || lastRecord.transaction);
+  }
+  return null;
+}
+
+function stringRecordValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
 async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Promise<RefundEligibility> {
