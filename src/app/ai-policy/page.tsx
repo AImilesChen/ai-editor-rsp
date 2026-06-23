@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { AI_PROVIDER, legalDisclaimer, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { legalDisclaimer, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "AI Policy — AI Editor RSP",
@@ -46,7 +46,7 @@ export default function AiPolicyPage() {
           <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Clear AI usage policy for image generation.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">{legalDisclaimer}</p>
           <p className="mt-5 max-w-2xl text-base leading-7 text-rsp-text">
-            Our safety rules are aligned with widely used AI usage-policy principles, including the types of content OpenAI and major AI providers prohibit. This page is not an official OpenAI policy page; it is AI Editor RSP&apos;s own user-facing safety summary.
+            Our safety rules are based on common AI usage-policy principles used across major AI platforms. This page is AI Editor RSP&apos;s own user-facing safety summary.
           </p>
         </div>
 
@@ -63,14 +63,14 @@ export default function AiPolicyPage() {
           <h2 className="font-heading text-2xl font-bold text-rsp-text">Enforcement and review</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-7 text-rsp-muted">
             <li>We may block prompts, refuse generation, remove outputs, suspend access, or request additional review when content creates safety, legal, or rights risk.</li>
-            <li>Prompt and output moderation runs before and after generation. AI image/video payment review may also require Creem moderation controls or an equivalent documented moderation process.</li>
-            <li>Provider terms still apply. Generation uses third-party AI model providers such as {AI_PROVIDER} for image generation and editing requests.</li>
+            <li>Prompt and output moderation may run before and after generation. Payment, abuse, and policy reviews may also use third-party safety and fraud-prevention tools.</li>
+            <li>Provider terms still apply. Generation uses third-party AI model providers for image generation and editing requests.</li>
             <li>Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.</li>
           </ul>
         </section>
 
         <div className="mt-8 border border-rsp-secondary/25 bg-[#FFF7EA] p-5 text-sm font-medium leading-6 text-[#7A3F12] shadow-[0_18px_40px_rgba(184,115,51,0.10)]">
-          Provider: {AI_PROVIDER}. Contact: {SUPPORT_EMAIL}. This policy describes the current safety and AI-use rules for account access, credits, generation requests, billing, and refunds.
+          Contact: {SUPPORT_EMAIL}. This policy describes the current safety and AI-use rules for account access, credits, generation requests, billing, and refunds.
         </div>
       </main>
       <Footer />

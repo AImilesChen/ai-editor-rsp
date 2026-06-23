@@ -79,8 +79,8 @@ export const pricingPlans = [
 
 export const integrationStates = [
   { label: "AI image generation", state: "Connected", detail: "Generation requests run through secure image generation with safety and credit checks." },
-  { label: "Creem subscription billing", state: "Connected", detail: "Checkout, customer portal, cancellation, webhook credit grants, and refund status are handled through Creem." },
-  { label: "Login and library", state: "Connected", detail: "Google OAuth, email magic links, account credits, and billing status are available from signed-in accounts." },
+  { label: "Subscription billing", state: "Connected", detail: "Secure checkout, billing portal access, cancellation, credits, and refund status are available from signed-in accounts." },
+  { label: "Login and library", state: "Connected", detail: "Google sign-in, email magic links, account credits, and billing status are available from signed-in accounts." },
   { label: "Credits", state: "Account-based", detail: "New accounts receive 3 one-time free credits. Paid credits are granted after payment confirmation." },
 ];
 
@@ -91,5 +91,5 @@ export const faqItems = [
   { q: "Do I need a card to start?", a: "No. You can sign in and use your free credits before choosing a paid plan." },
   { q: "Can I use uploaded images for editing?", a: "Yes. Upload a PNG, JPG, or WebP image, describe the edit, compare before and after, then download the result." },
   { q: "Can I use generated images commercially?", a: "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use." },
-  { q: "How are payments handled?", a: "Paid plans use secure Creem checkout after sign-in. AI Editor RSP does not store your payment details. Eligible refunds can be requested from Account → Billing." },
+  { q: "How are payments handled?", a: "Paid plans use secure hosted checkout after sign-in. AI Editor RSP does not store your payment details. Eligible refunds can be requested from Account → Billing." },
 ];

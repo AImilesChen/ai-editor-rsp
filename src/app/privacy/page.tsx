@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createMetadata } from "@/lib/utils/metadata";
-import { AI_PROVIDER, PAYMENT_PROVIDER, SUPPORT_EMAIL } from "@/lib/site";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
   title: "Privacy Policy",
@@ -35,8 +35,8 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li><strong>Account information:</strong> email address, display name, login provider, authentication state, plan, and credits balance.</li>
               <li><strong>Authentication data:</strong> Google OAuth response data needed to sign you in, email magic link tokens, and security/session cookies.</li>
-              <li><strong>Generation data:</strong> prompts, selected style/aspect settings, uploaded input image data when you choose to upload a photo, generated image request IDs, provider response metadata, safety events, and credit usage.</li>
-              <li><strong>Billing data:</strong> selected plan, checkout status, payment identifiers, subscription status, refunds, and credit grants when you choose a paid plan through {PAYMENT_PROVIDER}. We do not store full card numbers on our servers.</li>
+              <li><strong>Generation data:</strong> prompts, selected style/aspect settings, uploaded input images when you choose to upload a photo, generated results, safety checks, and credit usage.</li>
+              <li><strong>Billing data:</strong> selected plan, checkout status, payment identifiers, subscription status, refunds, and credit grants when you choose a paid plan. We do not store full card numbers on our servers.</li>
               <li><strong>Technical data:</strong> IP address, browser/device information, logs, abuse-prevention signals, and Cloudflare security/performance data.</li>
             </ul>
 
@@ -45,17 +45,17 @@ export default function PrivacyPage() {
               <li>To provide login, account access, credits, image generation, and result delivery.</li>
               <li>To process billing, subscription changes, refunds, support requests, and abuse prevention after payment is enabled.</li>
               <li>To run safety checks, prevent prohibited content, detect repeated violations, and protect the service.</li>
-              <li>To maintain site performance, debug errors, prevent fraud, and improve user experience.</li>
+              <li>To maintain site reliability, resolve errors, prevent fraud, and improve user experience.</li>
               <li>To send transactional email such as magic links, account notices, payment notices, and support responses.</li>
             </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Third-Party Services</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li><strong>Cloudflare:</strong> hosting, Workers, security, CDN, D1/R2/KV/Queues where enabled, and Cloudflare Web Analytics beacon.</li>
+              <li><strong>Cloudflare:</strong> hosting, security, storage, performance, and analytics services where enabled.</li>
               <li><strong>Google OAuth:</strong> sign-in with your Google account when you choose Google login.</li>
               <li><strong>Resend:</strong> email magic links and transactional email delivery.</li>
-              <li><strong>{AI_PROVIDER}:</strong> third-party AI model/API provider used to process prompts, uploaded input images, and generation requests.</li>
-              <li><strong>{PAYMENT_PROVIDER}:</strong> payment, tax, invoice, subscription, refund, and chargeback processing when billing is used.</li>
+              <li><strong>AI model providers:</strong> third-party services used to process prompts, uploaded input images, and generation requests.</li>
+              <li><strong>Payment providers:</strong> payment, tax, invoice, subscription, refund, and chargeback processing when billing is used.</li>
               <li><strong>External creator tools:</strong> links to platforms such as CapCut, ChatGPT, Gemini, Bing Image Creator, or similar services are governed by those services&apos; own policies.</li>
             </ul>
 

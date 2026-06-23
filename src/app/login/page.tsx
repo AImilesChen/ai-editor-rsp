@@ -23,9 +23,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <h1 className="mt-4 font-heading text-5xl font-normal tracking-[-0.04em] text-rsp-text md:text-6xl">Log in to continue</h1>
             <p className="mt-5 max-w-xl text-lg leading-8 text-rsp-muted">New users get 3 free credits total. Sign in to manage credits, generation history, billing, and refund requests from your account.</p>
             <div className="mt-8 grid gap-3 text-sm text-rsp-muted">
-              <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Google OAuth</strong><br />Primary login path for account access.</div>
-              <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Email Magic Link</strong><br />Passwordless fallback via Resend.</div>
-              <div className="border border-rsp-secondary/35 bg-rsp-secondary/10 p-4"><strong className="text-rsp-text">Credits</strong><br />Draft 1 / Standard 2 / High Quality 4. Paid plans use secure Creem checkout and account billing records.</div>
+              <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Google sign-in</strong><br />Primary login path for account access.</div>
+              <div className="border border-rsp-border bg-white/55 p-4"><strong className="text-rsp-text">Email magic link</strong><br />Passwordless sign-in if you prefer email.</div>
+              <div className="border border-rsp-secondary/35 bg-rsp-secondary/10 p-4"><strong className="text-rsp-text">Credits</strong><br />Different image modes and sizes use different credit amounts. Paid plans use secure hosted checkout.</div>
             </div>
           </section>
           <LoginPanel error={params.error} />

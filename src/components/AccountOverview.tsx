@@ -75,7 +75,7 @@ export default function AccountOverview() {
         <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 font-mono text-sm font-semibold text-rsp-secondary">Credits: {user.creditsRemaining} remaining</div>
         <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Plan: {user.plan}</div>
         <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Subscription: {user.subscriptionStatus || "none"}</div>
-        <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Provider: {user.provider === "google" ? "Google OAuth" : "Email Magic Link"}</div>
+        <div className="mt-3 border border-rsp-border bg-white/55 p-3 text-sm text-rsp-muted">Sign-in method: {user.provider === "google" ? "Google" : "Email magic link"}</div>
         <nav className="mt-6 grid gap-2">
           <Link className="choice-active no-underline" href="/account">Overview</Link>
           <Link className="choice no-underline" href="/account/history">Generation History</Link>

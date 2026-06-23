@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createMetadata } from "@/lib/utils/metadata";
-import { PAYMENT_PROVIDER, SUPPORT_EMAIL } from "@/lib/site";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
   title: "Refund Policy",
-  description: "Refund rules for AI Editor RSP credits, monthly plans, failed generations, and billing-provider refunds.",
+  description: "Refund rules for AI Editor RSP credits, monthly plans, failed generations, and refunds.",
   path: "/refund-policy",
 });
 
@@ -23,7 +23,7 @@ export default function RefundPolicyPage() {
 
           <div className="prose prose-neutral max-w-none text-neutral-700 leading-7">
             <p className="mb-4">
-              AI Editor RSP uses credits for AI image generation. This Refund Policy explains the refund rules for paid monthly plans processed through {PAYMENT_PROVIDER} and for failed or blocked generation attempts.
+              AI Editor RSP uses credits for AI image generation. This Refund Policy explains the refund rules for paid monthly plans and for failed or blocked generation attempts.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Free Credits</h2>
@@ -49,24 +49,24 @@ export default function RefundPolicyPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Failed or Blocked Generations</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>If a prompt is blocked by our safety checks before generation, credits are not charged.</li>
-              <li>If a provider rejects a request, returns no usable result, times out, or fails because of a system error, the affected credit may be returned or not deducted according to product logic.</li>
-              <li>If generated output is blocked after provider processing for safety reasons, the system may return the affected credit once for that request.</li>
+              <li>If a generation request fails, times out, or returns no usable result because of a system error, the affected credit may be returned or not deducted.</li>
+              <li>If generated output is blocked after processing for safety reasons, the affected credit may be returned once for that request.</li>
               <li>Subjective dissatisfaction with AI output style, composition, resemblance, or perceived quality does not automatically qualify for a refund or replacement credits.</li>
             </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Cancellations</h2>
             <p className="mb-4">
-              You can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel subscription</a> or from the Creem Customer Portal opened by the Manage billing button. Cancellation stops future recurring billing. Remaining credits and access follow the active plan, safety rules, and payment-provider status.
+              You can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel subscription</a> or from the billing portal opened by the Manage billing button. Cancellation stops future recurring billing. Remaining credits and access follow the active plan and safety rules.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">How Refunds Are Processed</h2>
             <p className="mb-4">
-              Payments, taxes, invoices, refunds, and chargebacks may be processed by {PAYMENT_PROVIDER} or another payment provider/Merchant of Record. Refund timing, supported countries, tax treatment, payment-method availability, and chargeback handling depend on that provider&apos;s current terms and the applicable payment network.
+              Payments, taxes, invoices, refunds, and chargebacks may be processed by a third-party payment provider. Refund timing, supported countries, tax treatment, payment-method availability, and chargeback handling depend on that provider&apos;s current terms and the applicable payment network.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Request a Refund</h2>
             <p className="mb-4">
-              The primary refund path is inside your account: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund review</a>. The button validates the 7-day / 20%-usage eligibility gate, records the request from the signed-in account, and cancels an active Creem subscription first when possible. The account shows <strong>refund_requested</strong> while the payment-provider refund is pending and <strong>refunded</strong> only after Creem confirms the refund or a verified dashboard refund is synced.
+              The primary refund path is inside your account: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund review</a>. We check the 7-day refund window and the 20% paid-credit usage limit, then cancel future renewals when possible. Your account shows the refund as under review while confirmation is pending and completed after the refund is confirmed.
             </p>
             <p className="mb-4">
               If the account button is unavailable, contact <a className="text-brand-500 underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> from the email associated with your account. Do not send card numbers, passwords, API keys, or sensitive identity documents by email.

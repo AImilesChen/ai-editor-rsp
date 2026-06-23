@@ -19,8 +19,8 @@ const pricingFaq = [
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
   ["Can I get a refund?", "Self-service refunds are available within 7 days of purchase if no more than 20% of paid credits from that billing period have been used. A confirmed refund revokes paid-plan credits but preserves any unused one-time free signup credits."],
-  ["How do I manage or cancel billing?", "Use Account → Billing → Manage billing to open the Creem Customer Portal, or use Cancel subscription in the product to stop future recurring billing."],
-  ["What happens if I cancel?", "Cancellation stops future recurring billing. Remaining credits and access follow the active plan status, safety rules, and Creem confirmation events. Monthly credits do not roll over after the billing period ends."],
+  ["How do I manage or cancel billing?", "Use Account → Billing to manage payment details, invoices, cancellation, and refund requests."],
+  ["What happens if I cancel?", "Cancellation stops future recurring billing. Remaining credits and access follow the active plan rules and monthly credits do not roll over after the billing period ends."],
   ["Can I use generated images commercially?", "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use."],
 ];
 
@@ -63,7 +63,7 @@ export default function PricingPage() {
             ))}
           </div>
           <div className="mx-auto mt-8 grid max-w-screen-2xl gap-3 md:grid-cols-3">
-            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Payments are processed by Creem after sign-in. AI Editor RSP does not store your payment details.</div>
+            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Payments are processed through a secure hosted checkout after sign-in. AI Editor RSP does not store your payment details.</div>
             <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Cancel anytime:</strong> Monthly credits are valid for the current billing period and do not roll over.</div>
             <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">AI usage:</strong> {legalDisclaimer}</div>
           </div>

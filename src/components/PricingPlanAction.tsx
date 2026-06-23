@@ -121,7 +121,7 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
         <Link href="/account/billing" className="w-full rounded-full border border-rsp-secondary bg-rsp-secondary/12 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-secondary">
           Refund pending
         </Link>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">Your {planName} credits are locked while Creem refund confirmation is pending. Check Account → Billing for status.</p>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">Your {planName} credits are temporarily unavailable while refund confirmation is pending. Check Account → Billing for status.</p>
       </div>
     );
   }
@@ -130,7 +130,7 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
     return (
       <div className="mt-7">
         <Link href="/account/billing" className="rsp-button-primary w-full text-center">Refund pending</Link>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">A refund review is already in progress. Paid credits are locked until provider confirmation, so new checkout is paused.</p>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">A refund review is already in progress. Paid credits are temporarily unavailable, so new checkout is paused.</p>
       </div>
     );
   }

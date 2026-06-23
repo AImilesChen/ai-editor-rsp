@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createMetadata } from "@/lib/utils/metadata";
-import { AI_PROVIDER, PAYMENT_PROVIDER, SUPPORT_EMAIL } from "@/lib/site";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
   title: "Terms of Service",
@@ -31,12 +31,12 @@ export default function TermsPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Service Description</h2>
             <p className="mb-4">
-              AI Editor RSP provides prompt-assisted AI image generation, curated RSP-style prompt inspiration, image upload workflows, account access, credits, and related creator tools. Images are generated through third-party AI model/API providers such as {AI_PROVIDER}. Output quality, availability, and usage rights may vary by model, provider terms, prompt, uploaded image, and applicable law.
+              AI Editor RSP provides prompt-assisted AI image generation, curated RSP-style prompt inspiration, image upload workflows, account access, credits, and related creator tools. Images are generated through third-party AI model services. Output quality, availability, and usage rights may vary by model terms, prompt, uploaded image, and applicable law.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Accounts and Security</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li>You may sign in using Google OAuth or email magic link.</li>
+              <li>You may sign in using Google or an email magic link.</li>
               <li>You are responsible for keeping your email account and devices secure.</li>
               <li>We may limit, suspend, or terminate access for abuse, fraud, safety violations, or attempts to bypass credits or technical limits.</li>
             </ul>
@@ -44,27 +44,27 @@ export default function TermsPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Credits and Plans</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>New users receive 3 free credits total as a one-time trial grant.</li>
-              <li>Generation cost can vary by mode and image size. Text-to-image portrait requests use fewer credits; square, landscape, and uploaded-photo edits use more credits because provider cost is higher.</li>
+              <li>Generation cost can vary by mode and image size. Text-to-image portrait requests use fewer credits; square, landscape, and uploaded-photo edits may use more credits.</li>
               <li>Paid monthly plans grant credits at the start of each billing period after payment confirmation. Paid credits do not roll over unless stated otherwise in the plan copy.</li>
               <li>Plans, credit amounts, queues, retention periods, and prices may change. Changes will be shown before purchase or renewal where required.</li>
             </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Billing</h2>
             <p className="mb-4">
-              Payments, taxes, invoices, subscriptions, refunds, and chargebacks may be processed by {PAYMENT_PROVIDER} or another payment provider/Merchant of Record. You must provide accurate billing information and comply with the payment provider&apos;s terms. We do not store full card numbers on our servers.
+              Payments, taxes, invoices, subscriptions, refunds, and chargebacks may be processed by a third-party payment provider. You must provide accurate billing information and comply with the payment provider&apos;s terms. We do not store full card numbers on our servers.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Refunds and Failed Generations</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>Self-service refunds are available within 7 days of purchase if no more than 20% of the granted paid credits have been used, unless applicable law requires otherwise.</li>
               <li>If a prompt is blocked before generation, credits are not charged.</li>
-              <li>If the AI provider rejects a request, times out, or returns no usable result due to a system/provider failure, we may avoid charging or return the affected credit according to product logic.</li>
+              <li>If a generation request fails, times out, or returns no usable result due to a system issue, we may avoid charging or return the affected credit.</li>
               <li>Subjective dissatisfaction with AI output style, composition, or quality does not automatically qualify for a refund or extra credits.</li>
             </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Acceptable Use</h2>
             <p className="mb-4">
-              You must follow our <a className="text-brand-500 underline" href="/content-policy">Content Policy</a> and <a className="text-brand-500 underline" href="/ai-policy">AI Policy</a>. Do not use the service to create illegal, abusive, deceptive, sexually exploitative, non-consensual, hateful, violent, extremist, or rights-infringing content. Do not submit prompts or uploads that violate copyright, trademark, publicity, privacy, or platform/provider rules.
+              You must follow our <a className="text-brand-500 underline" href="/content-policy">Content Policy</a> and <a className="text-brand-500 underline" href="/ai-policy">AI Policy</a>. Do not use the service to create illegal, abusive, deceptive, sexually exploitative, non-consensual, hateful, violent, extremist, or rights-infringing content. Do not submit prompts or uploads that violate copyright, trademark, publicity, privacy, or third-party platform rules.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Third-Party Tools and Rights</h2>

@@ -25,7 +25,7 @@ export const pricingPlans = [
     badge: "Standard queue",
     audience: "For occasional image generation and light editing.",
     estimate: "For light creator use.",
-    features: ["120 credits/month", "Use ready-made prompts", "Generate portraits, products, and social visuals", "Secure checkout through Creem"],
+    features: ["120 credits/month", "Use ready-made prompts", "Generate portraits, products, and social visuals", "Secure hosted checkout"],
   },
   {
     name: "Creator",

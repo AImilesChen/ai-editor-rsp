@@ -27,7 +27,7 @@ export default function ContentPolicyPage() {
           <p className="rsp-chip mb-4 border-rsp-secondary/35 bg-white/70 text-rsp-secondary">Content Policy</p>
           <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Content safety rules.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">
-            Do not submit prompts intended to create illegal, abusive, deceptive, sexually exploitative, or rights-infringing content. These rules are aligned with common AI provider safety standards, including OpenAI-style prohibited-use categories, while remaining AI Editor RSP&apos;s own site policy.
+            Do not submit prompts intended to create illegal, abusive, deceptive, sexually exploitative, or rights-infringing content. These rules are aligned with common AI safety standards while remaining AI Editor RSP&apos;s own site policy.
           </p>
         </div>
 

@@ -33,7 +33,7 @@ const canceledStatuses = new Set(["canceled", "scheduled_cancel", "expired"]);
 
 function refundLabel(status?: string) {
   if (completedRefundStatuses.has(status || "")) return "Refund completed";
-  if (pendingRefundStatuses.has(status || "")) return "Retry refund prep";
+  if (pendingRefundStatuses.has(status || "")) return "Refund under review";
   return "Request refund review";
 }
 
@@ -83,7 +83,7 @@ export default function AccountBillingCenter() {
   const refundCompleted = completedRefundStatuses.has(user?.subscriptionStatus || "");
   const subscriptionCanceled = canceledStatuses.has(user?.subscriptionStatus || "");
   const busy = refundSubmitting || cancelSubmitting || portalSubmitting;
-  const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted;
+  const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted || refundPending;
   const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted;
   const portalDisabled = loading || busy || !hasPaidPlan;
 
@@ -107,10 +107,10 @@ export default function AccountBillingCenter() {
         return;
       }
       const nextMessage = data.duplicate
-        ? "Refund review is already pending. If a paid subscription is still active, the product will try to cancel it before provider/manual refund handling."
+        ? "Your refund review is already pending. Paid credits remain temporarily unavailable while we confirm the refund status."
         : data.subscriptionCanceled
-          ? "Refund review saved and the active subscription was canceled first. Cash refund still requires Creem dashboard/provider confirmation."
-          : "Refund review saved. Cash refund still requires Creem dashboard/provider confirmation.";
+          ? "Refund review saved and future renewals were canceled. We will update your account after the refund is confirmed."
+          : "Refund review saved. We will update your account after the refund is confirmed.";
       setMessage(nextMessage);
       setUser((current) => current ? { ...current, subscriptionStatus: data.status || "refund_requested" } : current);
     } catch {
@@ -149,7 +149,7 @@ export default function AccountBillingCenter() {
         setError(data?.message || "Subscription could not be canceled. Use Manage billing or contact support.");
         return;
       }
-      setMessage(data.duplicate ? "Subscription was already canceled." : "Subscription canceled. The account status has been updated and Creem webhooks will keep it in sync.");
+      setMessage(data.duplicate ? "Subscription was already canceled." : "Subscription canceled. Future recurring billing will stop for this account.");
       setUser((current) => current ? { ...current, subscriptionStatus: data.status || "canceled" } : current);
     } catch {
       setError("Subscription could not be canceled. Please try again.");
@@ -165,7 +165,7 @@ export default function AccountBillingCenter() {
           <p className="eyebrow">Billing status</p>
           <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Plan, credits, and subscription actions</h2>
           <p className="mt-3 max-w-2xl leading-7 text-rsp-muted">
-            Manage billing from the signed-in account. You can open the Creem billing portal, cancel recurring billing from the product, or request a refund review. Self-service refund review is limited to 7 days after payment and 20% or less paid-credit usage. Refund completion is shown only after Creem/payment-provider confirmation.
+            Manage billing from your account. You can view payment details, cancel future renewals, or request a refund review. Self-service refund review is limited to 7 days after payment and 20% or less paid-credit usage. We update your account after the refund is confirmed.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-3">
@@ -183,8 +183,8 @@ export default function AccountBillingCenter() {
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
-      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are locked while cash refund is waiting for Creem dashboard/provider confirmation. If refund processing fails in Creem, click Retry refund prep to cancel an active subscription again, then retry the paid transaction refund in Creem.</div> : null}
-      {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: Creem has confirmed the refund. Paid credits are no longer available.</div> : null}
+      {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are temporarily unavailable while we confirm the refund status. We will update your account once the review is complete.</div> : null}
+      {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: paid-plan credits are no longer available.</div> : null}
       {subscriptionCanceled ? <div className="mt-5 border border-rsp-border bg-white/70 p-4 text-sm font-semibold text-rsp-text">Subscription status: recurring billing is no longer active for this account.</div> : null}
 
       <div className="mt-8 grid gap-3 md:grid-cols-4">
@@ -217,19 +217,19 @@ export default function AccountBillingCenter() {
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article className="border border-rsp-border bg-rsp-surface p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Open Creem&apos;s secure Customer Portal to update payment methods, inspect billing details, and manage your subscription directly with the merchant-of-record provider.</p>
+          <p className="mt-4 leading-7 text-rsp-muted">Open the secure billing portal to view invoices, update payment details, and manage your subscription.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Cancel subscription</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Canceling stops future recurring billing. The product calls Creem&apos;s subscription cancellation API when your account has a Creem subscription ID.</p>
+          <p className="mt-4 leading-7 text-rsp-muted">Canceling stops future renewals. Credits from the current billing period remain subject to the plan rules.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
-          <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund lifecycle</h3>
+          <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund review</h3>
           <ol className="mt-4 list-decimal space-y-2 pl-5 leading-7 text-rsp-muted">
             <li>Click <strong className="text-rsp-text">Request refund review</strong> from the paid account.</li>
-            <li>The site validates the 7-day / 20%-usage eligibility gate, cancels an active Creem subscription when possible, and records the action as <strong className="text-rsp-text">refund_requested</strong>.</li>
-            <li>Creem confirms the cash refund with <strong className="text-rsp-text">refund.created</strong> or a verified dashboard action.</li>
-            <li>The account changes to <strong className="text-rsp-text">refunded</strong> and paid credits are removed.</li>
+            <li>We check the 7-day refund window and the 20% paid-credit usage limit.</li>
+            <li>Future renewals are canceled when possible.</li>
+            <li>Once the refund is confirmed, paid-plan credits are removed from the account.</li>
           </ol>
         </article>
       </div>
@@ -241,7 +241,7 @@ export default function AccountBillingCenter() {
       </div>
 
       <p className="mt-5 text-sm leading-6 text-rsp-muted">
-        Support: <a className="text-rsp-secondary underline" href="mailto:support@aieditorrspediting.org">support@aieditorrspediting.org</a>. We respond to billing and refund requests within 3 business days. Credit card refunds generally appear in 5-10 business days after Creem processes them.
+        Support: <a className="text-rsp-secondary underline" href="mailto:support@aieditorrspediting.org">support@aieditorrspediting.org</a>. We respond to billing and refund requests within 3 business days. Credit card refunds generally appear in 5-10 business days after processing.
       </p>
     </section>
   );

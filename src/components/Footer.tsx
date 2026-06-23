@@ -37,7 +37,7 @@ export default function Footer() {
           <p className="mt-3 text-xs leading-5">Use Account → Billing to manage billing, cancel subscriptions, or start eligible refund requests. We respond within 3 business days.</p>
         </div>
       </div>
-      <div className="mx-auto mt-10 max-w-screen-2xl border-t border-rsp-border pt-6 text-xs text-rsp-muted">© 2026 AI Editor RSP. Payments are processed by Creem. AI generation uses third-party model providers and requires user review.</div>
+      <div className="mx-auto mt-10 max-w-screen-2xl border-t border-rsp-border pt-6 text-xs text-rsp-muted">© 2026 AI Editor RSP. Payments use secure hosted checkout. AI-generated images require user review.</div>
     </footer>
   );
 }

@@ -49,8 +49,8 @@ export default function DisclaimerPage() {
             <p className="mb-4">
               AI Editor RSP provides prompt-assisted image generation and curated
               prompt inspiration. Generated images are processed by third-party
-              AI model/API providers and results may vary significantly based on
-              provider availability, model version, settings, prompts, and input images used.
+              AI model services and results may vary significantly based on
+              service availability, model version, settings, prompts, and input images used.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">
