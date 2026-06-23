@@ -604,7 +604,8 @@ async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) 
   }
 
   const current = await readD1Account(db, userId);
-  if (current?.subscriptionStatus && creditLockedStatuses.has(current.subscriptionStatus)) {
+  const sameLockedSubscription = Boolean(current?.subscriptionId && input.subscriptionId && current.subscriptionId === input.subscriptionId);
+  if (current?.subscriptionStatus === "refund_requested" || current?.subscriptionStatus === "disputed" || (current?.subscriptionStatus === "refunded" && sameLockedSubscription)) {
     await recordWebhookEvent(db, input.eventId, input.eventType, { ignored: "account_locked_for_refund", raw: input.rawEvent || input }, userId, "processed", null, true);
     return { persisted: true, duplicate: true, account: current };
   }
@@ -676,7 +677,8 @@ async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStat
     accountStatus = "refund_requested";
   }
   if (current?.subscriptionStatus === "refunded" && input.status !== "refunded") {
-    accountStatus = "refunded";
+    const sameSubscription = Boolean(current.subscriptionId && input.subscriptionId && current.subscriptionId === input.subscriptionId);
+    if (sameSubscription) accountStatus = "refunded";
   }
   if (current) {
     await db.prepare("UPDATE users SET plan = COALESCE(?, plan), status = ?, creem_customer_id = COALESCE(?, creem_customer_id), updated_at = ? WHERE id = ?")
