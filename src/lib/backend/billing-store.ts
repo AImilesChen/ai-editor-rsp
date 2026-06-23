@@ -177,9 +177,14 @@ export async function ensureBillingAccount(user: AuthUser): Promise<BillingAccou
 
 export async function accountForPublicUser(user: AuthUser) {
   const account = await ensureBillingAccount(user);
-  if (account?.subscriptionStatus === "refund_requested") {
+  const pendingRefund = await pendingRefundRequestForUser(user.id);
+  if (account?.subscriptionStatus === "refund_requested" || pendingRefund) {
     const reconciled = await reconcilePendingCreemRefund(user.id);
     if (reconciled) return publicBillingAccount(reconciled);
+    if (pendingRefund && account && account.subscriptionStatus !== "refunded") {
+      const synced = await syncAccountToPendingRefund(user.id);
+      return publicBillingAccount(synced || { ...account, subscriptionStatus: "refund_requested" as const, lastRefundRequestId: pendingRefund.id });
+    }
   }
   return account ? publicBillingAccount(account) : {
     userId: user.id,
@@ -189,6 +194,24 @@ export async function accountForPublicUser(user: AuthUser) {
     creditsHeld: undefined,
     subscriptionStatus: "none" as const,
   };
+}
+
+async function pendingRefundRequestForUser(userId: string) {
+  const db = await billingDb();
+  if (!db) return null;
+  return db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
+    .bind(userId)
+    .first<{ id: string }>();
+}
+
+async function syncAccountToPendingRefund(userId: string) {
+  const db = await billingDb();
+  if (!db) return null;
+  const now = Date.now();
+  await db.prepare("UPDATE users SET status = 'refund_requested', updated_at = ? WHERE id = ? AND status NOT IN ('refunded', 'disputed')")
+    .bind(now, userId)
+    .run();
+  return readD1Account(db, userId);
 }
 
 export async function reconcilePendingCreemRefund(userId: string) {
@@ -526,7 +549,7 @@ async function readD1Account(db: D1Database, userId?: string | null, email?: str
   const sub = await db.prepare("SELECT id, creem_subscription_id, creem_customer_id, status FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
     .bind(row.id)
     .first<SubscriptionRow>();
-  const refund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status = 'submitted' ORDER BY requested_at DESC LIMIT 1")
+  const refund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
     .bind(row.id)
     .first<{ id: string }>();
   return {
@@ -559,6 +582,10 @@ async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) 
   }
 
   const current = await readD1Account(db, userId);
+  if (current?.subscriptionStatus && creditLockedStatuses.has(current.subscriptionStatus)) {
+    await recordWebhookEvent(db, input.eventId, input.eventType, { ignored: "account_locked_for_refund", raw: input.rawEvent || input }, userId, "processed", null, true);
+    return { persisted: true, duplicate: true, account: current };
+  }
   const email = input.email?.trim().toLowerCase() || current?.email || `${userId}@unknown.local`;
   const now = Date.now();
   if (!current) {
@@ -620,11 +647,11 @@ async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStat
   if (input.status === "canceled" && current?.subscriptionStatus === "refund_requested") {
     accountStatus = "refund_requested";
   }
-  if (input.status === "canceled") {
-    const pendingRefund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
-      .bind(userId)
-      .first<{ id: string }>();
-    if (pendingRefund?.id) accountStatus = "refund_requested";
+  const pendingRefund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
+    .bind(userId)
+    .first<{ id: string }>();
+  if (pendingRefund?.id && input.status !== "refunded") {
+    accountStatus = "refund_requested";
   }
   if (current?.subscriptionStatus === "refunded" && input.status !== "refunded") {
     accountStatus = "refunded";
