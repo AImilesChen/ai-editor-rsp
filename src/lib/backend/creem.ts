@@ -95,11 +95,20 @@ export async function lookupCreemRefundStatus(input: { paymentId?: string | null
   const ids = uniqueTruthy([input.transactionId, input.paymentId, input.checkoutId, input.invoiceId, input.subscriptionId]);
   const paths: Array<{ path: string; id: string }> = [];
   for (const id of ids) {
-    paths.push({ path: `/transactions/${encodeURIComponent(id)}`, id });
-    paths.push({ path: `/payments/${encodeURIComponent(id)}`, id });
-    paths.push({ path: `/orders/${encodeURIComponent(id)}`, id });
-    paths.push({ path: `/checkouts/${encodeURIComponent(id)}`, id });
-    paths.push({ path: `/subscriptions/${encodeURIComponent(id)}`, id });
+    const encoded = encodeURIComponent(id);
+    // Creem's read endpoints use query parameters for resource IDs, while action endpoints
+    // such as POST /subscriptions/{id}/cancel use path parameters. Keep the old path-form
+    // probes as harmless fallbacks, but query-form probes are the ones that return the
+    // dashboard's current transaction/subscription state.
+    paths.push({ path: `/transactions?transaction_id=${encoded}`, id });
+    paths.push({ path: `/subscriptions?subscription_id=${encoded}`, id });
+    paths.push({ path: `/checkouts?checkout_id=${encoded}`, id });
+    paths.push({ path: `/orders?order_id=${encoded}`, id });
+    paths.push({ path: `/transactions/${encoded}`, id });
+    paths.push({ path: `/payments/${encoded}`, id });
+    paths.push({ path: `/orders/${encoded}`, id });
+    paths.push({ path: `/checkouts/${encoded}`, id });
+    paths.push({ path: `/subscriptions/${encoded}`, id });
   }
 
   let lastError: string | undefined;
