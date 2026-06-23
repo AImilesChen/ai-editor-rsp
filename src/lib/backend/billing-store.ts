@@ -826,20 +826,22 @@ async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
 async function calculateFreeCreditRefundBalanceD1(db: D1Database, userId: string): Promise<FreeCreditRefundBalance> {
   const row = await db.prepare(`SELECT
       COALESCE(SUM(CASE WHEN source_type = 'creem_credit_grant' AND delta > 0 THEN delta ELSE 0 END), 0) AS paid_granted,
+      COALESCE(SUM(CASE WHEN source_type IN ('free_signup', 'manual_free_signup_restore_after_refund') AND delta > 0 THEN delta ELSE 0 END), 0) AS free_granted,
       COALESCE(SUM(CASE WHEN source_type = 'generation_debit' AND delta < 0 THEN -delta ELSE 0 END), 0) AS generation_debited,
       COALESCE(SUM(CASE WHEN source_type = 'generation_refund' AND delta > 0 THEN delta ELSE 0 END), 0) AS generation_refunded
     FROM credit_ledger
     WHERE user_id = ?`)
     .bind(userId)
-    .first<{ paid_granted: number | null; generation_debited: number | null; generation_refunded: number | null }>();
+    .first<{ paid_granted: number | null; free_granted: number | null; generation_debited: number | null; generation_refunded: number | null }>();
 
   const paidGranted = Number(row?.paid_granted || 0);
+  const freeGranted = Math.min(DEFAULT_LIFETIME_CREDITS, Number(row?.free_granted || 0));
   const generationDebited = Number(row?.generation_debited || 0);
   const generationRefunded = Number(row?.generation_refunded || 0);
   const netGenerationDebits = Math.max(0, generationDebited - generationRefunded);
-  const paidCreditsConsumedFirst = Math.min(paidGranted, netGenerationDebits);
-  const freeCreditsConsumed = Math.max(0, netGenerationDebits - paidCreditsConsumedFirst);
-  const freeCreditsRemaining = Math.max(0, DEFAULT_LIFETIME_CREDITS - freeCreditsConsumed);
+  const freeCreditsConsumed = Math.min(freeGranted, netGenerationDebits);
+  const paidCreditsConsumedFirst = Math.min(paidGranted, Math.max(0, netGenerationDebits - freeGranted));
+  const freeCreditsRemaining = Math.max(0, freeGranted - freeCreditsConsumed);
 
   return {
     paidGranted,
