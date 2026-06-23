@@ -22,12 +22,29 @@ export default function AccountOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((response) => response.json() as Promise<AuthMeResponse>)
-      .then((data) => {
-        if (data.authenticated && data.user) setUser(data.user);
-      })
-      .finally(() => setLoading(false));
+    let canceled = false;
+    const loadAccount = () => {
+      fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
+        .then((response) => response.json() as Promise<AuthMeResponse>)
+        .then((data) => {
+          if (!canceled && data.authenticated && data.user) setUser(data.user);
+        })
+        .finally(() => {
+          if (!canceled) setLoading(false);
+        });
+    };
+    loadAccount();
+    const onFocus = () => loadAccount();
+    const onVisibilityChange = () => {
+      if (!document.hidden) loadAccount();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      canceled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, []);
 
   const logout = async () => {

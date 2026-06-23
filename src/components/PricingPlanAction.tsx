@@ -59,19 +59,30 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
 
   useEffect(() => {
     let canceled = false;
-    fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
-      .then((response) => response.json() as Promise<AuthResponse>)
-      .then((data) => {
-        if (!canceled) setAuth(data);
-      })
-      .catch(() => {
-        if (!canceled) setAuth(null);
-      })
-      .finally(() => {
-        if (!canceled) setLoaded(true);
-      });
+    const loadAuth = () => {
+      fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
+        .then((response) => response.json() as Promise<AuthResponse>)
+        .then((data) => {
+          if (!canceled) setAuth(data);
+        })
+        .catch(() => {
+          if (!canceled) setAuth(null);
+        })
+        .finally(() => {
+          if (!canceled) setLoaded(true);
+        });
+    };
+    loadAuth();
+    const onFocus = () => loadAuth();
+    const onVisibilityChange = () => {
+      if (!document.hidden) loadAuth();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       canceled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 

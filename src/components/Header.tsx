@@ -22,18 +22,34 @@ export default function Header() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
-      .then((response) => response.json() as Promise<AuthMeResponse>)
-      .then((authData) => {
-        if (authData?.authenticated && authData.user) {
-          setAuthenticated(true);
-          if (typeof authData.user.creditsRemaining === "number") setCredits(authData.user.creditsRemaining);
-          return;
-        }
-        setAuthenticated(false);
-        setCredits(null);
-      })
-      .catch(() => undefined);
+    let canceled = false;
+    const loadAccount = () => {
+      fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
+        .then((response) => response.json() as Promise<AuthMeResponse>)
+        .then((authData) => {
+          if (canceled) return;
+          if (authData?.authenticated && authData.user) {
+            setAuthenticated(true);
+            if (typeof authData.user.creditsRemaining === "number") setCredits(authData.user.creditsRemaining);
+            return;
+          }
+          setAuthenticated(false);
+          setCredits(null);
+        })
+        .catch(() => undefined);
+    };
+    loadAccount();
+    const onFocus = () => loadAccount();
+    const onVisibilityChange = () => {
+      if (!document.hidden) loadAccount();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      canceled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
