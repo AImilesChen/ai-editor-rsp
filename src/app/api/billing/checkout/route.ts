@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/backend/auth";
-import { accountForPublicUser } from "@/lib/backend/billing-store";
+import { accountForPublicUser, hasRecentPendingCheckout, recordPendingCheckoutForUser } from "@/lib/backend/billing-store";
 import {
   creemApiBase,
   creemMode,
@@ -41,6 +41,16 @@ export async function POST(request: NextRequest) {
       ok: false,
       code: "ACTIVE_PLAN_EXISTS",
       error: "You already have a paid plan on your account. Use Account → Billing before changing plans.",
+      currentPlan: account.plan,
+      subscriptionStatus: account.subscriptionStatus,
+    }, { status: 409 });
+  }
+
+  if (await hasRecentPendingCheckout(user.id)) {
+    return NextResponse.json({
+      ok: false,
+      code: "CHECKOUT_ALREADY_STARTED",
+      error: "A checkout was already started recently. If you completed payment, go to Account → Billing instead of starting a second checkout.",
       currentPlan: account.plan,
       subscriptionStatus: account.subscriptionStatus,
     }, { status: 409 });
@@ -114,5 +124,22 @@ export async function POST(request: NextRequest) {
     }, { status: 502 });
   }
 
+  const checkoutId = extractCheckoutId(payload) || `checkout_${Date.now()}_${crypto.randomUUID()}`;
+  await recordPendingCheckoutForUser({ userId: user.id, plan, checkoutId });
+
   return NextResponse.json({ ok: true, checkoutUrl, plan, mode: creemMode() });
+}
+
+function extractCheckoutId(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const record = payload as Record<string, unknown>;
+  for (const key of ["id", "checkout_id", "checkoutId"]) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  for (const key of ["checkout", "data", "session"]) {
+    const nested = extractCheckoutId(record[key]);
+    if (nested) return nested;
+  }
+  return null;
 }

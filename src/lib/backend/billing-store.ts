@@ -214,6 +214,28 @@ async function syncAccountToPendingRefund(userId: string) {
   return readD1Account(db, userId);
 }
 
+export async function hasRecentPendingCheckout(userId: string, windowMs = 30 * 60 * 1000) {
+  const db = await billingDb();
+  if (!db) return false;
+  const since = Date.now() - windowMs;
+  const row = await db.prepare("SELECT id FROM payments WHERE user_id = ? AND status = 'checkout_pending' AND created_at >= ? ORDER BY created_at DESC LIMIT 1")
+    .bind(userId, since)
+    .first<{ id: string }>();
+  return Boolean(row?.id);
+}
+
+export async function recordPendingCheckoutForUser(input: { userId: string; plan: BillingPlan; checkoutId: string; amountCents?: number | null; currency?: string | null }) {
+  const db = await billingDb();
+  if (!db || !input.checkoutId) return { persisted: false };
+  const now = Date.now();
+  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, creem_checkout_id, creem_transaction_id, creem_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
+    VALUES (?, ?, NULL, ?, NULL, NULL, ?, 'checkout_pending', ?, ?, ?, NULL, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET status = payments.status, updated_at = excluded.updated_at`)
+    .bind(input.checkoutId, input.userId, input.checkoutId, input.plan, input.currency || "USD", input.amountCents || 0, `checkout_started_${input.checkoutId}`, now, now)
+    .run();
+  return { persisted: true };
+}
+
 export async function reconcilePendingCreemRefund(userId: string) {
   const db = await billingDb();
   if (!db || !process.env.CREEM_API_KEY) return null;
