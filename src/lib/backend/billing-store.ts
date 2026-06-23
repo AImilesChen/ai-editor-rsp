@@ -217,6 +217,7 @@ export async function reconcilePendingCreemRefund(userId: string) {
     transactionId: pending.creem_transaction_id || pending.refund_payment_id,
     checkoutId: pending.creem_checkout_id,
     invoiceId: pending.creem_invoice_id,
+    subscriptionId: pending.refund_subscription_id || pending.payment_subscription_id,
   });
   if (!lookup.refunded) return null;
 

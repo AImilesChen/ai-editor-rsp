@@ -91,14 +91,15 @@ export type CreemRefundLookupResult = {
   error?: string;
 };
 
-export async function lookupCreemRefundStatus(input: { paymentId?: string | null; transactionId?: string | null; checkoutId?: string | null; invoiceId?: string | null }) {
-  const ids = uniqueTruthy([input.transactionId, input.paymentId, input.checkoutId, input.invoiceId]);
+export async function lookupCreemRefundStatus(input: { paymentId?: string | null; transactionId?: string | null; checkoutId?: string | null; invoiceId?: string | null; subscriptionId?: string | null }) {
+  const ids = uniqueTruthy([input.transactionId, input.paymentId, input.checkoutId, input.invoiceId, input.subscriptionId]);
   const paths: Array<{ path: string; id: string }> = [];
   for (const id of ids) {
     paths.push({ path: `/transactions/${encodeURIComponent(id)}`, id });
     paths.push({ path: `/payments/${encodeURIComponent(id)}`, id });
     paths.push({ path: `/orders/${encodeURIComponent(id)}`, id });
     paths.push({ path: `/checkouts/${encodeURIComponent(id)}`, id });
+    paths.push({ path: `/subscriptions/${encodeURIComponent(id)}`, id });
   }
 
   let lastError: string | undefined;
@@ -162,6 +163,7 @@ function extractRefundStatus(payload: unknown) {
   const statuses: string[] = [];
   const refundIds: string[] = [];
   let refunded = false;
+  let hasRefundSignal = false;
   function visit(value: unknown, depth = 0) {
     if (!value || depth > 5) return;
     if (Array.isArray(value)) {
@@ -172,6 +174,7 @@ function extractRefundStatus(payload: unknown) {
     const record = value as Record<string, unknown>;
     for (const [rawKey, rawValue] of Object.entries(record)) {
       const key = rawKey.toLowerCase();
+      if (key.includes("refund")) hasRefundSignal = true;
       if (key === "refunded" && rawValue === true) refunded = true;
       if ((key === "refunded_at" || key === "refundedat") && rawValue) refunded = true;
       if ((key === "amount_refunded" || key === "amountrefunded" || key === "refunded_amount" || key === "refundedamount") && Number(rawValue) > 0) refunded = true;
@@ -182,7 +185,14 @@ function extractRefundStatus(payload: unknown) {
   }
   visit(payload);
   const status = statuses.find(Boolean) || null;
-  if (statuses.some((item) => item === "refunded" || item === "refund_succeeded" || item === "refund.success" || item === "refund_created")) refunded = true;
+  if (statuses.some((item) => [
+    "refunded",
+    "refund_succeeded",
+    "refund.success",
+    "refund_created",
+    "paid_refunded",
+  ].includes(item))) refunded = true;
+  if (hasRefundSignal && refundIds.length > 0 && statuses.some((item) => ["succeeded", "success", "completed", "complete", "processed"].includes(item))) refunded = true;
   return { refunded, status, refundId: refundIds[0] || null };
 }
 
