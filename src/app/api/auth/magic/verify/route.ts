@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAuthUser, decodeSignedPayload, setAuthCookie, siteOrigin } from "@/lib/backend/auth";
+import { createAuthUser, decodeSignedPayload, safeRedirectPath, setAuthCookie, siteOrigin } from "@/lib/backend/auth";
 
 type MagicPayload = {
   email?: string;
   provider?: string;
   nonce?: string;
+  next?: string;
 };
 
 export async function GET(request: NextRequest) {
@@ -15,7 +16,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=magic_invalid`, 302);
   }
   const user = createAuthUser({ email: payload.email, provider: "email" });
-  const response = NextResponse.redirect(`${origin}/account?auth=success`, 302);
+  const nextPath = safeRedirectPath(payload.next);
+  const redirectUrl = new URL(nextPath, origin);
+  redirectUrl.searchParams.set("auth", "success");
+  const response = NextResponse.redirect(redirectUrl.toString(), 302);
   await setAuthCookie(response, user);
   return response;
 }

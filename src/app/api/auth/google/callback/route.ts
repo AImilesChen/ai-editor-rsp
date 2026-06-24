@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAuthUser, OAUTH_STATE_COOKIE, setAuthCookie, siteOrigin } from "@/lib/backend/auth";
+import { createAuthUser, OAUTH_NEXT_COOKIE, OAUTH_STATE_COOKIE, safeRedirectPath, setAuthCookie, siteOrigin } from "@/lib/backend/auth";
 
 type GoogleTokenResponse = {
   access_token?: string;
@@ -57,8 +57,12 @@ export async function GET(request: NextRequest) {
   }
 
   const user = createAuthUser({ email: userInfo.email, name: userInfo.name, picture: userInfo.picture, provider: "google" });
-  const response = NextResponse.redirect(`${origin}/account?auth=success`, 302);
+  const nextPath = safeRedirectPath(request.cookies.get(OAUTH_NEXT_COOKIE)?.value);
+  const redirectUrl = new URL(nextPath, origin);
+  redirectUrl.searchParams.set("auth", "success");
+  const response = NextResponse.redirect(redirectUrl.toString(), 302);
   response.cookies.set(OAUTH_STATE_COOKIE, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+  response.cookies.set(OAUTH_NEXT_COOKIE, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
   await setAuthCookie(response, user);
   return response;
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { OAUTH_STATE_COOKIE, siteOrigin } from "@/lib/backend/auth";
+import { OAUTH_NEXT_COOKIE, OAUTH_STATE_COOKIE, safeRedirectPath, siteOrigin } from "@/lib/backend/auth";
 
 export async function GET(request: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
 
   const origin = siteOrigin(request);
   const state = crypto.randomUUID();
+  const nextPath = safeRedirectPath(request.nextUrl.searchParams.get("next"));
   const redirectUri = `${origin}/api/auth/google/callback`;
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", clientId);
@@ -20,6 +21,13 @@ export async function GET(request: NextRequest) {
 
   const response = NextResponse.redirect(url.toString(), 302);
   response.cookies.set(OAUTH_STATE_COOKIE, state, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 10 * 60,
+  });
+  response.cookies.set(OAUTH_NEXT_COOKIE, nextPath, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",

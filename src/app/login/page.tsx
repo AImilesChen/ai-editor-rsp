@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
   const params = await searchParams;
   return (
     <>
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <div className="border border-rsp-secondary/35 bg-rsp-secondary/10 p-4"><strong className="text-rsp-text">Credits</strong><br />Different image modes and sizes use different credit amounts. Paid plans use secure hosted checkout.</div>
             </div>
           </section>
-          <LoginPanel error={params.error} />
+          <LoginPanel error={params.error} next={params.next} />
         </div>
       </main>
       <Footer />

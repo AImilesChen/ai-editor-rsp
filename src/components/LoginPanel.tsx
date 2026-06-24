@@ -5,6 +5,7 @@ import Link from "next/link";
 
 type LoginPanelProps = {
   error?: string;
+  next?: string;
 };
 
 type MagicLinkResponse = {
@@ -21,11 +22,24 @@ const errorCopy: Record<string, string> = {
   magic_invalid: "Magic link is invalid or expired. Request a new link.",
 };
 
-export default function LoginPanel({ error }: LoginPanelProps) {
+function safeNextPath(value?: string) {
+  if (!value) return "/account";
+  try {
+    const decoded = decodeURIComponent(value);
+    if (!decoded.startsWith("/") || decoded.startsWith("//") || decoded.startsWith("/api/")) return "/account";
+    return decoded;
+  } catch {
+    return "/account";
+  }
+}
+
+export default function LoginPanel({ error, next }: LoginPanelProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const displayedError = useMemo(() => error ? errorCopy[error] || "Login failed. Please try again." : null, [error]);
+  const nextPath = useMemo(() => safeNextPath(next), [next]);
+  const googleHref = nextPath === "/account" ? "/api/auth/google/start" : `/api/auth/google/start?next=${encodeURIComponent(nextPath)}`;
 
   const requestMagicLink = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -35,7 +49,7 @@ export default function LoginPanel({ error }: LoginPanelProps) {
       const response = await fetch("/api/auth/magic/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, next: nextPath }),
       });
       const data = await response.json() as MagicLinkResponse;
       if (!response.ok || !data.ok) throw new Error(data.error || "Could not send magic link.");
@@ -51,7 +65,7 @@ export default function LoginPanel({ error }: LoginPanelProps) {
     <section className="rsp-card p-6 md:p-8" aria-label="Login form">
       <h2 className="font-heading text-3xl font-normal text-rsp-text">Log In</h2>
       {displayedError ? <div className="mt-4 border border-red-300 bg-red-50 p-3 text-sm text-red-700">{displayedError}</div> : null}
-      <a href="/api/auth/google/start" className="mt-6 block w-full border border-rsp-border bg-white px-5 py-4 text-center font-semibold text-rsp-text no-underline transition hover:border-rsp-secondary">
+      <a href={googleHref} className="mt-6 block w-full border border-rsp-border bg-white px-5 py-4 text-center font-semibold text-rsp-text no-underline transition hover:border-rsp-secondary">
         Continue with Google
       </a>
       <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-[0.16em] text-rsp-muted"><span className="h-px flex-1 bg-rsp-border" />Or use email<span className="h-px flex-1 bg-rsp-border" /></div>

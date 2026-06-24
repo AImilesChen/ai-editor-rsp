@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { encodeSignedPayload, isValidEmail, MAGIC_LINK_TTL_MS, normalizeEmail, siteOrigin } from "@/lib/backend/auth";
+import { encodeSignedPayload, isValidEmail, MAGIC_LINK_TTL_MS, normalizeEmail, safeRedirectPath, siteOrigin } from "@/lib/backend/auth";
 
-type Body = { email?: string };
+type Body = { email?: string; next?: string };
 
 function fromEmail() {
   return process.env.RESEND_FROM_EMAIL || process.env.FROM_EMAIL || "AI Editor RSP <support@aieditorrspediting.org>";
@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
   }
 
   const origin = siteOrigin(request);
-  const token = await encodeSignedPayload({ email, provider: "email", nonce: crypto.randomUUID() }, MAGIC_LINK_TTL_MS);
+  const nextPath = safeRedirectPath(body.next);
+  const token = await encodeSignedPayload({ email, provider: "email", nonce: crypto.randomUUID(), next: nextPath }, MAGIC_LINK_TTL_MS);
   const magicUrl = `${origin}/api/auth/magic/verify?token=${encodeURIComponent(token)}`;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",

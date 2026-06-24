@@ -3,6 +3,7 @@ import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 
 export const AUTH_COOKIE = "rsp_auth";
 export const OAUTH_STATE_COOKIE = "rsp_oauth_state";
+export const OAUTH_NEXT_COOKIE = "rsp_oauth_next";
 export const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 export const AUTH_TTL_SECONDS = 60 * 60 * 24 * 30;
 
@@ -135,4 +136,16 @@ export function publicUser(user: AuthUser | null) {
 
 export function siteOrigin(request: NextRequest) {
   return process.env.NEXT_PUBLIC_SITE_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+}
+
+export function safeRedirectPath(value?: string | null) {
+  if (!value) return "/account";
+  try {
+    const decoded = decodeURIComponent(value);
+    if (!decoded.startsWith("/") || decoded.startsWith("//")) return "/account";
+    if (decoded.startsWith("/api/")) return "/account";
+    return decoded;
+  } catch {
+    return "/account";
+  }
 }
