@@ -564,9 +564,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         <div className={`${isHero ? "mt-4" : "mt-5"} flex flex-col gap-2`}>
           {authenticated ? (
-            <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-              {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload image to start" : prompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && editScope === "selected" ? `Generate edit (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
-            </button>
+            <>
+              <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload image to start" : prompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && editScope === "selected" ? `Generate edit (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
+              </button>
+              <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
+                View generation history
+              </a>
+            </>
           ) : (
             <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : "Sign in to edit free"}</a>
           )}

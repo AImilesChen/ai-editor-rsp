@@ -99,6 +99,11 @@ export default function Header() {
               {creditBadge}
             </span>
           ) : null}
+          {authenticated ? (
+            <Link href="/account/history" className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
+              History
+            </Link>
+          ) : null}
           <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
             {authenticated ? "Account" : "Log in"}
           </Link>
@@ -132,6 +137,11 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            {authenticated ? (
+              <Link href="/account/history" onClick={() => setMobileOpen(false)} className="border border-rsp-border bg-rsp-panel px-5 py-4 font-heading text-2xl font-normal text-rsp-text no-underline">
+                Generation History
+              </Link>
+            ) : null}
             <Link href={authenticated ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
               {authenticated ? "Account" : "Log in"}
             </Link>
