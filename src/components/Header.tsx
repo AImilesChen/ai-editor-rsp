@@ -11,6 +11,37 @@ const links = [
   { href: "/ai-policy", label: "AI Policy" },
 ];
 
+const promptCategoryLinks = [
+  {
+    label: "Professional",
+    items: [
+      { href: "/prompts/ai-headshot", label: "AI Headshot" },
+      { href: "/prompts/linkedin-profile", label: "LinkedIn Profile" },
+    ],
+  },
+  {
+    label: "Creator",
+    items: [
+      { href: "/prompts/cinematic-portrait", label: "Cinematic Portrait" },
+      { href: "/prompts/fashion-editorial", label: "Fashion Editorial" },
+    ],
+  },
+  {
+    label: "Trend",
+    items: [
+      { href: "/prompts/yearbook-photo", label: "Yearbook Photo" },
+      { href: "/prompts/anime-avatar", label: "Anime Avatar" },
+    ],
+  },
+  {
+    label: "Business",
+    items: [
+      { href: "/prompts/product-photography", label: "Product Photography" },
+      { href: "/prompts/brand-lifestyle", label: "Brand Lifestyle" },
+    ],
+  },
+];
+
 type AuthMeResponse = {
   authenticated?: boolean;
   user?: { creditsRemaining?: number; isAdmin?: boolean };
@@ -93,9 +124,39 @@ export default function Header() {
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
-              {link.label}
-            </Link>
+            link.href === "/prompts" ? (
+              <div key={link.href} className="group relative">
+                <Link href={link.href} className="inline-flex items-center gap-1 text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text" aria-haspopup="true">
+                  {link.label}
+                  <span aria-hidden="true" className="text-[10px] leading-none">▾</span>
+                </Link>
+                <div className="invisible absolute left-1/2 top-full z-[70] mt-3 w-[720px] -translate-x-1/2 translate-y-2 rounded-2xl border border-rsp-border bg-rsp-panel p-4 opacity-0 shadow-[0_18px_50px_rgba(58,41,30,0.14)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  <div className="grid gap-3 md:grid-cols-4">
+                    {promptCategoryLinks.map((category) => (
+                      <div key={category.label} className="rounded-xl border border-rsp-border bg-white/55 p-3">
+                        <Link href={`/prompts#style-${category.label.toLowerCase()}`} className="block text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline">
+                          {category.label}
+                        </Link>
+                        <div className="mt-2 flex flex-col gap-2">
+                          {category.items.map((item) => (
+                            <Link key={item.href} href={item.href} className="text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:text-rsp-secondary">
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/prompts" className="mt-3 block rounded-xl bg-rsp-secondary/10 px-4 py-3 text-center text-sm font-bold text-rsp-secondary no-underline transition hover:bg-rsp-secondary hover:text-white">
+                    View all prompt cases and style guides
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <Link key={link.href} href={link.href} className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
+                {link.label}
+              </Link>
+            )
           ))}
           {creditBadge ? (
             <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">

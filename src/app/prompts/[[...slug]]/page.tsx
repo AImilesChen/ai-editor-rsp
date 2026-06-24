@@ -297,6 +297,54 @@ function StyleGuideDetailPage({ page }: { page: (typeof promptPages)[number] }) 
   );
 }
 
+function categoryAnchor(categoryKey: string) {
+  return `style-${categoryKey.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+
+function PromptStyleQuickNav() {
+  return (
+    <section className="mx-auto mt-8 max-w-screen-xl rounded-[2rem] border border-rsp-border bg-white/75 p-5 shadow-[0_18px_60px_rgba(94,63,36,0.10)] backdrop-blur">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-sm">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-rsp-secondary">Quick find</p>
+          <h2 className="mt-2 font-heading text-2xl font-bold text-rsp-text">Style guide categories</h2>
+          <p className="mt-2 text-sm leading-6 text-rsp-muted">
+            Jump to the new prompt categories, then open the style guide that matches the image you want to create.
+          </p>
+        </div>
+        <div className="grid flex-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {categories.map((category) => {
+            const pages = promptPages.filter((page) => page.category === category.key);
+            if (!pages.length) return null;
+            return (
+              <div key={category.key} className="rounded-2xl border border-rsp-border bg-rsp-panel p-4">
+                <a
+                  href={`#${categoryAnchor(category.key)}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-rsp-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline transition hover:bg-rsp-secondary hover:text-white"
+                >
+                  {category.label}
+                  <span>{pages.length}</span>
+                </a>
+                <div className="mt-3 flex flex-col gap-2">
+                  {pages.map((page) => (
+                    <Link
+                      key={page.slug}
+                      href={`/prompts/${page.slug}`}
+                      className="text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:text-rsp-secondary"
+                    >
+                      {page.h1}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PromptsLibraryPage() {
   return (
     <>
@@ -315,6 +363,7 @@ function PromptsLibraryPage() {
             />
             <p className="mt-3 text-sm text-rsp-muted">Static library view: use browser find or open a prompt card for details.</p>
           </div>
+          <PromptStyleQuickNav />
           <div className="mt-10 grid items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
             {activePrompts.map((prompt) => (
               <article key={prompt.slug} className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel transition hover:-translate-y-1 hover:border-rsp-primary/60">
@@ -363,7 +412,7 @@ function PromptsLibraryPage() {
               const pages = promptPages.filter((page) => page.category === category.key);
               if (!pages.length) return null;
               return (
-                <section key={category.key}>
+                <section key={category.key} id={categoryAnchor(category.key)} className="scroll-mt-28">
                   <div className="mb-5 flex items-center gap-3">
                     <h3 className="font-heading text-2xl font-bold">{category.label}</h3>
                     <span className="rounded-full bg-rsp-secondary/10 px-3 py-1 text-xs font-semibold text-rsp-secondary">
