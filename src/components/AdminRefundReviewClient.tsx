@@ -87,6 +87,46 @@ function calcUsagePercent(row: OverviewRow) {
   return `${Math.min(100, Math.round((used / granted) * 1000) / 10)}%`;
 }
 
+function rowTime(row: OverviewRow, fields: string[]) {
+  return Math.max(...fields.map((field) => Number(row[field] || 0)), 0);
+}
+
+function compactOverviewRows(rows: OverviewRow[], kind: "subscribers" | "refunds" | "canceled") {
+  const groups = new Map<string, OverviewRow[]>();
+  rows.forEach((row) => {
+    const key = String(row.email || row.userId || "unknown").toLowerCase();
+    groups.set(key, [...(groups.get(key) || []), row]);
+  });
+
+  const timeFields = kind === "refunds"
+    ? ["requestedAt", "paidAt"]
+    : kind === "canceled"
+      ? ["latestRefundRequestedAt", "canceledAt", "periodEnd"]
+      : ["periodEnd", "paidAt"];
+
+  return Array.from(groups.values()).map((group) => {
+    const sorted = [...group].sort((a, b) => rowTime(b, timeFields) - rowTime(a, timeFields));
+    const latest = { ...sorted[0] };
+    const count = group.length;
+    const totalRefundCents = group.reduce((sum, row) => sum + Number(row.refundAmountCents || row.paymentAmountCents || 0), 0);
+    const totalPaymentCents = group.reduce((sum, row) => sum + Number(row.paymentAmountCents || row.amountCents || 0), 0);
+    const uniquePlans = Array.from(new Set(group.map((row) => String(row.subscriptionPlan || row.paymentPlan || row.userPlan || "")).filter(Boolean)));
+    const uniqueStatuses = Array.from(new Set(group.map((row) => String(row.subscriptionStatus || row.refundStatus || row.paymentStatus || row.userStatus || "")).filter(Boolean)));
+
+    latest._recordCount = count;
+    latest._totalRefundCents = totalRefundCents;
+    latest._totalPaymentCents = totalPaymentCents;
+    latest._plansSummary = uniquePlans.slice(0, 3).join(" / ");
+    latest._statusesSummary = uniqueStatuses.slice(0, 3).join(" / ");
+    return latest;
+  }).sort((a, b) => rowTime(b, timeFields) - rowTime(a, timeFields));
+}
+
+function countLabel(row: OverviewRow, singular: string, plural: string) {
+  const count = Number(row._recordCount || 1);
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export default function AdminRefundReviewClient({ adminEmail }: { adminEmail?: string }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -249,38 +289,52 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function OverviewList({ title, rows, empty, kind }: { title: string; rows: OverviewRow[]; empty: string; kind: "subscribers" | "refunds" | "canceled" }) {
+  const compactRows = compactOverviewRows(rows, kind);
+  const shownLabel = rows.length === compactRows.length
+    ? `${compactRows.length} shown`
+    : `${compactRows.length} users · ${rows.length} records`;
+
   return (
     <div className="mt-8 overflow-hidden rounded-2xl border border-rsp-border">
       <div className="flex items-center justify-between border-b border-rsp-border bg-rsp-cream px-5 py-4">
         <h3 className="font-heading text-2xl font-normal text-rsp-text">{title}</h3>
-        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-rsp-muted">{rows.length} shown</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-rsp-muted">{shownLabel}</span>
       </div>
-      {rows.length === 0 ? (
+      {compactRows.length === 0 ? (
         <div className="p-5 text-sm text-rsp-muted">{empty}</div>
       ) : (
         <div className="divide-y divide-rsp-border">
-          {rows.map((row, index) => (
-            <div key={`${kind}-${text(row.userId)}-${index}`} className="grid gap-4 p-5 text-sm md:grid-cols-[1.2fr_0.9fr_0.9fr_0.9fr]">
+          {compactRows.map((row, index) => (
+            <div key={`${kind}-${text(row.email || row.userId)}-${index}`} className="grid gap-4 p-5 text-sm md:grid-cols-[1.2fr_0.9fr_0.9fr_0.9fr]">
               <div>
                 <p className="font-semibold text-rsp-text">{text(row.email)}</p>
                 <p className="mt-1 text-rsp-muted">User: {text(row.userPlan)} / {text(row.userStatus)} · Credits: {text(row.creditsRemaining)}</p>
+                {Number(row._recordCount || 1) > 1 ? (
+                  <p className="mt-2 inline-flex rounded-full border border-rsp-border bg-rsp-cream px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-rsp-muted">
+                    Merged {countLabel(row, "record", "records")}
+                  </p>
+                ) : null}
               </div>
               {kind === "refunds" ? (
                 <>
-                  <Block label="Refund" value={`${text(row.refundStatus)} · ${moneyCents(Number(row.refundAmountCents || row.paymentAmountCents || 0), String(row.refundCurrency || row.paymentCurrency || "USD"))}`} sub={formatDate(Number(row.requestedAt || 0))} />
-                  <Block label="Payment" value={`${text(row.paymentPlan)} · ${text(row.paymentStatus)}`} sub={`${moneyCents(Number(row.paymentAmountCents || 0), String(row.paymentCurrency || "USD"))} · ${formatDate(Number(row.paidAt || 0))}`} />
+                  <Block
+                    label="Refund"
+                    value={`${text(row.refundStatus)} · Latest ${moneyCents(Number(row.refundAmountCents || row.paymentAmountCents || 0), String(row.refundCurrency || row.paymentCurrency || "USD"))}`}
+                    sub={`${countLabel(row, "request", "requests")} · Total ${moneyCents(Number(row._totalRefundCents || row.refundAmountCents || row.paymentAmountCents || 0), String(row.refundCurrency || row.paymentCurrency || "USD"))} · Latest ${formatDate(Number(row.requestedAt || 0))}`}
+                  />
+                  <Block label="Latest payment" value={`${text(row.paymentPlan)} · ${text(row.paymentStatus)}`} sub={`${moneyCents(Number(row.paymentAmountCents || 0), String(row.paymentCurrency || "USD"))} · ${formatDate(Number(row.paidAt || 0))}`} />
                   <Block label="Usage" value={`${text(row.paidCreditsGranted)} granted · ${text(row.generationCreditsUsed)} used`} sub={`${calcUsagePercent(row)} · ${text(row.generationJobs)} jobs`} />
                 </>
               ) : kind === "canceled" ? (
                 <>
-                  <Block label="Subscription" value={`${text(row.subscriptionPlan)} · ${text(row.subscriptionStatus)}`} sub={text(row.creemSubscriptionId)} />
-                  <Block label="Timing" value={`Canceled: ${formatDate(Number(row.canceledAt || 0))}`} sub={`Period end: ${formatDate(Number(row.periodEnd || 0))}`} />
-                  <Block label="Refund request" value={text(row.latestRefundStatus)} sub={formatDate(Number(row.latestRefundRequestedAt || 0))} />
+                  <Block label="Subscription" value={`${text(row._plansSummary || row.subscriptionPlan)} · ${text(row._statusesSummary || row.subscriptionStatus)}`} sub={countLabel(row, "subscription", "subscriptions")} />
+                  <Block label="Timing" value={`Latest canceled: ${formatDate(Number(row.canceledAt || 0))}`} sub={`Latest period end: ${formatDate(Number(row.periodEnd || 0))}`} />
+                  <Block label="Refund request" value={text(row.latestRefundStatus)} sub={`Latest ${formatDate(Number(row.latestRefundRequestedAt || 0))}`} />
                 </>
               ) : (
                 <>
-                  <Block label="Subscription" value={`${text(row.subscriptionPlan)} · ${text(row.subscriptionStatus)}`} sub={`Period end: ${formatDate(Number(row.periodEnd || 0))}`} />
-                  <Block label="Payment" value={`${text(row.paymentStatus)} · ${moneyCents(Number(row.amountCents || 0), String(row.currency || "USD"))}`} sub={formatDate(Number(row.paidAt || 0))} />
+                  <Block label="Subscription" value={`${text(row._plansSummary || row.subscriptionPlan)} · ${text(row._statusesSummary || row.subscriptionStatus)}`} sub={`${countLabel(row, "subscription", "subscriptions")} · Period end: ${formatDate(Number(row.periodEnd || 0))}`} />
+                  <Block label="Latest payment" value={`${text(row.paymentStatus)} · ${moneyCents(Number(row.amountCents || 0), String(row.currency || "USD"))}`} sub={formatDate(Number(row.paidAt || 0))} />
                   <Block label="Usage" value={`${text(row.paidCreditsGranted)} granted · ${text(row.generationCreditsUsed)} used`} sub={`${calcUsagePercent(row)} · ${text(row.generationJobs)} jobs`} />
                 </>
               )}
