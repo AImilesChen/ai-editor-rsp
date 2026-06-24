@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, publicUser } from "@/lib/backend/auth";
 import { accountForPublicUser } from "@/lib/backend/billing-store";
+import { isAdminEmail } from "@/lib/backend/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
       creditsRemaining: account.creditsRemaining,
       creditsHeld: account.creditsHeld,
       subscriptionStatus: account.subscriptionStatus,
+      isAdmin: isAdminEmail(user.email),
     },
   }, { headers: noStoreHeaders });
 }

@@ -13,13 +13,14 @@ const links = [
 
 type AuthMeResponse = {
   authenticated?: boolean;
-  user?: { creditsRemaining?: number };
+  user?: { creditsRemaining?: number; isAdmin?: boolean };
 };
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let canceled = false;
@@ -30,10 +31,12 @@ export default function Header() {
           if (canceled) return;
           if (authData?.authenticated && authData.user) {
             setAuthenticated(true);
+            setIsAdmin(Boolean(authData.user.isAdmin));
             if (typeof authData.user.creditsRemaining === "number") setCredits(authData.user.creditsRemaining);
             return;
           }
           setAuthenticated(false);
+          setIsAdmin(false);
           setCredits(null);
         })
         .catch(() => undefined);
@@ -116,6 +119,11 @@ export default function Header() {
                 <Link href="/account/history" className="block px-4 py-3 text-sm font-semibold text-rsp-text no-underline transition hover:bg-rsp-secondary/10">
                   Generation history
                 </Link>
+                {isAdmin ? (
+                  <Link href="/admin/refund-review" className="block px-4 py-3 text-sm font-semibold text-rsp-text no-underline transition hover:bg-rsp-secondary/10">
+                    Admin refund review
+                  </Link>
+                ) : null}
               </div>
             </div>
           ) : (
@@ -162,6 +170,11 @@ export default function Header() {
                   <Link href="/account/history" onClick={() => setMobileOpen(false)} className="block font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-secondary no-underline">
                     Generation history
                   </Link>
+                  {isAdmin ? (
+                    <Link href="/admin/refund-review" onClick={() => setMobileOpen(false)} className="mt-3 block font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-secondary no-underline">
+                      Admin refund review
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             ) : (
