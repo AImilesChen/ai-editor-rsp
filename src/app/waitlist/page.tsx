@@ -26,11 +26,11 @@ export default function WaitlistPage() {
               Get New Prompts & Templates First
             </h1>
             <p className="mt-5 max-w-xl text-lg text-neutral-500">
-              Join the waitlist and be the first to know when we add new effects, features, and collections.
+              Join the update list and be the first to know when we add new effects, templates, safety improvements, and creator workflows.
             </p>
             <div className="mt-8 grid gap-3 text-sm text-neutral-700">
-              <p className="rounded-xl bg-white/80 p-4 shadow-sm">50+ prompt directions, 30+ CapCut template references, and 20+ effect guides are now part of the P1 library.</p>
-              <p className="rounded-xl bg-white/80 p-4 shadow-sm">No account, checkout, subscription, upload, photo analysis, storage, or on-site AI generation is included in P1.</p>
+              <p className="rounded-xl bg-white/80 p-4 shadow-sm">Prompt directions, template references, image editing, generation history, billing, and refund review workflows are now available on AI Editor RSP.</p>
+              <p className="rounded-xl bg-white/80 p-4 shadow-sm">Sign in to try free credits, then use Account → Billing to manage plans, cancellations, and eligible refund requests.</p>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/prompts" className="rounded-full border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-700 no-underline">

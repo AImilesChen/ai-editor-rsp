@@ -44,7 +44,7 @@ export default function CookiePolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Analytics Status</h2>
             <p className="mb-4">
-              The site currently loads Cloudflare Web Analytics/Insights beacon for privacy-conscious performance and traffic measurement. We do not currently load Google Analytics, Microsoft Clarity, Plausible, or advertising pixels on the audited production pages. If those tools are enabled later, this policy and the Privacy Policy should be updated before or at launch.
+              The audited production pages do not currently load Google Analytics, Microsoft Clarity, Plausible, advertising pixels, or other optional third-party analytics scripts. Infrastructure providers such as Cloudflare may still process essential security, performance, and routing data. If optional analytics tools are enabled later, this policy and the Privacy Policy should be updated before or at launch.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Third-Party Cookies</h2>
