@@ -184,14 +184,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
   useEffect(() => {
     if (typeof window === "undefined" || lockedMode === "edit") return;
-    const promptSlug = new URLSearchParams(window.location.search).get("prompt");
-    if (!promptSlug) return;
-    const matchedPrompt = libraryPromptCards.find((item) => item.slug === promptSlug);
-    if (!matchedPrompt) return;
+    const promptParam = new URLSearchParams(window.location.search).get("prompt");
+    if (!promptParam) return;
+    const matchedPrompt = libraryPromptCards.find((item) => item.slug === promptParam);
     setMode("text");
-    setTask(matchedPrompt.title);
-    setPrompt(matchedPrompt.prompt);
-    setRatio(matchedPrompt.ratio || "4:5");
+    if (matchedPrompt) {
+      setTask(matchedPrompt.title);
+      setPrompt(matchedPrompt.prompt);
+      setRatio(matchedPrompt.ratio || "4:5");
+      return;
+    }
+    setTask(null);
+    setPrompt(promptParam);
+    setRatio("4:5");
   }, [lockedMode]);
 
   const switchMode = (nextMode: "edit" | "text") => {
@@ -508,7 +513,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>
+        </div>
         <textarea
           id="prompt"
           value={prompt}

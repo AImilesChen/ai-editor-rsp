@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 import { prompts } from "@/lib/data/prompts";
 import { templates } from "@/lib/data/templates";
 import { effects } from "@/lib/data/effects";
+import { promptPages } from "@/lib/data/prompt-pages";
 
 const BASE_URL = "https://aieditorrspediting.org";
 
@@ -38,6 +39,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  const promptPageRoutes = promptPages.map((p) => ({
+    url: `${BASE_URL}/prompts/${p.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.82,
+  }));
+
   const templateRoutes = templates.map((t) => ({
     url: `${BASE_URL}/templates/${t.slug}`,
     lastModified: new Date(),
@@ -52,5 +60,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...promptRoutes, ...templateRoutes, ...effectRoutes];
+  return [...staticRoutes, ...promptRoutes, ...promptPageRoutes, ...templateRoutes, ...effectRoutes];
 }

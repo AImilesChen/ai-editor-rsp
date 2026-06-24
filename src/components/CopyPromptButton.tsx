@@ -12,12 +12,24 @@ export default function CopyPromptButton({ prompt, className = "", label = "Copy
   const [copied, setCopied] = useState(false);
 
   const copyPrompt = async () => {
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
     try {
-      await navigator.clipboard.writeText(prompt);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(prompt);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = prompt;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
     } catch {
-      setCopied(false);
+      // The visible feedback still confirms the click even if clipboard permission is unavailable.
     }
   };
 
