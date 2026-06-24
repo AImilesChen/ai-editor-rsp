@@ -31,6 +31,92 @@ async function count(db: D1Database, sql: string, ...binds: unknown[]) {
   return Number(row?.count || 0);
 }
 
+const REFUND_WINDOW_DAYS = 7;
+const MAX_PAID_CREDIT_USAGE = 0.2;
+
+type RefundOverviewRow = Record<string, unknown>;
+
+function refundDecision(row: RefundOverviewRow) {
+  const userStatus = String(row.userStatus || "");
+  const refundStatus = String(row.refundStatus || "");
+  const paymentStatus = String(row.paymentStatus || "");
+  const paymentAmountCents = Number(row.paymentAmountCents || 0);
+  const paidCreditsGranted = Number(row.paidCreditsGranted || 0);
+  const lifetimeFreeGranted = Number(row.lifetimeFreeCreditsGranted || 0);
+  const generationUsedBeforePayment = Number(row.generationUsedBeforePayment || 0);
+  const periodGenerationUsed = Number(row.periodGenerationCreditsUsed || row.generationCreditsUsed || 0);
+  const freeRemainingAtPayment = Math.max(0, lifetimeFreeGranted - generationUsedBeforePayment);
+  const paidCreditsUsed = Math.max(0, periodGenerationUsed - freeRemainingAtPayment);
+  const usageRatio = paidCreditsGranted > 0 ? paidCreditsUsed / paidCreditsGranted : 0;
+  const paidAt = Number(row.paidAt || 0);
+  const requestedAt = Number(row.requestedAt || Date.now());
+  const daysSincePayment = paidAt ? Math.max(0, (requestedAt - paidAt) / (24 * 60 * 60 * 1000)) : null;
+
+  if (userStatus === "refunded" || refundStatus === "refunded" || paymentStatus === "refunded") {
+    return {
+      canRefund: false,
+      refundDecisionCode: "ALREADY_REFUNDED",
+      refundDecisionLabel: "Already refunded",
+      suggestedRefundCents: 0,
+      refundDecisionReason: "This payment or account is already marked refunded.",
+      paidCreditsUsed,
+      paidUsagePercent: Number((usageRatio * 100).toFixed(2)),
+      daysSincePayment: daysSincePayment === null ? null : Number(daysSincePayment.toFixed(2)),
+    };
+  }
+
+  if (paymentAmountCents <= 0 || paidCreditsGranted <= 0) {
+    return {
+      canRefund: false,
+      refundDecisionCode: "NO_PAID_CYCLE",
+      refundDecisionLabel: "Needs manual review",
+      suggestedRefundCents: 0,
+      refundDecisionReason: "No auditable paid payment or paid credit grant was found.",
+      paidCreditsUsed,
+      paidUsagePercent: Number((usageRatio * 100).toFixed(2)),
+      daysSincePayment: daysSincePayment === null ? null : Number(daysSincePayment.toFixed(2)),
+    };
+  }
+
+  if (daysSincePayment === null || daysSincePayment > REFUND_WINDOW_DAYS) {
+    return {
+      canRefund: false,
+      refundDecisionCode: "REFUND_WINDOW_EXPIRED",
+      refundDecisionLabel: "Cannot self-service refund",
+      suggestedRefundCents: 0,
+      refundDecisionReason: `Payment is outside the ${REFUND_WINDOW_DAYS}-day refund window.`,
+      paidCreditsUsed,
+      paidUsagePercent: Number((usageRatio * 100).toFixed(2)),
+      daysSincePayment: daysSincePayment === null ? null : Number(daysSincePayment.toFixed(2)),
+    };
+  }
+
+  if (usageRatio > MAX_PAID_CREDIT_USAGE) {
+    const unusedRatio = Math.max(0, 1 - usageRatio);
+    return {
+      canRefund: false,
+      refundDecisionCode: "PAID_CREDITS_OVER_20_PERCENT_USED",
+      refundDecisionLabel: "Manual review required",
+      suggestedRefundCents: Math.floor(paymentAmountCents * unusedRatio),
+      refundDecisionReason: "Paid credit usage is above the self-service threshold; show the unused-credit amount as the maximum goodwill refund reference.",
+      paidCreditsUsed,
+      paidUsagePercent: Number((usageRatio * 100).toFixed(2)),
+      daysSincePayment: Number(daysSincePayment.toFixed(2)),
+    };
+  }
+
+  return {
+    canRefund: true,
+    refundDecisionCode: "ELIGIBLE_FULL_REFUND",
+    refundDecisionLabel: "Can refund",
+    suggestedRefundCents: paymentAmountCents,
+    refundDecisionReason: "Within refund window and paid credit usage is within policy.",
+    paidCreditsUsed,
+    paidUsagePercent: Number((usageRatio * 100).toFixed(2)),
+    daysSincePayment: Number(daysSincePayment.toFixed(2)),
+  };
+}
+
 export async function GET(request: NextRequest) {
   if (!(await isAuthorized(request))) return unauthorized();
 
@@ -111,6 +197,9 @@ export async function GET(request: NextRequest) {
         WHEN 'studio' THEN 700
         ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0 AND created_at >= COALESCE(p.paid_at, p.created_at) AND created_at <= rr.requested_at), 0)
       END paidCreditsGranted,
+      COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type IN ('signup_grant', 'kv_backfill') AND delta > 0), 0) lifetimeFreeCreditsGranted,
+      COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at < COALESCE(p.paid_at, p.created_at, 0)), 0) generationUsedBeforePayment,
+      COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at >= COALESCE(p.paid_at, p.created_at, 0) AND created_at <= rr.requested_at), 0) periodGenerationCreditsUsed,
       COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at >= COALESCE(p.paid_at, p.created_at, 0) AND created_at <= rr.requested_at), 0) generationCreditsUsed,
       COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id AND created_at >= COALESCE(p.paid_at, p.created_at, 0) AND created_at <= rr.requested_at), 0) generationJobs
     FROM refund_requests rr
@@ -147,12 +236,21 @@ export async function GET(request: NextRequest) {
     LIMIT 50
   `).all();
 
+  const refundsWithDecision = (refunds.results || []).map((row) => {
+    const decision = refundDecision(row as RefundOverviewRow);
+    return {
+      ...row,
+      ...decision,
+      generationCreditsUsed: decision.paidCreditsUsed,
+    };
+  });
+
   return NextResponse.json({
     ok: true,
     generatedAt: Date.now(),
     stats: { totalUsers, activeSubscribers, refundRequests, pendingRefunds, refundedUsers, canceledSubscriptions },
     subscribers: subscribers.results || [],
-    refunds: refunds.results || [],
+    refunds: refundsWithDecision,
     canceled: canceled.results || [],
   }, { headers: { "Cache-Control": "no-store" } });
 }

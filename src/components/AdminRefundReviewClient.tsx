@@ -88,6 +88,10 @@ function calcUsagePercent(row: OverviewRow) {
   return `${Math.min(100, Math.round((used / granted) * 1000) / 10)}%`;
 }
 
+function suggestedRefundCents(row: OverviewRow) {
+  return typeof row.suggestedRefundCents === "number" ? row.suggestedRefundCents : Number(row.refundAmountCents || row.paymentAmountCents || 0);
+}
+
 function rowTime(row: OverviewRow, fields: string[]) {
   return Math.max(...fields.map((field) => Number(row[field] || 0)), 0);
 }
@@ -337,9 +341,9 @@ function OverviewList({ title, rows, empty, kind }: { title: string; rows: Overv
                   {kind === "refunds" ? (
                     <>
                       <Block
-                        label="Latest refund"
-                        value={`${text(row.refundStatus)} · ${moneyCents(Number(row.refundAmountCents || row.paymentAmountCents || 0), String(row.refundCurrency || row.paymentCurrency || "USD"))}`}
-                        sub={`${countLabel(row, "request", "requests")} · Latest ${formatDate(Number(row.requestedAt || 0))}`}
+                        label="Refund decision"
+                        value={`${text(row.refundDecisionLabel)} · ${moneyCents(suggestedRefundCents(row), String(row.refundCurrency || row.paymentCurrency || "USD"))}`}
+                        sub={`${text(row.refundDecisionCode)} · ${countLabel(row, "request", "requests")} · Latest ${formatDate(Number(row.requestedAt || 0))}`}
                       />
                       <Block label="Latest payment" value={`${text(row.paymentPlan)} · ${text(row.paymentStatus)}`} sub={`${moneyCents(Number(row.paymentAmountCents || 0), String(row.paymentCurrency || "USD"))} · ${formatDate(Number(row.paidAt || 0))}`} />
                       <Block label="Usage" value={`${text(row.paidCreditsGranted)} granted · ${text(row.generationCreditsUsed)} used`} sub={`${calcUsagePercent(row)} · ${text(row.generationJobs)} jobs`} />
@@ -377,7 +381,7 @@ function RecordDetails({ kind, rows }: { kind: "subscribers" | "refunds" | "canc
           <div key={`${text(record.creemSubscriptionId || record.paymentId || record.refundId || record.requestedAt)}-${detailIndex}`} className="grid gap-3 rounded-2xl border border-rsp-border bg-white p-4 text-xs md:grid-cols-4">
             {kind === "refunds" ? (
               <>
-                <Block label="Refund" value={`${text(record.refundStatus)} · ${moneyCents(Number(record.refundAmountCents || record.paymentAmountCents || 0), String(record.refundCurrency || record.paymentCurrency || "USD"))}`} sub={formatDate(Number(record.requestedAt || 0))} />
+                <Block label="Refund decision" value={`${text(record.refundDecisionLabel)} · ${moneyCents(suggestedRefundCents(record), String(record.refundCurrency || record.paymentCurrency || "USD"))}`} sub={`${text(record.refundDecisionCode)} · ${text(record.refundStatus)} · ${formatDate(Number(record.requestedAt || 0))}`} />
                 <Block label="Payment" value={`${text(record.paymentPlan)} · ${text(record.paymentStatus)}`} sub={`${moneyCents(Number(record.paymentAmountCents || 0), String(record.paymentCurrency || "USD"))} · ${formatDate(Number(record.paidAt || 0))}`} />
                 <Block label="Usage" value={`${text(record.paidCreditsGranted)} granted · ${text(record.generationCreditsUsed)} used`} sub={`${calcUsagePercent(record)} · ${text(record.generationJobs)} jobs`} />
                 <Block label="Subscription" value={text(record.creemSubscriptionId)} sub={text(record.subscriptionStatus)} />
