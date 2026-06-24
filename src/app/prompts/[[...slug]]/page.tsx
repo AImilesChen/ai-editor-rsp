@@ -302,7 +302,6 @@ function PromptLibraryPage() {
                             src={page.sampleImage}
                             alt={page.sampleImageAlt}
                             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                            loading="lazy"
                           />
                           <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
                             Example output
