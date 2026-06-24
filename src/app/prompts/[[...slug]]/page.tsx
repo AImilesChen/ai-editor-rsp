@@ -60,20 +60,32 @@ function PromptDetailPage({ page }: { page: (typeof promptPages)[number] }) {
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-rsp-border bg-[radial-gradient(circle_at_18%_22%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)] px-4 py-12 md:px-8 md:py-16">
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
-        <div className="relative mx-auto max-w-screen-2xl">
-          <p className="eyebrow">{page.categoryLabel} style</p>
-          <h1 className="mt-3 max-w-3xl font-heading text-4xl font-bold tracking-[-0.03em] md:text-5xl">
-            {page.h1}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-rsp-muted">{page.heroText}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <UsePromptButton prompt={page.prompts[0]?.prompt ?? ""} />
-            <Link
-              href="/prompts"
-              className="rounded-full border border-rsp-secondary/30 px-5 py-2.5 text-sm font-bold text-rsp-secondary no-underline transition hover:bg-rsp-secondary/10"
-            >
-              Back to library
-            </Link>
+        <div className="relative mx-auto grid max-w-screen-2xl items-center gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+          <div>
+            <p className="eyebrow">{page.categoryLabel} style</p>
+            <h1 className="mt-3 max-w-3xl font-heading text-4xl font-bold tracking-[-0.03em] md:text-5xl">
+              {page.h1}
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-rsp-muted">{page.heroText}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <UsePromptButton prompt={page.prompts[0]?.prompt ?? ""} />
+              <Link
+                href="/prompts"
+                className="rounded-full border border-rsp-secondary/30 px-5 py-2.5 text-sm font-bold text-rsp-secondary no-underline transition hover:bg-rsp-secondary/10"
+              >
+                Back to library
+              </Link>
+            </div>
+          </div>
+          <div className="rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-[0_24px_80px_rgba(94,63,36,0.16)] backdrop-blur">
+            <img
+              src={page.sampleImage}
+              alt={page.sampleImageAlt}
+              className="aspect-[4/5] w-full rounded-[1.5rem] object-cover"
+            />
+            <p className="mt-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-rsp-muted">
+              Example output
+            </p>
           </div>
         </div>
       </section>
@@ -109,19 +121,34 @@ function PromptDetailPage({ page }: { page: (typeof promptPages)[number] }) {
                   {page.prompts.map((example, idx) => (
                     <div
                       key={idx}
-                      className="rounded-2xl border border-rsp-border bg-rsp-panel p-5"
+                      className="overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel"
                     >
-                      <div className="flex items-center justify-between gap-4">
-                        <h3 className="font-heading text-lg font-semibold">{example.title}</h3>
-                        <div className="flex shrink-0 gap-2">
-                          <CopyPromptButton prompt={example.prompt} label="Copy" />
-                          <UsePromptButton prompt={example.prompt} />
+                      <div className="grid gap-0 lg:grid-cols-[240px_minmax(0,1fr)]">
+                        <div className="relative min-h-56 bg-[#F3E8DA] lg:min-h-full">
+                          <img
+                            src={page.sampleImage}
+                            alt={`${page.sampleImageAlt} for ${example.title}`}
+                            className="h-full min-h-56 w-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
+                            Sample image
+                          </div>
                         </div>
-                      </div>
-                      <div className="mt-4 rounded-xl border border-white/10 bg-rsp-panel-strong p-4">
-                        <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-6 text-rsp-text">
-                          {example.prompt}
-                        </pre>
+                        <div className="p-5">
+                          <div className="flex items-center justify-between gap-4">
+                            <h3 className="font-heading text-lg font-semibold">{example.title}</h3>
+                            <div className="flex shrink-0 gap-2">
+                              <CopyPromptButton prompt={example.prompt} label="Copy" />
+                              <UsePromptButton prompt={example.prompt} />
+                            </div>
+                          </div>
+                          <div className="mt-4 rounded-xl border border-white/10 bg-rsp-panel-strong p-4">
+                            <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-6 text-rsp-text">
+                              {example.prompt}
+                            </pre>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -270,10 +297,16 @@ function PromptLibraryPage() {
                       className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel transition hover:-translate-y-1 hover:border-rsp-primary/60"
                     >
                       <Link href={`/prompts/${page.slug}`} className="block no-underline">
-                        <div className="flex h-40 items-center justify-center bg-gradient-to-br from-[#F3E8DA] to-[#EFE7DC]">
-                          <span className="font-heading text-5xl font-bold text-rsp-secondary/20">
-                            {page.h1.charAt(0)}
-                          </span>
+                        <div className="relative h-56 overflow-hidden bg-[#F3E8DA]">
+                          <img
+                            src={page.sampleImage}
+                            alt={page.sampleImageAlt}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
+                            Example output
+                          </div>
                         </div>
                       </Link>
                       <div className="p-5">

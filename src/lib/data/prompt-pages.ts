@@ -5,6 +5,8 @@ export interface PromptPage {
   h1: string;
   category: string;
   categoryLabel: string;
+  sampleImage: string;
+  sampleImageAlt: string;
   heroText: string;
   ctaText: string;
   whatItIs: string;
@@ -24,6 +26,8 @@ export const promptPages: PromptPage[] = [
     h1: "AI Headshot Prompts for Professional Profile Photos",
     category: "Professional",
     categoryLabel: "Professional",
+    sampleImage: "/images/generated/vintage-film-look.webp",
+    sampleImageAlt: "Example professional AI headshot with warm studio lighting",
     heroText:
       "Create clean, realistic AI headshots for LinkedIn, resumes, team pages, and personal branding. Start with a ready-made prompt, then adjust outfit, background, and lighting to fit your role.",
     ctaText: "Use an AI headshot prompt",
@@ -106,6 +110,8 @@ export const promptPages: PromptPage[] = [
     h1: "LinkedIn Profile Photo Prompts",
     category: "Professional",
     categoryLabel: "Professional",
+    sampleImage: "/images/generated/hero-photo.webp",
+    sampleImageAlt: "Example LinkedIn-style profile photo with realistic portrait lighting",
     heroText:
       "A strong LinkedIn photo should feel professional, clear, and approachable. These prompts help you create profile-ready AI portraits for founders, freelancers, job seekers, and remote professionals.",
     ctaText: "Create a LinkedIn-style photo",
@@ -187,6 +193,8 @@ export const promptPages: PromptPage[] = [
     h1: "Cinematic Portrait Prompts for Movie-Style AI Photos",
     category: "Creator",
     categoryLabel: "Creator",
+    sampleImage: "/images/generated/neon-shadows-portrait.webp",
+    sampleImageAlt: "Example cinematic portrait with rainy neon city lighting",
     heroText:
       "Turn a simple portrait idea into a moody, movie-style image. These cinematic portrait prompts focus on lighting, composition, atmosphere, and emotion.",
     ctaText: "Generate a cinematic portrait",
@@ -269,6 +277,8 @@ export const promptPages: PromptPage[] = [
     h1: "Fashion Editorial Prompts for Magazine-Style AI Photos",
     category: "Creator",
     categoryLabel: "Creator",
+    sampleImage: "/images/generated/hero-editorial.webp",
+    sampleImageAlt: "Example fashion editorial portrait with atmospheric lighting",
     heroText:
       "Create polished fashion-editorial images with studio lighting, curated outfits, and magazine-style composition. These prompts are designed for stylish, fully dressed, social-ready portraits.",
     ctaText: "Try a fashion editorial prompt",
@@ -350,6 +360,8 @@ export const promptPages: PromptPage[] = [
     h1: "90s Yearbook AI Prompts",
     category: "Trend",
     categoryLabel: "Trend",
+    sampleImage: "/images/prompts/vintage-film-look-card.webp",
+    sampleImageAlt: "Example nostalgic yearbook-style portrait with vintage film color",
     heroText:
       "Create nostalgic 90s yearbook-style portraits with soft flash, retro studio backgrounds, denim, varsity jackets, and classic school-photo composition.",
     ctaText: "Try a 90s yearbook prompt",
@@ -430,6 +442,8 @@ export const promptPages: PromptPage[] = [
     h1: "Anime-Inspired Portrait Prompts",
     category: "Trend",
     categoryLabel: "Trend",
+    sampleImage: "/images/generated/three-d-cartoon-selfie.webp",
+    sampleImageAlt: "Example stylized avatar inspired by animated portrait prompts",
     heroText:
       "Create soft anime-inspired portraits and illustrated avatars without copying a specific studio, artist, or franchise. Use these prompts for cozy, expressive, social-ready profile images.",
     ctaText: "Create an anime-inspired portrait",
@@ -511,6 +525,8 @@ export const promptPages: PromptPage[] = [
     h1: "Social Media Avatar Prompts",
     category: "Creator",
     categoryLabel: "Creator",
+    sampleImage: "/images/prompts/3d-cartoon-selfie-card.webp",
+    sampleImageAlt: "Example social media avatar with playful character styling",
     heroText:
       "Your avatar is often the first thing people notice. Use these AI avatar prompts to create profile pictures for X, Instagram, TikTok, YouTube, Discord, and personal websites.",
     ctaText: "Create a social media avatar",
@@ -592,6 +608,8 @@ export const promptPages: PromptPage[] = [
     h1: "AI Product Photography Prompts",
     category: "Business",
     categoryLabel: "Business",
+    sampleImage: "/images/generated/product-glow-shot.webp",
+    sampleImageAlt: "Example product photography image with dramatic studio lighting",
     heroText:
       "Create polished product photos for ecommerce, ads, and social posts. These prompts help you describe lighting, background, composition, props, and commercial mood.",
     ctaText: "Generate a product photo",
