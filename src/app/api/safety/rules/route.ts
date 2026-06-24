@@ -6,6 +6,7 @@ export async function GET() {
     policy: "AI Editor RSP generation safety rules",
     enforcement: [
       "Prompt safety check before provider calls",
+      "Suggestive adult styling terms are softly rewritten into tasteful non-explicit fashion prompts",
       "Provider safety checker and NSFW filter flags where supported",
       "Output safety check using provider metadata before returning result images",
       "Safety event logging, credit-safe failures, and repeated-violation limits",

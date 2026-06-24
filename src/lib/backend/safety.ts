@@ -47,6 +47,13 @@ const RULES: SafetyRule[] = [
     terms: [/\b(nsfw|porn|porno|erotic|explicit sex|nude|naked|topless|genitals?|breasts?|hentai|fetish|stripper|lingerie)\b/i],
   },
   {
+    category: "sexual",
+    severity: "medium",
+    decision: "review",
+    reason: "suggestive adult styling request; rewrite to tasteful non-explicit fashion imagery",
+    terms: [/\b(sexy|seductive|revealing|see[- ]?through|cleavage|bikini|swimsuit|provocative|hot girl|sensual|skimpy|thong)\b/i],
+  },
+  {
     category: "graphic_violence",
     severity: "high",
     decision: "block",
@@ -99,6 +106,11 @@ const RULES: SafetyRule[] = [
 
 const REVIEW_MESSAGE = "This prompt may create safety, deception, or rights risk. Please remove sexual, violent, deceptive, impersonation, or rights-infringing details and try again.";
 const BLOCK_MESSAGE = "We cannot help create this image. Please choose a different prompt that follows our content safety rules.";
+const SOFT_SAFETY_REWRITE = [
+  "Safety rewrite: keep the subject clearly adult, fully clothed, tasteful, non-explicit, and non-sexualized.",
+  "Use a fashion/editorial portrait direction with natural pose, appropriate wardrobe coverage, no nudity, no see-through clothing, no fetish styling, and no focus on sexual body parts.",
+  "If the original prompt requested swimwear or beach styling, render it as modest vacation fashion or an elegant beach portrait suitable for general audiences.",
+].join(" ");
 
 function unique<T>(items: T[]) {
   return Array.from(new Set(items));
@@ -130,6 +142,11 @@ export function checkPromptSafety(prompt: string): PromptSafetyResult {
     reason,
     message: hasBlock ? BLOCK_MESSAGE : REVIEW_MESSAGE,
   };
+}
+
+export function rewritePromptForSoftSafety(prompt: string, safety: PromptSafetyResult) {
+  if (safety.decision !== "review") return prompt;
+  return [prompt.trim(), SOFT_SAFETY_REWRITE].filter(Boolean).join("\n");
 }
 
 export function safePromptInstruction() {
