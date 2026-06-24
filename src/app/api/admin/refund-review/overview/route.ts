@@ -66,9 +66,14 @@ export async function GET(request: NextRequest) {
       p.amount_cents amountCents,
       p.currency,
       p.paid_at paidAt,
-      COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0), 0) paidCreditsGranted,
-      COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0), 0) generationCreditsUsed,
-      COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id), 0) generationJobs
+      CASE LOWER(s.plan)
+        WHEN 'starter' THEN 120
+        WHEN 'creator' THEN 300
+        WHEN 'studio' THEN 700
+        ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0), 0)
+      END paidCreditsGranted,
+      COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at >= COALESCE(s.current_period_start, p.paid_at, s.created_at) AND created_at <= COALESCE(s.current_period_end, strftime('%s','now') * 1000)), 0) generationCreditsUsed,
+      COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id AND created_at >= COALESCE(s.current_period_start, p.paid_at, s.created_at) AND created_at <= COALESCE(s.current_period_end, strftime('%s','now') * 1000)), 0) generationJobs
     FROM subscriptions s
     JOIN users u ON u.id = s.user_id
     LEFT JOIN payments p ON p.id = (
@@ -97,10 +102,17 @@ export async function GET(request: NextRequest) {
       p.amount_cents paymentAmountCents,
       p.currency paymentCurrency,
       p.paid_at paidAt,
+      s.id subscriptionId,
+      s.creem_subscription_id creemSubscriptionId,
       s.status subscriptionStatus,
-      COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0), 0) paidCreditsGranted,
-      COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0), 0) generationCreditsUsed,
-      COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id), 0) generationJobs
+      CASE LOWER(p.plan)
+        WHEN 'starter' THEN 120
+        WHEN 'creator' THEN 300
+        WHEN 'studio' THEN 700
+        ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0 AND created_at >= COALESCE(p.paid_at, p.created_at) AND created_at <= rr.requested_at), 0)
+      END paidCreditsGranted,
+      COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at >= COALESCE(p.paid_at, p.created_at, 0) AND created_at <= rr.requested_at), 0) generationCreditsUsed,
+      COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id AND created_at >= COALESCE(p.paid_at, p.created_at, 0) AND created_at <= rr.requested_at), 0) generationJobs
     FROM refund_requests rr
     JOIN users u ON u.id = rr.user_id
     LEFT JOIN payments p ON p.id = rr.payment_id
