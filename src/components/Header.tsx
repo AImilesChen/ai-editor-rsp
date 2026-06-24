@@ -100,13 +100,29 @@ export default function Header() {
             </span>
           ) : null}
           {authenticated ? (
-            <Link href="/account/history" className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
-              History
+            <div className="group relative">
+              <Link
+                href="/account"
+                className="inline-flex items-center gap-2 bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90"
+                aria-haspopup="true"
+              >
+                Account
+                <span aria-hidden="true" className="text-[10px] leading-none">▾</span>
+              </Link>
+              <div className="invisible absolute right-0 top-full z-[70] min-w-56 translate-y-3 border border-rsp-border bg-rsp-panel p-2 opacity-0 shadow-[0_18px_50px_rgba(58,41,30,0.14)] transition group-hover:visible group-hover:translate-y-2 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-2 group-focus-within:opacity-100">
+                <Link href="/account" className="block px-4 py-3 text-sm font-semibold text-rsp-text no-underline transition hover:bg-rsp-secondary/10">
+                  Account overview
+                </Link>
+                <Link href="/account/history" className="block px-4 py-3 text-sm font-semibold text-rsp-text no-underline transition hover:bg-rsp-secondary/10">
+                  Generation history
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <Link href="/login" className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
+              Log in
             </Link>
-          ) : null}
-          <Link href={authenticated ? "/account" : "/login"} className="bg-rsp-primary px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-on-primary no-underline transition hover:opacity-90">
-            {authenticated ? "Account" : "Log in"}
-          </Link>
+          )}
         </nav>
         <button
           type="button"
@@ -138,13 +154,21 @@ export default function Header() {
               </Link>
             ))}
             {authenticated ? (
-              <Link href="/account/history" onClick={() => setMobileOpen(false)} className="border border-rsp-border bg-rsp-panel px-5 py-4 font-heading text-2xl font-normal text-rsp-text no-underline">
-                Generation History
+              <div className="border border-rsp-border bg-rsp-panel px-5 py-4">
+                <Link href="/account" onClick={() => setMobileOpen(false)} className="block font-heading text-2xl font-normal text-rsp-text no-underline">
+                  Account
+                </Link>
+                <div className="mt-4 border-t border-rsp-border pt-4">
+                  <Link href="/account/history" onClick={() => setMobileOpen(false)} className="block font-mono text-xs font-bold uppercase tracking-[0.12em] text-rsp-secondary no-underline">
+                    Generation history
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
+                Log in
               </Link>
-            ) : null}
-            <Link href={authenticated ? "/account" : "/login"} onClick={() => setMobileOpen(false)} className="bg-rsp-primary px-5 py-4 text-center font-bold text-rsp-on-primary no-underline">
-              {authenticated ? "Account" : "Log in"}
-            </Link>
+            )}
           </nav>
         </div>
       ) : null}
