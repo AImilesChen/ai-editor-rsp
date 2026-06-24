@@ -76,6 +76,15 @@ type RefundEligibility = {
   currency?: string;
 };
 
+export type PublicSelfServiceRefundStatus = {
+  canRequest: boolean;
+  code: string;
+  message: string;
+  refundWindowDays: number;
+  daysSinceLatestPayment?: number;
+  paidCreditsUsagePercent?: number;
+};
+
 export type CreditGrantInput = {
   eventId: string;
   eventType: string;
@@ -476,6 +485,49 @@ export async function updateSubscriptionState(input: {
   if (account.email) await kv.put(emailKey(account.email), userId);
   await kv.put(eventKey(input.eventId), JSON.stringify({ ...input, persisted: true, accountUserId: userId, at: now }));
   return { persisted: true, account };
+}
+
+export async function selfServiceRefundStatusForUser(user: AuthUser): Promise<PublicSelfServiceRefundStatus | null> {
+  const db = await billingDb();
+  if (!db) return null;
+  const account = await ensureD1BillingAccount(db, user);
+  if (account.plan === "free") {
+    return {
+      canRequest: false,
+      code: "NO_PAID_PLAN",
+      message: "No paid plan on this account.",
+      refundWindowDays: SELF_SERVICE_REFUND_WINDOW_DAYS,
+    };
+  }
+  if (account.subscriptionStatus === "refunded") {
+    return {
+      canRequest: false,
+      code: "ALREADY_REFUNDED",
+      message: "This account has already been refunded.",
+      refundWindowDays: SELF_SERVICE_REFUND_WINDOW_DAYS,
+    };
+  }
+  if (account.subscriptionStatus === "refund_requested") {
+    return {
+      canRequest: false,
+      code: "REFUND_ALREADY_PENDING",
+      message: "Refund review is already pending.",
+      refundWindowDays: SELF_SERVICE_REFUND_WINDOW_DAYS,
+    };
+  }
+
+  const eligibility = await evaluateRefundEligibilityD1(db, user.id);
+  const daysSinceLatestPayment = eligibility.latestPaymentAt
+    ? Math.max(0, Math.floor((Date.now() - eligibility.latestPaymentAt) / (1000 * 60 * 60 * 24)))
+    : undefined;
+  return {
+    canRequest: eligibility.eligible,
+    code: eligibility.eligible ? "ELIGIBLE" : eligibility.code || "NOT_ELIGIBLE",
+    message: eligibility.eligible ? "Self-service refund review is available." : eligibility.message || "This payment is not eligible for self-service refund review.",
+    refundWindowDays: SELF_SERVICE_REFUND_WINDOW_DAYS,
+    daysSinceLatestPayment,
+    paidCreditsUsagePercent: eligibility.paidCreditsUsagePercent,
+  };
 }
 
 export async function submitRefundRequestForUser(user: AuthUser, reason?: string) {

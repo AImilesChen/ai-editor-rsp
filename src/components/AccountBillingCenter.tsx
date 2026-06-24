@@ -11,6 +11,14 @@ type User = {
   creditsRemaining: number;
   creditsHeld?: number;
   subscriptionStatus?: string;
+  selfServiceRefund?: {
+    canRequest: boolean;
+    code: string;
+    message: string;
+    refundWindowDays: number;
+    daysSinceLatestPayment?: number;
+    paidCreditsUsagePercent?: number;
+  } | null;
 };
 
 type AuthMeResponse = {
@@ -35,6 +43,27 @@ function refundLabel(status?: string) {
   if (completedRefundStatuses.has(status || "")) return "Refund completed";
   if (pendingRefundStatuses.has(status || "")) return "Refund under review";
   return "Request refund review";
+}
+
+function refundButtonLabel(user: User | null) {
+  if (!user) return "Request refund review";
+  const refundStatus = user.selfServiceRefund;
+  if (refundStatus && !refundStatus.canRequest) {
+    if (refundStatus.code === "REFUND_WINDOW_EXPIRED") return "Refund window expired";
+    if (refundStatus.code === "PAID_CREDITS_OVER_20_PERCENT_USED") return "Refund usage limit reached";
+  }
+  return refundLabel(user.subscriptionStatus);
+}
+
+function refundUnavailableMessage(user: User | null) {
+  const refundStatus = user?.selfServiceRefund;
+  if (!refundStatus || refundStatus.canRequest) return null;
+  if (["NO_PAID_PLAN", "ALREADY_REFUNDED", "REFUND_ALREADY_PENDING"].includes(refundStatus.code)) return null;
+  if (refundStatus.code === "REFUND_WINDOW_EXPIRED") {
+    const days = refundStatus.daysSinceLatestPayment;
+    return `Self-service refund is no longer available${typeof days === "number" ? ` because this payment is ${days} days old` : ""}. Refund requests are available within ${refundStatus.refundWindowDays} days of payment. You can still cancel future renewals.`;
+  }
+  return `${refundStatus.message} You can still cancel future renewals or contact support if there is a billing issue.`;
 }
 
 function cancelLabel(status?: string) {
@@ -83,7 +112,15 @@ export default function AccountBillingCenter() {
   const refundCompleted = completedRefundStatuses.has(user?.subscriptionStatus || "");
   const subscriptionCanceled = canceledStatuses.has(user?.subscriptionStatus || "");
   const busy = refundSubmitting || cancelSubmitting || portalSubmitting;
-  const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted || refundPending;
+  const refundStatus = user?.selfServiceRefund;
+  const refundSelfServiceUnavailable = Boolean(
+    hasPaidPlan &&
+    refundStatus &&
+    !refundStatus.canRequest &&
+    !["NO_PAID_PLAN", "ALREADY_REFUNDED", "REFUND_ALREADY_PENDING"].includes(refundStatus.code)
+  );
+  const refundNotice = refundUnavailableMessage(user);
+  const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted || refundPending || refundSelfServiceUnavailable;
   const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted;
   const portalDisabled = loading || busy || !hasPaidPlan;
 
@@ -176,13 +213,14 @@ export default function AccountBillingCenter() {
             {cancelSubmitting ? "Canceling…" : cancelLabel(user?.subscriptionStatus)}
           </button>
           <button type="button" disabled={refundDisabled} onClick={submitRefundRequest} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-55">
-            {refundSubmitting ? "Starting refund…" : refundLabel(user?.subscriptionStatus)}
+            {refundSubmitting ? "Starting refund…" : refundButtonLabel(user)}
           </button>
         </div>
       </div>
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
+      {refundNotice ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">{refundNotice}</div> : null}
       {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are temporarily unavailable while we confirm the refund status. We will update your account once the review is complete.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: paid-plan credits are no longer available.</div> : null}
       {subscriptionCanceled ? <div className="mt-5 border border-rsp-border bg-white/70 p-4 text-sm font-semibold text-rsp-text">Subscription status: recurring billing is no longer active for this account.</div> : null}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser, publicUser } from "@/lib/backend/auth";
-import { accountForPublicUser } from "@/lib/backend/billing-store";
+import { accountForPublicUser, selfServiceRefundStatusForUser } from "@/lib/backend/billing-store";
 import { isAdminEmail } from "@/lib/backend/admin";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   };
   if (!user) return NextResponse.json({ ok: true, authenticated: false, user: null }, { headers: noStoreHeaders });
   const account = await accountForPublicUser(user);
+  const selfServiceRefund = await selfServiceRefundStatusForUser(user);
   return NextResponse.json({
     ok: true,
     authenticated: true,
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
       creditsRemaining: account.creditsRemaining,
       creditsHeld: account.creditsHeld,
       subscriptionStatus: account.subscriptionStatus,
+      selfServiceRefund,
       isAdmin: isAdminEmail(user.email),
     },
   }, { headers: noStoreHeaders });
