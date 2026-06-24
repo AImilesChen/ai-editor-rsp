@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AdminRefundReviewClient from "@/components/AdminRefundReviewClient";
+import { AUTH_COOKIE, decodeSignedPayload, type AuthUser } from "@/lib/backend/auth";
+import { isAdminEmail } from "@/lib/backend/admin";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +18,18 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function RefundReviewPage() {
+async function currentAuthUser() {
+  const cookieStore = await cookies();
+  const user = await decodeSignedPayload<AuthUser>(cookieStore.get(AUTH_COOKIE)?.value);
+  if (!user?.email || !user.id) return null;
+  return user;
+}
+
+export default async function RefundReviewPage() {
+  const user = await currentAuthUser();
+  if (!user) redirect("/login?next=/admin/refund-review");
+  if (!isAdminEmail(user.email)) notFound();
+
   return (
     <>
       <Header />
@@ -24,7 +39,7 @@ export default function RefundReviewPage() {
         <p className="mt-4 max-w-2xl text-sm leading-6 text-rsp-muted">
           Internal-only review surface for checking subscription payment, paid credit usage, refund window, and suggested refund handling.
         </p>
-        <AdminRefundReviewClient />
+        <AdminRefundReviewClient adminEmail={user.email} />
       </main>
       <Footer />
     </>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { billingDb } from "@/lib/backend/cloudflare";
 import { getAuthUser, isValidEmail, normalizeEmail } from "@/lib/backend/auth";
+import { adminToken, isAdminEmail } from "@/lib/backend/admin";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -8,22 +9,10 @@ export const revalidate = 0;
 const REFUND_WINDOW_DAYS = 7;
 const MAX_PAID_CREDIT_USAGE = 0.2;
 
-function adminToken() {
-  return process.env.REFUND_REVIEW_TOKEN || process.env.ADMIN_API_TOKEN || process.env.CRON_SECRET || "";
-}
-
 function requestToken(request: NextRequest) {
   const auth = request.headers.get("authorization") || "";
   if (auth.toLowerCase().startsWith("bearer ")) return auth.slice(7).trim();
   return request.headers.get("x-admin-token") || "";
-}
-
-function adminEmails() {
-  const configured = (process.env.REFUND_REVIEW_ADMIN_EMAILS || process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-  return new Set([...configured, "chenminjian08@gmail.com", "veryhappygou@gmail.com"]);
 }
 
 async function isAuthorized(request: NextRequest) {
@@ -31,7 +20,7 @@ async function isAuthorized(request: NextRequest) {
   const token = requestToken(request);
   if (expected && token && token === expected) return true;
   const user = await getAuthUser(request);
-  return Boolean(user?.email && adminEmails().has(normalizeEmail(user.email)));
+  return isAdminEmail(user?.email);
 }
 
 function unauthorized() {

@@ -76,9 +76,8 @@ function statusTone(eligible?: boolean, code?: string) {
   return "border-amber-200 bg-amber-50 text-amber-800";
 }
 
-export default function AdminRefundReviewClient() {
+export default function AdminRefundReviewClient({ adminEmail }: { adminEmail?: string }) {
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ReviewResponse | null>(null);
 
@@ -88,7 +87,6 @@ export default function AdminRefundReviewClient() {
     setResult(null);
     try {
       const response = await fetch(`/api/admin/refund-review?email=${encodeURIComponent(email)}`, {
-        headers: { "x-admin-token": token },
         cache: "no-store",
       });
       const data = await response.json() as ReviewResponse;
@@ -106,7 +104,7 @@ export default function AdminRefundReviewClient() {
         <p className="eyebrow">Internal only</p>
         <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Refund review lookup</h2>
         <p className="mt-3 text-sm leading-6 text-rsp-muted">
-          Enter a customer email. If you are signed in with an owner account, no token is needed; otherwise use the internal review token.
+          This page is only available to configured admin emails. You are signed in as {adminEmail ? <strong className="text-rsp-text">{adminEmail}</strong> : "an authorized admin"}.
         </p>
         <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.2em] text-rsp-muted">Customer email</label>
         <input
@@ -116,14 +114,6 @@ export default function AdminRefundReviewClient() {
           placeholder="customer@example.com"
           type="email"
           required
-        />
-        <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-rsp-muted">Internal token</label>
-        <input
-          className="mt-2 w-full rounded-2xl border border-rsp-border bg-rsp-cream px-4 py-3 text-sm outline-none focus:border-rsp-gold"
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-          placeholder="Optional token"
-          type="password"
         />
         <button disabled={loading} className="mt-6 w-full rounded-full bg-rsp-brown px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white disabled:opacity-60">
           {loading ? "Checking..." : "Review refund"}
