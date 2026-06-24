@@ -608,7 +608,7 @@ export const promptPages: PromptPage[] = [
     h1: "AI Product Photography Prompts",
     category: "Business",
     categoryLabel: "Business",
-    sampleImage: "/images/generated/product-glow-shot.webp",
+    sampleImage: "/images/generated/product-photography-sample.webp",
     sampleImageAlt: "Example product photography image with dramatic studio lighting",
     heroText:
       "Create polished product photos for ecommerce, ads, and social posts. These prompts help you describe lighting, background, composition, props, and commercial mood.",
