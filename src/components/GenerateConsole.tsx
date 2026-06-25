@@ -46,6 +46,7 @@ type GenerateConsoleProps = {
   variant?: "full" | "hero";
   defaultMode?: "edit" | "text";
   lockedMode?: "edit" | "text";
+  defaultPreset?: "headshot";
   compactPromptBuilder?: boolean;
   previewHeadingLevel?: "h1" | "h2" | "h3";
   hidePreviewIntro?: boolean;
@@ -126,14 +127,15 @@ function stripBuilderNotes(prompt: string) {
     .trim();
 }
 
-export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false }: GenerateConsoleProps) {
+export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, defaultPreset, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const PreviewHeadingTag = previewHeadingLevel;
   const isHero = variant === "hero";
   const initialMode = lockedMode || defaultMode;
+  const defaultHeadshotTask = defaultPreset === "headshot" ? editTasks[0] : null;
   const [mode, setMode] = useState<"edit" | "text">(initialMode);
-  const [prompt, setPrompt] = useState("");
-  const [task, setTask] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState(defaultHeadshotTask?.prompt || "");
+  const [task, setTask] = useState<string | null>(defaultHeadshotTask?.label || null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
   const [selectedShot, setSelectedShot] = useState<string | null>(null);
@@ -186,14 +188,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const promptParam = new URLSearchParams(window.location.search).get("prompt");
-    if (!promptParam) return;
-    const matchedPrompt = libraryPromptCards.find((item) => item.slug === promptParam);
+    const searchParams = new URLSearchParams(window.location.search);
+    const promptParam = searchParams.get("prompt");
+    const presetParam = searchParams.get("preset");
+    if (!promptParam && presetParam !== "headshot") return;
+    const matchedPrompt = promptParam ? libraryPromptCards.find((item) => item.slug === promptParam) : null;
 
     if (lockedMode === "edit") {
+      const headshotTask = editTasks[0];
       setMode("edit");
-      setTask(matchedPrompt?.title || "Professional headshot");
-      setPrompt(matchedPrompt?.prompt || promptParam);
+      setTask(matchedPrompt?.title || headshotTask.label);
+      setPrompt(matchedPrompt?.prompt || promptParam || headshotTask.prompt);
       setRatio("auto");
       return;
     }
@@ -206,7 +211,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       return;
     }
     setTask(null);
-    setPrompt(promptParam);
+    setPrompt(promptParam || "");
     setRatio("4:5");
   }, [lockedMode]);
 
@@ -228,6 +233,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const applyTask = (item: { label: string; prompt: string }) => {
     setTask(item.label);
     setPrompt(composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
+    if (mode === "edit" && item.label === "Professional headshot") {
+      setEditScope("whole");
+      setEditRegion(null);
+    }
   };
 
   const clearPromptChoices = () => {
@@ -271,10 +280,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setUploadedName(file.name);
       if (mode === "edit") {
         setRatio("auto");
-        setEditScope("selected");
+        setEditScope(task === "Professional headshot" ? "whole" : "selected");
       }
       setGeneratedImage(null);
-      setEditRegion(mode === "edit" ? { x: 24, y: 24, width: 38, height: 34 } : null);
+      setEditRegion(mode === "edit" && task !== "Professional headshot" ? { x: 24, y: 24, width: 38, height: 34 } : null);
       setError(null);
       setState("idle");
     } catch (err) {
@@ -307,7 +316,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const runGenerate = async () => {
     const trimmedPrompt = prompt.trim();
     if (!authenticated) {
-      window.location.href = "/login?next=/generate";
+      window.location.href = mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate";
       return;
     }
     if (needsUpload) {
@@ -339,7 +348,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       const data = await response.json() as GenerateResponse;
       if (!response.ok || !data.ok) {
         if (response.status === 401) {
-          window.location.href = "/login?next=/generate";
+          window.location.href = mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate";
           return;
         }
         throw new Error(data.error || "Generation request failed.");
@@ -456,7 +465,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? "Start your edit" : "Choose or write a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
@@ -477,6 +486,22 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         </div>}
 
+        {mode === "edit" && isHero && lockedMode === "edit" && (
+          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose a simple mode</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={() => applyTask(editTasks[0])} className={`rounded-xl border p-3 text-left transition ${task === editTasks[0].label ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
+                <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Professional Headshot</span>{task === editTasks[0].label && <span className="text-[#86EFAC]">✓</span>}</span>
+                <span className="mt-1 block text-xs leading-5 text-white/58">For LinkedIn, resume, and business profile photos.</span>
+              </button>
+              <button type="button" onClick={clearPromptChoices} className={`rounded-xl border p-3 text-left transition ${!task && !prompt ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
+                <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Custom Edit</span>{!task && !prompt && <span className="text-[#86EFAC]">✓</span>}</span>
+                <span className="mt-1 block text-xs leading-5 text-white/58">Describe your own background, outfit, lighting, or cleanup edit.</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {mode === "edit" && (
           <>
             <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
@@ -491,7 +516,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </>
         )}
 
-        {mode === "edit" && (uploadedImage || !isHero || lockedMode === "edit") && (
+        {mode === "edit" && (uploadedImage || !isHero) && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose edit area</p>
@@ -525,8 +550,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
-          <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>
+          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Headshot instructions" : "Describe the edit") : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
         </div>
         <textarea
           id="prompt"
@@ -585,14 +610,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload image to start" : prompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && editScope === "selected" ? `Generate edit (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : prompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && task === "Professional headshot" ? `Generate headshot (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
               </button>
               <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
                 View generation history
               </a>
             </>
           ) : (
-            <a href="/login?next=/generate" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : "Sign in to edit free"}</a>
+            <a href={mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
           )}
           {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
         </div>
