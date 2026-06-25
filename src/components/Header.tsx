@@ -124,21 +124,21 @@ export default function Header() {
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((link) => (
             link.href === "/prompts" ? (
-              <div key={link.href} className="group relative">
-                <Link href={link.href} className="inline-flex items-center gap-1 text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text" aria-haspopup="true">
+              <div key={link.href} className="group relative -my-4 py-4">
+                <Link href={link.href} className="inline-flex items-center gap-1 rounded-full px-2 py-2 text-sm font-semibold text-rsp-muted no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-text" aria-haspopup="true">
                   {link.label}
                   <span aria-hidden="true" className="text-[10px] leading-none">▾</span>
                 </Link>
-                <div className="invisible absolute left-1/2 top-full z-[70] mt-3 w-[720px] -translate-x-1/2 translate-y-2 rounded-2xl border border-rsp-border bg-rsp-panel p-4 opacity-0 shadow-[0_18px_50px_rgba(58,41,30,0.14)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                <div className="invisible absolute left-1/2 top-full z-[70] w-[760px] -translate-x-1/2 translate-y-2 rounded-2xl border border-rsp-border bg-rsp-panel p-4 opacity-0 shadow-[0_18px_50px_rgba(58,41,30,0.14)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
                   <div className="grid gap-3 md:grid-cols-4">
                     {promptCategoryLinks.map((category) => (
                       <div key={category.label} className="rounded-xl border border-rsp-border bg-white/55 p-3">
-                        <Link href={`/prompts#style-${category.label.toLowerCase()}`} className="block text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline">
+                        <Link href={`/prompts#style-${category.label.toLowerCase()}`} className="block rounded-lg px-2 py-1 text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline transition hover:bg-rsp-secondary/10">
                           {category.label}
                         </Link>
-                        <div className="mt-2 flex flex-col gap-2">
+                        <div className="mt-2 flex flex-col gap-1">
                           {category.items.map((item) => (
-                            <Link key={item.href} href={item.href} className="text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:text-rsp-secondary">
+                            <Link key={item.href} href={item.href} className="block rounded-lg px-2 py-2 text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-secondary whitespace-nowrap">
                               {item.label}
                             </Link>
                           ))}
