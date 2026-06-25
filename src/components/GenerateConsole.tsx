@@ -134,7 +134,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const initialMode = lockedMode || defaultMode;
   const defaultHeadshotTask = defaultPreset === "headshot" ? editTasks[0] : null;
   const [mode, setMode] = useState<"edit" | "text">(initialMode);
-  const [prompt, setPrompt] = useState(defaultHeadshotTask?.prompt || "");
+  const [prompt, setPrompt] = useState("");
   const [task, setTask] = useState<string | null>(defaultHeadshotTask?.label || null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
@@ -161,11 +161,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
   const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
   const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
-  const promptPlaceholder = mode === "edit"
-    ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
-    : "Describe the image you want to create, or start from a ready prompt below.";
+  const headshotPrompt = editTasks[0].prompt;
+  const isHeadshotMode = mode === "edit" && task === "Professional headshot";
+  const promptPlaceholder = isHeadshotMode
+    ? "Optional: add outfit, background, or lighting details. Leave blank to use the default professional headshot prompt."
+    : mode === "edit"
+      ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
+      : "Describe the image you want to create, or start from a ready prompt below.";
+  const effectivePrompt = isHeadshotMode && !prompt.trim() ? headshotPrompt : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
-  const canGenerate = Boolean(authenticated) && !needsUpload && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
+  const canGenerate = Boolean(authenticated) && !needsUpload && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions.slice(0, 5), value: selectedStyle, setter: setSelectedStyle },
@@ -198,7 +203,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       const headshotTask = editTasks[0];
       setMode("edit");
       setTask(matchedPrompt?.title || headshotTask.label);
-      setPrompt(matchedPrompt?.prompt || promptParam || headshotTask.prompt);
+      setPrompt(matchedPrompt?.prompt || promptParam || "");
       setRatio("auto");
       return;
     }
@@ -232,7 +237,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
   const applyTask = (item: { label: string; prompt: string }) => {
     setTask(item.label);
-    setPrompt(composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
+    setPrompt(item.label === "Professional headshot" ? "" : composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
     if (mode === "edit" && item.label === "Professional headshot") {
       setEditScope("whole");
       setEditRegion(null);
@@ -314,7 +319,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   const runGenerate = async () => {
-    const trimmedPrompt = prompt.trim();
+    const trimmedPrompt = effectivePrompt.trim();
     if (!authenticated) {
       window.location.href = mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate";
       return;
@@ -516,6 +521,24 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </>
         )}
 
+        {mode === "edit" && (
+          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose image size</p>
+              <span className="text-[11px] font-semibold text-white/45">{currentQuote.sizeLabel}</span>
+            </div>
+            <div className={`grid ${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"}`}>
+              {visibleRatios.map((item) => (
+                <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
+                  <span className="block">{item.label}</span>
+                  {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{item.imageCredits} cr</span>}
+                </button>
+              ))}
+            </div>
+            {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
+          </div>
+        )}
+
         {mode === "edit" && (uploadedImage || !isHero) && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -550,7 +573,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Headshot instructions" : "Describe the edit") : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
           {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
         </div>
         <textarea
@@ -558,7 +581,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/35 focus:ring-4`}
+          className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
         />
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
@@ -593,13 +616,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {(!isHero || mode === "text") && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
+        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Choose image size" : "Ratio"}</p>
           <div className={`${isHero ? "grid-cols-4 gap-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
             {visibleRatios.map((item) => (
               <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
                 <span className="block">{item.label}</span>
-                {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{mode === "edit" ? item.imageCredits : item.textCredits} cr</span>}
+                {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{item.textCredits} cr</span>}
               </button>
             ))}
           </div>
@@ -610,7 +633,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : prompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && task === "Professional headshot" ? `Generate headshot (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && task === "Professional headshot" ? `Generate headshot (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
               </button>
               <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
                 View generation history
@@ -697,7 +720,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                   </div>
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/6" />
-                {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">After</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
+                {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">After · generated result</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
                 {!generatedImage && editScope === "selected" && editRegion && (
                   <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
                 )}
@@ -707,35 +730,45 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </div>
             </div>
           ) : (
-            <div
-              className={`relative ${isHero ? "max-h-[62vh] min-h-[260px]" : "max-h-[72vh] min-h-[320px]"} cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#241B13]`}
-              style={{ aspectRatio: editPreviewAspect }}
-              role="slider"
-              aria-label="Drag to compare before and after demo"
-              aria-valuemin={12}
-              aria-valuemax={88}
-              aria-valuenow={comparePosition}
-              tabIndex={0}
-              onPointerDown={startCompareDrag}
-              onPointerMove={(event) => { if (isDraggingCompare) updateComparePosition(event); }}
-              onPointerUp={stopCompareDrag}
-              onPointerCancel={stopCompareDrag}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowLeft") setComparePosition((value) => Math.max(12, value - 4));
-                if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
-              }}
-            >
-              <img src={previewImage} alt="Before reference demo" className="absolute inset-0 h-full w-full object-contain opacity-80 saturate-90" draggable={false} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
-              <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
-                <img src={previewImage} alt="After edited result demo" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
-              </div>
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>
-              <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
-              {state === "idle" && !isHero && <div className="absolute bottom-6 right-6 max-w-sm rounded-2xl border border-white/10 bg-black/55 p-4 text-left text-sm leading-6 text-white/78">Demo preview. Upload your image, choose whole image or selected area, then generate to preview and download.</div>}
-              <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
-              <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
+            <div className={`relative ${isHero ? "min-h-[260px]" : "min-h-[320px]"} overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.10),rgba(36,27,19,0.94)_48%,rgba(10,15,12,0.98))]`}>
+              {isHeadshotMode ? (
+                <div className="flex h-full min-h-[260px] items-center justify-center p-6 text-center">
+                  <div className="max-w-md rounded-3xl border border-white/12 bg-black/45 p-5 shadow-2xl backdrop-blur-sm">
+                    <p className={`${isHero ? "text-2xl" : "text-3xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Before / after appears after generation</p>
+                    <p className="mt-3 text-sm leading-6 text-white/65">Upload your photo first. After the headshot is generated, this area will compare your original photo with the generated result.</p>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="relative h-full min-h-[260px] cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px]"
+                  role="slider"
+                  aria-label="Drag to compare before and after demo"
+                  aria-valuemin={12}
+                  aria-valuemax={88}
+                  aria-valuenow={comparePosition}
+                  tabIndex={0}
+                  onPointerDown={startCompareDrag}
+                  onPointerMove={(event) => { if (isDraggingCompare) updateComparePosition(event); }}
+                  onPointerUp={stopCompareDrag}
+                  onPointerCancel={stopCompareDrag}
+                  onKeyDown={(event) => {
+                    if (event.key === "ArrowLeft") setComparePosition((value) => Math.max(12, value - 4));
+                    if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
+                  }}
+                >
+                  <img src={previewImage} alt="Before reference demo" className="absolute inset-0 h-full w-full object-contain opacity-80 saturate-90" draggable={false} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
+                  <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
+                    <img src={previewImage} alt="After edited result demo" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
+                  </div>
+                  <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>
+                  <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
+                  {state === "idle" && !isHero && <div className="absolute bottom-6 right-6 max-w-sm rounded-2xl border border-white/10 bg-black/55 p-4 text-left text-sm leading-6 text-white/78">Demo preview. Upload your image, choose whole image or selected area, then generate to preview and download.</div>}
+                  <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
+                  <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
+                </div>
+              )}
             </div>
           )}
         </div>
