@@ -305,54 +305,6 @@ function StyleGuideDetailPage({ page }: { page: (typeof promptPages)[number] }) 
   );
 }
 
-function categoryAnchor(categoryKey: string) {
-  return `style-${categoryKey.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-}
-
-function PromptStyleQuickNav() {
-  return (
-    <section className="mx-auto mt-8 max-w-screen-xl rounded-[2rem] border border-rsp-border bg-white/75 p-5 shadow-[0_18px_60px_rgba(94,63,36,0.10)] backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-rsp-secondary">Quick find</p>
-          <h2 className="mt-2 font-heading text-2xl font-bold text-rsp-text">Style guide categories</h2>
-          <p className="mt-2 text-sm leading-6 text-rsp-muted">
-            Jump to the new prompt categories, then open the style guide that matches the image you want to create.
-          </p>
-        </div>
-        <div className="grid flex-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {categories.map((category) => {
-            const pages = promptPages.filter((page) => page.category === category.key);
-            if (!pages.length) return null;
-            return (
-              <div key={category.key} className="rounded-2xl border border-rsp-border bg-rsp-panel p-4">
-                <a
-                  href={`#${categoryAnchor(category.key)}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-rsp-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline transition hover:bg-rsp-secondary hover:text-white"
-                >
-                  {category.label}
-                  <span>{pages.length}</span>
-                </a>
-                <div className="mt-3 flex flex-col gap-2">
-                  {pages.map((page) => (
-                    <Link
-                      key={page.slug}
-                      href={`/prompts/${page.slug}`}
-                      className="text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:text-rsp-secondary"
-                    >
-                      {page.h1}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function PromptsLibraryPage() {
   return (
     <>
@@ -361,7 +313,7 @@ function PromptsLibraryPage() {
           <p className="eyebrow text-center">Prompt Library</p>
           <h1 className="mt-3 text-center font-heading text-5xl font-bold">Browse AI Image Prompts</h1>
           <p className="mx-auto mt-4 max-w-2xl text-center text-rsp-muted">
-            Browse all {activePrompts.length} original prompt recipes with categories, tool notes, preview images, and detail pages. New style-guide pages are added below without replacing the original library.
+            Browse ready-to-use AI image prompts by style, scene, and use case.
           </p>
           <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-white/10 bg-rsp-panel p-4">
             <input
@@ -369,9 +321,7 @@ function PromptsLibraryPage() {
               placeholder="Search prompts by style, scene, or tool"
               aria-label="Search prompts"
             />
-            <p className="mt-3 text-sm text-rsp-muted">Static library view: use browser find or open a prompt card for details.</p>
           </div>
-          <PromptStyleQuickNav />
           <div className="mt-10 grid items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
             {activePrompts.map((prompt) => (
               <article key={prompt.slug} className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel transition hover:-translate-y-1 hover:border-rsp-primary/60">
@@ -412,59 +362,62 @@ function PromptsLibraryPage() {
           <h2 className="mt-3 text-center font-heading text-4xl font-bold tracking-[-0.03em]">
             {promptLibraryMeta.h1}
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-rsp-muted">
-            These are additional prompt-guide pages. They do not replace the original prompt cases above.
-          </p>
-          <div className="mt-10 space-y-12">
+          <div className="mx-auto mt-6 flex max-w-4xl flex-wrap justify-center gap-2">
             {categories.map((category) => {
               const pages = promptPages.filter((page) => page.category === category.key);
               if (!pages.length) return null;
               return (
-                <section key={category.key} id={categoryAnchor(category.key)} className="scroll-mt-28">
-                  <div className="mb-5 flex items-center gap-3">
-                    <h3 className="font-heading text-2xl font-bold">{category.label}</h3>
-                    <span className="rounded-full bg-rsp-secondary/10 px-3 py-1 text-xs font-semibold text-rsp-secondary">
-                      {pages.length}
-                    </span>
-                  </div>
-                  <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                    {pages.map((page) => (
-                      <article
-                        key={page.slug}
-                        className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel transition hover:-translate-y-1 hover:border-rsp-primary/60"
-                      >
-                        <Link href={`/prompts/${page.slug}`} className="block no-underline">
-                          {page.sampleImage ? (
-                            <div className="relative overflow-hidden bg-[#F3E8DA]">
-                              <img
-                                src={page.sampleImage}
-                                alt={page.sampleImageAlt ?? `${page.h1} prompt-matched sample`}
-                                className="h-auto w-full object-contain transition duration-500 group-hover:scale-[1.02]"
-                              />
-                              <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
-                                Prompt-matched sample
-                              </div>
-                            </div>
-                          ) : null}
-                        </Link>
-                        <div className="p-5">
-                          <p className="text-xs uppercase tracking-[0.16em] text-rsp-muted">{page.categoryLabel}</p>
-                          <h4 className="mt-2 font-heading text-xl font-bold text-rsp-text">{page.h1}</h4>
-                          <p className="mt-3 line-clamp-3 text-sm leading-6 text-rsp-muted">{page.metaDescription}</p>
-                          <div className="mt-5 flex flex-wrap items-center gap-3">
-                            <CopyPromptButton prompt={page.prompts[0]?.prompt ?? ""} label="Copy prompt" />
-                            <Link href={`/prompts/${page.slug}`} className="text-sm font-bold text-rsp-secondary no-underline">
-                              View guide →
-                            </Link>
-                            <UsePromptButton prompt={page.prompts[0]?.prompt ?? ""} />
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </section>
+                <span
+                  key={category.key}
+                  className="rounded-full border border-rsp-border bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary"
+                >
+                  {category.label} · {pages.length}
+                </span>
               );
             })}
+          </div>
+          <div className="mt-10 grid auto-rows-fr gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {promptPages.map((page) => (
+              <article
+                key={page.slug}
+                className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-rsp-border bg-rsp-panel shadow-[0_14px_40px_rgba(94,63,36,0.08)] transition hover:-translate-y-1 hover:border-rsp-primary/60 hover:shadow-[0_18px_55px_rgba(94,63,36,0.14)]"
+              >
+                <Link href={`/prompts/${page.slug}`} className="block no-underline">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#F3E8DA]">
+                    {page.sampleImage ? (
+                      <img
+                        src={page.sampleImage}
+                        alt={page.sampleImageAlt ?? `${page.h1} prompt-matched sample`}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-6 text-center text-sm font-semibold text-rsp-muted">
+                        Prompt examples only
+                      </div>
+                    )}
+                    <div className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
+                      {page.sampleImage ? "Matching sample" : "No sample image"}
+                    </div>
+                  </div>
+                </Link>
+                <div className="flex flex-1 flex-col p-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-rsp-secondary">{page.categoryLabel}</p>
+                  <h4 className="mt-2 min-h-[3.5rem] font-heading text-xl font-bold leading-tight text-rsp-text">{page.h1}</h4>
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-rsp-muted">{page.metaDescription}</p>
+                  <div className="mt-auto pt-5">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <CopyPromptButton prompt={page.prompts[0]?.prompt ?? ""} label="Copy prompt" />
+                      <Link href={`/prompts/${page.slug}`} className="text-sm font-bold text-rsp-secondary no-underline">
+                        View guide →
+                      </Link>
+                    </div>
+                    <div className="mt-3">
+                      <UsePromptButton prompt={page.prompts[0]?.prompt ?? ""} />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/", label: "Generate" },
@@ -51,24 +51,6 @@ export default function Header() {
   const [credits, setCredits] = useState<number | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [promptMenuOpen, setPromptMenuOpen] = useState(false);
-  const promptCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const openPromptMenu = () => {
-    if (promptCloseTimer.current) clearTimeout(promptCloseTimer.current);
-    setPromptMenuOpen(true);
-  };
-
-  const closePromptMenuSoon = () => {
-    if (promptCloseTimer.current) clearTimeout(promptCloseTimer.current);
-    promptCloseTimer.current = setTimeout(() => setPromptMenuOpen(false), 220);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (promptCloseTimer.current) clearTimeout(promptCloseTimer.current);
-    };
-  }, []);
 
   useEffect(() => {
     let canceled = false;
@@ -142,58 +124,31 @@ export default function Header() {
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((link) => (
             link.href === "/prompts" ? (
-              <div
-                key={link.href}
-                className="relative -my-5 py-5"
-                onMouseEnter={openPromptMenu}
-                onMouseLeave={closePromptMenuSoon}
-                onFocus={openPromptMenu}
-                onBlur={(event) => {
-                  if (!event.currentTarget.contains(event.relatedTarget)) closePromptMenuSoon();
-                }}
-              >
-                <Link
-                  href={link.href}
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold no-underline transition ${promptMenuOpen ? "bg-rsp-secondary/10 text-rsp-text" : "text-rsp-muted hover:bg-rsp-secondary/10 hover:text-rsp-text"}`}
-                  aria-haspopup="true"
-                  aria-expanded={promptMenuOpen}
-                >
+              <div key={link.href} className="group relative -my-4 py-4">
+                <Link href={link.href} className="inline-flex items-center gap-1 rounded-full px-2 py-2 text-sm font-semibold text-rsp-muted no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-text" aria-haspopup="true">
                   {link.label}
-                  <span aria-hidden="true" className={`text-[10px] leading-none transition ${promptMenuOpen ? "rotate-180" : ""}`}>▾</span>
+                  <span aria-hidden="true" className="text-[10px] leading-none">▾</span>
                 </Link>
-                <div className={`absolute left-1/2 top-[calc(100%-2px)] z-[70] w-[calc(100vw-32px)] max-w-[860px] -translate-x-1/2 rounded-[1.35rem] border border-rsp-border bg-rsp-panel p-4 shadow-[0_22px_60px_rgba(58,41,30,0.16)] transition duration-150 ${promptMenuOpen ? "visible translate-y-0 opacity-100" : "invisible translate-y-2 opacity-0"}`}>
-                  <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
-                    <div className="flex min-h-full flex-col justify-between rounded-2xl bg-rsp-secondary/10 p-4">
-                      <div>
-                        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-rsp-secondary">Prompt Library</p>
-                        <p className="mt-2 text-sm leading-5 text-rsp-muted">Find ready-to-use prompts by goal, then open a style guide or browse the full library.</p>
-                      </div>
-                      <Link href="/prompts" className="mt-4 inline-flex items-center justify-center rounded-full bg-rsp-primary px-4 py-3 text-sm font-bold text-rsp-on-primary no-underline transition hover:opacity-90">
-                        All prompts →
-                      </Link>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      {promptCategoryLinks.map((category) => (
-                        <div key={category.label} className="rounded-2xl border border-rsp-border bg-white/65 p-2 shadow-sm transition hover:-translate-y-0.5 hover:border-rsp-secondary/40 hover:bg-white">
-                          <Link href={`/prompts#style-${category.label.toLowerCase()}`} className="block rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline transition hover:bg-rsp-secondary/10">
-                            {category.label}
-                          </Link>
-                          <div className="mt-1 flex flex-col gap-1">
-                            {category.items.map((item) => (
-                              <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2.5 text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-secondary whitespace-nowrap">
-                                {item.label}
-                              </Link>
-                            ))}
-                            {category.items.length === 1 ? (
-                              <Link href={`/prompts#style-${category.label.toLowerCase()}`} className="block rounded-xl px-3 py-2.5 text-sm font-semibold leading-5 text-rsp-muted no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-secondary whitespace-nowrap">
-                                More {category.label}
-                              </Link>
-                            ) : null}
-                          </div>
+                <div className="invisible absolute left-1/2 top-full z-[70] w-[760px] -translate-x-1/2 translate-y-2 rounded-2xl border border-rsp-border bg-rsp-panel p-4 opacity-0 shadow-[0_18px_50px_rgba(58,41,30,0.14)] transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  <div className="grid gap-3 md:grid-cols-4">
+                    {promptCategoryLinks.map((category) => (
+                      <div key={category.label} className="rounded-xl border border-rsp-border bg-white/55 p-3">
+                        <Link href={`/prompts#style-${category.label.toLowerCase()}`} className="block rounded-lg px-2 py-1 text-xs font-bold uppercase tracking-[0.14em] text-rsp-secondary no-underline transition hover:bg-rsp-secondary/10">
+                          {category.label}
+                        </Link>
+                        <div className="mt-2 flex flex-col gap-1">
+                          {category.items.map((item) => (
+                            <Link key={item.href} href={item.href} className="block rounded-lg px-2 py-2 text-sm font-semibold leading-5 text-rsp-text no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-secondary whitespace-nowrap">
+                              {item.label}
+                            </Link>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
+                  <Link href="/prompts" className="mt-3 block rounded-xl bg-rsp-secondary/10 px-4 py-3 text-center text-sm font-bold text-rsp-secondary no-underline transition hover:bg-rsp-secondary hover:text-white">
+                    All prompts
+                  </Link>
                 </div>
               </div>
             ) : (
