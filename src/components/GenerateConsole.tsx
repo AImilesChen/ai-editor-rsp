@@ -730,12 +730,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </div>
             </div>
           ) : (
-            <div className={`relative ${isHero ? "min-h-[260px]" : "min-h-[320px]"} overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.10),rgba(36,27,19,0.94)_48%,rgba(10,15,12,0.98))]`}>
+            <div className={`relative ${isHero ? "min-h-[420px] md:min-h-[520px]" : "min-h-[320px]"} overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.10),rgba(36,27,19,0.94)_48%,rgba(10,15,12,0.98))]`}>
               {isHeadshotMode ? (
-                <div className="flex h-full min-h-[260px] items-center justify-center p-6 text-center">
-                  <div className="max-w-md rounded-3xl border border-white/12 bg-black/45 p-5 shadow-2xl backdrop-blur-sm">
-                    <p className={`${isHero ? "text-2xl" : "text-3xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Before / after appears after generation</p>
-                    <p className="mt-3 text-sm leading-6 text-white/65">Upload your photo first. After the headshot is generated, this area will compare your original photo with the generated result.</p>
+                <div className="relative h-full min-h-[420px] overflow-hidden rounded-[22px] md:min-h-[520px]">
+                  <img src={previewImage} alt="Professional headshot example" className="absolute inset-0 h-full w-full object-cover object-center brightness-[0.86] contrast-105 saturate-105" draggable={false} />
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.28)_46%,rgba(0,0,0,0.16)_100%),linear-gradient(0deg,rgba(0,0,0,0.66)_0%,transparent_45%,rgba(0,0,0,0.18)_100%)]" />
+                  <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/55 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white/85 shadow-lg backdrop-blur-sm">Example result</span>
+                  <div className="absolute bottom-5 left-5 max-w-md rounded-[24px] border border-white/12 bg-black/58 p-5 text-left shadow-2xl backdrop-blur-md md:bottom-7 md:left-7 md:p-6">
+                    <p className={`${isHero ? "text-3xl" : "text-4xl"} font-heading font-normal leading-none tracking-[-0.04em] text-white`}>Professional headshot example</p>
+                    <p className="mt-3 text-sm leading-6 text-white/72">Upload your photo on the left. This preview will switch to your real before/after comparison after generation.</p>
+                    <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold text-white/76">
+                      <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1.5">LinkedIn</span>
+                      <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1.5">Resume</span>
+                      <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1.5">Business profile</span>
+                    </div>
                   </div>
                 </div>
               ) : (
