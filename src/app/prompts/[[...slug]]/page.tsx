@@ -9,6 +9,8 @@ import { promptPages, promptLibraryMeta, categories } from "@/lib/data/prompt-pa
 import { site } from "@/lib/rsp-content";
 
 const activePrompts = prompts.filter((prompt) => prompt.status === "active");
+const professionalHeadshotPrompt = "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Dress the person in a clean navy blazer and light shirt. Use a soft grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy.";
+const professionalHeadshotHref = `/image-editor?prompt=${encodeURIComponent(professionalHeadshotPrompt)}`;
 
 export async function generateStaticParams() {
   return [
@@ -143,6 +145,14 @@ function StyleGuideDetailPage({ page }: { page: (typeof promptPages)[number] }) 
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-rsp-muted">{page.heroText}</p>
             <div className="mt-6 flex flex-wrap gap-3">
+              {page.slug === "ai-headshot" ? (
+                <Link
+                  href={professionalHeadshotHref}
+                  className="rounded-full bg-rsp-primary px-5 py-2.5 text-sm font-bold text-rsp-on-primary no-underline transition hover:opacity-90"
+                >
+                  Upload photo for headshot
+                </Link>
+              ) : null}
               <UsePromptButton prompt={page.prompts[0]?.prompt ?? ""} />
               <Link
                 href="/prompts"
@@ -410,6 +420,11 @@ function PromptsLibraryPage() {
                       <Link href={`/prompts/${page.slug}`} className="text-sm font-bold text-rsp-secondary no-underline">
                         View guide →
                       </Link>
+                      {page.slug === "ai-headshot" ? (
+                        <Link href={professionalHeadshotHref} className="text-sm font-bold text-rsp-secondary no-underline">
+                          Upload photo →
+                        </Link>
+                      ) : null}
                     </div>
                     <div className="mt-3">
                       <UsePromptButton prompt={page.prompts[0]?.prompt ?? ""} />

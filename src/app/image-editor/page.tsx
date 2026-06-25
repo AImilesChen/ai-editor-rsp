@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/image-editor` },
 };
 
+const professionalHeadshotPrompt = "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Dress the person in a clean navy blazer and light shirt. Use a soft grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy.";
+
 const benefits = [
   { title: "Keep the subject", body: "Preserve the main person, product, pose, and composition while changing only what you describe." },
   { title: "Change a focused part", body: "Replace a background, clean up lighting, remove distractions, or restyle the image with a focused prompt." },
@@ -26,6 +28,26 @@ export default function ReferenceEditPage() {
         <section id="try-reference-edit" className="relative scroll-mt-24 overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)] px-4 py-6 md:px-8 md:py-10">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
           <div className="relative mx-auto max-w-screen-2xl">
+            <div className="mb-4 rounded-[28px] border border-rsp-primary/25 bg-white/82 p-4 shadow-[0_14px_42px_rgba(46,32,18,0.08)] backdrop-blur md:p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="eyebrow text-[10px]">New photo-to-headshot preset</p>
+                  <h2 className="mt-2 font-heading text-3xl font-normal leading-tight tracking-[-0.04em] text-rsp-text md:text-4xl">
+                    Upload your photo, generate a professional headshot
+                  </h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-rsp-muted md:text-base">
+                    Keep the same person and facial identity while changing the outfit, lighting, and background into a polished LinkedIn-style business portrait.
+                  </p>
+                </div>
+                <Link
+                  href={`/image-editor?prompt=${encodeURIComponent(professionalHeadshotPrompt)}`}
+                  className="rsp-button-primary shrink-0 px-5 py-3 text-center text-sm"
+                >
+                  Start with headshot preset
+                </Link>
+              </div>
+            </div>
+
             <GenerateConsole headingLevel="h2" previewHeadingLevel="h2" variant="hero" defaultMode="edit" lockedMode="edit" hidePreviewIntro />
 
             <div className="mt-5 rounded-[28px] border border-rsp-border bg-white/76 p-4 shadow-[0_14px_42px_rgba(46,32,18,0.08)] backdrop-blur md:p-5 lg:p-6">

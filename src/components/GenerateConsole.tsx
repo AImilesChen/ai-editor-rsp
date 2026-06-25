@@ -6,6 +6,7 @@ import { promptCards as libraryPromptCards } from "@/lib/rsp-content";
 import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
 const editTasks = [
+  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Dress the person in a clean navy blazer and light shirt. Use a soft grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy." },
   { label: "Remove background", prompt: "Remove the background from the uploaded image, keep the subject edges clean and natural, and place the subject on a transparent or soft neutral backdrop." },
   { label: "Change background", prompt: "Keep the subject unchanged and replace only the background with a cozy lofi night-study room, warm lamp light, rain on the window, and soft film grain." },
   { label: "Replace object", prompt: "Replace the selected object with a premium desk lamp, matching the original perspective, lighting, shadows, and realistic texture." },
@@ -28,6 +29,7 @@ const lightingOptions = ["Golden hour", "Soft studio light", "Neon light", "Dram
 const shotOptions = ["Close-up", "Half body", "Full body", "Wide shot", "Top view", "Product hero shot"];
 
 const previewImages: Record<string, string> = {
+  "Professional headshot": "/images/prompt-cases/ai-headshot-case.webp",
   "Remove background": "/images/generated/double-exposure-travel-rishikesh.webp",
   "Change background": "/images/generated/lofi-girl-vibes.webp",
   "Replace object": "/images/generated/cinematic-movie-poster.webp",
@@ -183,10 +185,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined" || lockedMode === "edit") return;
+    if (typeof window === "undefined") return;
     const promptParam = new URLSearchParams(window.location.search).get("prompt");
     if (!promptParam) return;
     const matchedPrompt = libraryPromptCards.find((item) => item.slug === promptParam);
+
+    if (lockedMode === "edit") {
+      setMode("edit");
+      setTask(matchedPrompt?.title || "Professional headshot");
+      setPrompt(matchedPrompt?.prompt || promptParam);
+      setRatio("auto");
+      return;
+    }
+
     setMode("text");
     if (matchedPrompt) {
       setTask(matchedPrompt.title);
