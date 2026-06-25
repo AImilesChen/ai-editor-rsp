@@ -48,18 +48,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
         description: stylePage.metaDescription,
         url: `${site.url}/prompts/${stylePage.slug}`,
         type: "article",
-        images: [stylePage.sampleImage],
+        ...(stylePage.sampleImage ? { images: [stylePage.sampleImage] } : {}),
       },
     };
   }
 
   return {
     title: "Browse AI Image Prompts",
-    description: `Browse all ${activePrompts.length} original AI image prompts, plus ${promptPages.length} prompt style guides with example images for AI Editor RSP.`,
+    description: `Browse all ${activePrompts.length} original AI image prompts, plus ${promptPages.length} prompt style guides for AI Editor RSP.`,
     alternates: { canonical: `${site.url}/prompts` },
     openGraph: {
       title: "Browse AI Image Prompts",
-      description: `Browse all ${activePrompts.length} original AI image prompts, plus ${promptPages.length} prompt style guides with example images for AI Editor RSP.`,
+      description: `Browse all ${activePrompts.length} original AI image prompts, plus ${promptPages.length} prompt style guides for AI Editor RSP.`,
       url: `${site.url}/prompts`,
       type: "website",
     },
@@ -152,16 +152,25 @@ function StyleGuideDetailPage({ page }: { page: (typeof promptPages)[number] }) 
               </Link>
             </div>
           </div>
-          <div className="rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-[0_24px_80px_rgba(94,63,36,0.16)] backdrop-blur">
-            <img
-              src={page.sampleImage}
-              alt={page.sampleImageAlt}
-              className="aspect-[4/5] w-full rounded-[1.5rem] object-cover"
-            />
-            <p className="mt-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-rsp-muted">
-              Example output
-            </p>
-          </div>
+          {page.sampleImage ? (
+            <div className="rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-[0_24px_80px_rgba(94,63,36,0.16)] backdrop-blur">
+              <img
+                src={page.sampleImage}
+                alt={page.sampleImageAlt ?? `${page.h1} prompt-matched sample`}
+                className="h-auto w-full rounded-[1.5rem] object-contain"
+              />
+              <p className="mt-3 text-center text-xs font-semibold uppercase tracking-[0.16em] text-rsp-muted">
+                Prompt-matched sample
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-[2rem] border border-white/60 bg-white/70 p-6 shadow-[0_24px_80px_rgba(94,63,36,0.12)] backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-rsp-secondary">Prompt examples only</p>
+              <p className="mt-4 text-sm leading-6 text-rsp-muted">
+                We only show a case image when the visual asset is confirmed to match this prompt category. Use the prompts below to generate your own output.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -194,31 +203,18 @@ function StyleGuideDetailPage({ page }: { page: (typeof promptPages)[number] }) 
                       key={idx}
                       className="overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel"
                     >
-                      <div className="grid gap-0 lg:grid-cols-[240px_minmax(0,1fr)]">
-                        <div className="relative min-h-56 bg-[#F3E8DA] lg:min-h-full">
-                          <img
-                            src={page.sampleImage}
-                            alt={`${page.sampleImageAlt} for ${example.title}`}
-                            className="h-full min-h-56 w-full object-cover"
-                            loading="lazy"
-                          />
-                          <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
-                            Sample image
+                      <div className="p-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <h3 className="font-heading text-lg font-semibold">{example.title}</h3>
+                          <div className="flex shrink-0 flex-wrap gap-2">
+                            <CopyPromptButton prompt={example.prompt} label="Copy" />
+                            <UsePromptButton prompt={example.prompt} />
                           </div>
                         </div>
-                        <div className="p-5">
-                          <div className="flex items-center justify-between gap-4">
-                            <h3 className="font-heading text-lg font-semibold">{example.title}</h3>
-                            <div className="flex shrink-0 gap-2">
-                              <CopyPromptButton prompt={example.prompt} label="Copy" />
-                              <UsePromptButton prompt={example.prompt} />
-                            </div>
-                          </div>
-                          <div className="mt-4 rounded-xl border border-white/10 bg-rsp-panel-strong p-4">
-                            <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-6 text-rsp-text">
-                              {example.prompt}
-                            </pre>
-                          </div>
+                        <div className="mt-4 rounded-xl border border-white/10 bg-rsp-panel-strong p-4">
+                          <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-6 text-rsp-text">
+                            {example.prompt}
+                          </pre>
                         </div>
                       </div>
                     </div>
@@ -405,7 +401,7 @@ function PromptsLibraryPage() {
             {promptLibraryMeta.h1}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-rsp-muted">
-            These are additional prompt-guide pages with example outputs. They do not replace the original prompt cases above.
+            These are additional prompt-guide pages. They do not replace the original prompt cases above.
           </p>
           <div className="mt-10 space-y-12">
             {categories.map((category) => {
@@ -426,16 +422,18 @@ function PromptsLibraryPage() {
                         className="group overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel transition hover:-translate-y-1 hover:border-rsp-primary/60"
                       >
                         <Link href={`/prompts/${page.slug}`} className="block no-underline">
-                          <div className="relative h-56 overflow-hidden bg-[#F3E8DA]">
-                            <img
-                              src={page.sampleImage}
-                              alt={page.sampleImageAlt}
-                              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
-                              Example output
+                          {page.sampleImage ? (
+                            <div className="relative overflow-hidden bg-[#F3E8DA]">
+                              <img
+                                src={page.sampleImage}
+                                alt={page.sampleImageAlt ?? `${page.h1} prompt-matched sample`}
+                                className="h-auto w-full object-contain transition duration-500 group-hover:scale-[1.02]"
+                              />
+                              <div className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur">
+                                Prompt-matched sample
+                              </div>
                             </div>
-                          </div>
+                          ) : null}
                         </Link>
                         <div className="p-5">
                           <p className="text-xs uppercase tracking-[0.16em] text-rsp-muted">{page.categoryLabel}</p>

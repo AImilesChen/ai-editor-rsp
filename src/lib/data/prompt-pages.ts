@@ -5,8 +5,8 @@ export interface PromptPage {
   h1: string;
   category: string;
   categoryLabel: string;
-  sampleImage: string;
-  sampleImageAlt: string;
+  sampleImage?: string;
+  sampleImageAlt?: string;
   heroText: string;
   ctaText: string;
   whatItIs: string;
@@ -110,8 +110,6 @@ export const promptPages: PromptPage[] = [
     h1: "LinkedIn Profile Photo Prompts",
     category: "Professional",
     categoryLabel: "Professional",
-    sampleImage: "/images/generated/hero-photo.webp",
-    sampleImageAlt: "Example LinkedIn-style profile photo with realistic portrait lighting",
     heroText:
       "A strong LinkedIn photo should feel professional, clear, and approachable. These prompts help you create profile-ready AI portraits for founders, freelancers, job seekers, and remote professionals.",
     ctaText: "Create a LinkedIn-style photo",
@@ -360,8 +358,6 @@ export const promptPages: PromptPage[] = [
     h1: "90s Yearbook AI Prompts",
     category: "Trend",
     categoryLabel: "Trend",
-    sampleImage: "/images/prompts/vintage-film-look-card.webp",
-    sampleImageAlt: "Example nostalgic yearbook-style portrait with vintage film color",
     heroText:
       "Create nostalgic 90s yearbook-style portraits with soft flash, retro studio backgrounds, denim, varsity jackets, and classic school-photo composition.",
     ctaText: "Try a 90s yearbook prompt",
@@ -442,8 +438,6 @@ export const promptPages: PromptPage[] = [
     h1: "Anime-Inspired Portrait Prompts",
     category: "Trend",
     categoryLabel: "Trend",
-    sampleImage: "/images/generated/three-d-cartoon-selfie.webp",
-    sampleImageAlt: "Example stylized avatar inspired by animated portrait prompts",
     heroText:
       "Create soft anime-inspired portraits and illustrated avatars without copying a specific studio, artist, or franchise. Use these prompts for cozy, expressive, social-ready profile images.",
     ctaText: "Create an anime-inspired portrait",
@@ -608,8 +602,6 @@ export const promptPages: PromptPage[] = [
     h1: "AI Product Photography Prompts",
     category: "Business",
     categoryLabel: "Business",
-    sampleImage: "/images/generated/product-photography-sample.jpg",
-    sampleImageAlt: "Example product photography image with dramatic studio lighting",
     heroText:
       "Create polished product photos for ecommerce, ads, and social posts. These prompts help you describe lighting, background, composition, props, and commercial mood.",
     ctaText: "Generate a product photo",

@@ -16,7 +16,7 @@ const promptCategoryLinks = [
     label: "Professional",
     items: [
       { href: "/prompts/ai-headshot", label: "AI Headshot" },
-      { href: "/prompts/linkedin-profile", label: "LinkedIn Profile" },
+      { href: "/prompts/linkedin-profile-photo", label: "LinkedIn Profile" },
     ],
   },
   {
@@ -29,15 +29,14 @@ const promptCategoryLinks = [
   {
     label: "Trend",
     items: [
-      { href: "/prompts/yearbook-photo", label: "Yearbook Photo" },
-      { href: "/prompts/anime-avatar", label: "Anime Avatar" },
+      { href: "/prompts/90s-yearbook", label: "Yearbook Photo" },
+      { href: "/prompts/anime-inspired-portrait", label: "Anime Avatar" },
     ],
   },
   {
     label: "Business",
     items: [
       { href: "/prompts/product-photography", label: "Product Photography" },
-      { href: "/prompts/brand-lifestyle", label: "Brand Lifestyle" },
     ],
   },
 ];
@@ -148,7 +147,7 @@ export default function Header() {
                     ))}
                   </div>
                   <Link href="/prompts" className="mt-3 block rounded-xl bg-rsp-secondary/10 px-4 py-3 text-center text-sm font-bold text-rsp-secondary no-underline transition hover:bg-rsp-secondary hover:text-white">
-                    View all prompt cases and style guides
+                    All prompts
                   </Link>
                 </div>
               </div>
