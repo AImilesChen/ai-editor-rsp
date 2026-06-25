@@ -748,7 +748,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 </div>
               ) : (
                 <div
-                  className="relative h-full min-h-[260px] cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px]"
+                  className="relative h-full min-h-[420px] cursor-ew-resize touch-none select-none overflow-hidden rounded-[22px] bg-[#17110C] md:min-h-[520px]"
                   role="slider"
                   aria-label="Drag to compare before and after demo"
                   aria-valuemin={12}
@@ -764,16 +764,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                     if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
                   }}
                 >
-                  <img src={previewImage} alt="Before reference demo" className="absolute inset-0 h-full w-full object-contain opacity-80 saturate-90" draggable={false} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/18 to-transparent" />
+                  <img src={previewImage} alt="Before reference demo" className="absolute inset-0 h-full w-full object-cover opacity-80 brightness-90 saturate-90" draggable={false} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/38 via-transparent to-black/20" />
                   <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
-                    <img src={previewImage} alt="After edited result demo" className="h-full w-full object-contain brightness-105 contrast-110 saturate-125" draggable={false} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/24 to-transparent" />
+                    <img src={previewImage} alt="After edited result demo" className="h-full w-full object-cover brightness-110 contrast-110 saturate-125" draggable={false} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-black/10" />
                   </div>
-                  <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">Before · example</span>
-                  <span className="absolute right-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">After · AI edit</span>
-                  {state === "idle" && !isHero && <div className="absolute bottom-6 right-6 max-w-sm rounded-2xl border border-white/10 bg-black/55 p-4 text-left text-sm leading-6 text-white/78">Demo preview. Upload your image, choose whole image or selected area, then generate to preview and download.</div>}
-                  <div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
+                  <span className="absolute left-5 top-5 rounded-full border border-white/14 bg-black/62 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-lg backdrop-blur-sm">Before · example</span>
+                  <span className="absolute right-5 top-5 rounded-full border border-[#86EFAC]/35 bg-[#102014]/78 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#C8FADC] shadow-lg backdrop-blur-sm">After · AI edit</span>
+                  <div className="absolute bottom-5 left-5 max-w-[340px] text-left md:bottom-7 md:left-7">
+                    <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">Preview your edit before download</p>
+                    <p className="mt-3 max-w-[300px] text-sm leading-6 text-white/70">Upload your photo to see your own before/after comparison here.</p>
+                  </div>
+                  <div className="pointer-events-none absolute inset-y-0 w-px bg-white/85 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
                   <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
                 </div>
               )}
