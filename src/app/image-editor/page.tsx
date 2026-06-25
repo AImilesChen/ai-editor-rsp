@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 const professionalHeadshotPrompt = "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Dress the person in a clean navy blazer and light shirt. Use a soft grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy.";
+const professionalHeadshotHref = `/image-editor?prompt=${encodeURIComponent(professionalHeadshotPrompt)}#headshot-upload`;
 
 const benefits = [
   { title: "Keep the subject", body: "Preserve the main person, product, pose, and composition while changing only what you describe." },
@@ -39,16 +40,18 @@ export default function ReferenceEditPage() {
                     Keep the same person and facial identity while changing the outfit, lighting, and background into a polished LinkedIn-style business portrait.
                   </p>
                 </div>
-                <Link
-                  href={`/image-editor?prompt=${encodeURIComponent(professionalHeadshotPrompt)}`}
+                <a
+                  href={professionalHeadshotHref}
                   className="rsp-button-primary shrink-0 px-5 py-3 text-center text-sm"
                 >
                   Start with headshot preset
-                </Link>
+                </a>
               </div>
             </div>
 
-            <GenerateConsole headingLevel="h2" previewHeadingLevel="h2" variant="hero" defaultMode="edit" lockedMode="edit" hidePreviewIntro />
+            <div id="headshot-upload" className="scroll-mt-28">
+              <GenerateConsole headingLevel="h2" previewHeadingLevel="h2" variant="hero" defaultMode="edit" lockedMode="edit" hidePreviewIntro />
+            </div>
 
             <div className="mt-5 rounded-[28px] border border-rsp-border bg-white/76 p-4 shadow-[0_14px_42px_rgba(46,32,18,0.08)] backdrop-blur md:p-5 lg:p-6">
               <div className="grid gap-5 lg:grid-cols-[minmax(280px,0.48fr)_minmax(0,1.52fr)] lg:items-start">

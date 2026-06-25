@@ -10,7 +10,7 @@ import { site } from "@/lib/rsp-content";
 
 const activePrompts = prompts.filter((prompt) => prompt.status === "active");
 const professionalHeadshotPrompt = "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Dress the person in a clean navy blazer and light shirt. Use a soft grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy.";
-const professionalHeadshotHref = `/image-editor?prompt=${encodeURIComponent(professionalHeadshotPrompt)}`;
+const professionalHeadshotHref = `/image-editor?prompt=${encodeURIComponent(professionalHeadshotPrompt)}#headshot-upload`;
 
 export async function generateStaticParams() {
   return [
