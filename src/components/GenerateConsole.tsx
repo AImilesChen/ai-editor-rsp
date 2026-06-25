@@ -465,8 +465,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   return (
-    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[390px_minmax(0,1fr)] ${uploadedImage ? "max-h-[620px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
-      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? `p-3 ${uploadedImage ? "max-h-[620px] overflow-y-auto" : ""}` : "p-4 md:p-5"}`}>
+    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[460px_minmax(0,1fr)] ${uploadedImage ? "max-h-[760px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? `p-4 ${uploadedImage ? "max-h-[760px] overflow-y-auto" : ""}` : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
@@ -545,30 +545,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose edit area</p>
               <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className="text-xs font-semibold text-white/55 hover:text-white">Clear selection</button>
             </div>
-            <div className="mb-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setEditScope("whole")} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
               <button type="button" onClick={() => { setEditScope("selected"); if (uploadedImage && !editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Select area to edit</button>
             </div>
-            {!uploadedImage && <p className="text-xs leading-5 text-white/50">Upload an image first to choose an edit area.</p>}
-            {uploadedImage && editScope === "selected" ? (
-              <>
-                <div
-                  className="relative max-h-[220px] min-h-[150px] cursor-crosshair overflow-hidden rounded-xl border border-[#86EFAC]/45 bg-[#F3E8DA]/10"
-                  style={{ aspectRatio: editPreviewAspect }}
-                  onPointerDown={beginRegionSelect}
-                  onPointerMove={updateRegionSelect}
-                  onPointerUp={endRegionSelect}
-                  onPointerCancel={endRegionSelect}
-                >
-                  <img src={uploadedImage} alt="Select edit area on uploaded image" className="h-full w-full object-contain" draggable={false} />
-                  <div className="absolute inset-0 bg-black/28" />
-                  {editRegion && (
-                    <div className="absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/14 shadow-[0_0_0_9999px_rgba(0,0,0,0.28)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
-                  )}
-                </div>
-                <p className="mt-2 text-xs leading-5 text-white/50">Drag on the image to mark exactly what should change. Use Clear selection to return to whole-image editing.</p>
-              </>
-            ) : null}
+            <p className="mt-2 text-xs leading-5 text-white/50">{uploadedImage ? "Draw directly on the large preview to mark the part you want to change." : "Upload an image first to choose an edit area."}</p>
           </div>
         )}
 
@@ -581,7 +562,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? "min-h-[118px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
+          className={`${isHero ? "min-h-[96px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
         />
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
@@ -658,7 +639,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </p>
       </aside>
 
-      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "p-3 md:p-5" : "min-h-[500px] p-3 md:p-5") : "min-h-[520px] p-4 md:p-6"}`}>
+      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5" : "min-h-[500px] p-3 md:p-5") : "min-h-[520px] p-4 md:p-6"}`}>
         <div className={`${isHero ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
@@ -693,20 +674,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Your generated image will appear here</p><p className="mt-2 text-sm leading-6 text-white/68">Choose a prompt and size, then generate your result. The background is only a muted example.</p></div></div>}
             </div>
           ) : uploadedImage ? (
-            <div className={`relative flex ${isHero ? "min-h-[260px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
+            <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
               <div
-                className={`${generatedImage ? "cursor-ew-resize touch-none select-none" : ""} relative max-h-[min(54vh,560px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)]`}
-                style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(54vh,560px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
-                role={generatedImage ? "slider" : undefined}
-                aria-label={generatedImage ? "Drag to compare before and after edit" : undefined}
+                className={`${generatedImage ? "cursor-ew-resize" : editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(70vh,680px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
+                style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(70vh,680px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
+                role={generatedImage ? "slider" : editScope === "selected" ? "application" : undefined}
+                aria-label={generatedImage ? "Drag to compare before and after edit" : editScope === "selected" ? "Draw edit area on uploaded image" : undefined}
                 aria-valuemin={generatedImage ? 12 : undefined}
                 aria-valuemax={generatedImage ? 88 : undefined}
                 aria-valuenow={generatedImage ? comparePosition : undefined}
                 tabIndex={generatedImage ? 0 : undefined}
-                onPointerDown={(event) => { if (generatedImage) startCompareDrag(event); }}
-                onPointerMove={(event) => { if (generatedImage && isDraggingCompare) updateComparePosition(event); }}
-                onPointerUp={(event) => { if (generatedImage) stopCompareDrag(event); }}
-                onPointerCancel={(event) => { if (generatedImage) stopCompareDrag(event); }}
+                onPointerDown={(event) => { if (generatedImage) startCompareDrag(event); else if (editScope === "selected") beginRegionSelect(event); }}
+                onPointerMove={(event) => { if (generatedImage && isDraggingCompare) updateComparePosition(event); else if (!generatedImage && editScope === "selected") updateRegionSelect(event); }}
+                onPointerUp={(event) => { if (generatedImage) stopCompareDrag(event); else if (editScope === "selected") endRegionSelect(event); }}
+                onPointerCancel={(event) => { if (generatedImage) stopCompareDrag(event); else if (editScope === "selected") endRegionSelect(event); }}
                 onKeyDown={(event) => {
                   if (!generatedImage) return;
                   if (event.key === "ArrowLeft") setComparePosition((value) => Math.max(12, value - 4));
@@ -723,6 +704,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">After · generated result</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
                 {!generatedImage && editScope === "selected" && editRegion && (
                   <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
+                )}
+                {!generatedImage && (
+                  <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/78">
+                    <span className="rounded-full border border-white/12 bg-black/55 px-3 py-1.5 backdrop-blur-sm">{editScope === "selected" ? "Drag on this large preview to choose the edit area" : "Whole image will be edited"}</span>
+                    {editScope === "selected" && editRegion && <span className="rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-3 py-1.5 text-[#C8FADC] backdrop-blur-sm">Selected area</span>}
+                  </div>
                 )}
                 {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
                 {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
