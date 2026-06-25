@@ -203,18 +203,30 @@ function StyleGuideDetailPage({ page }: { page: (typeof promptPages)[number] }) 
                       key={idx}
                       className="overflow-hidden rounded-2xl border border-rsp-border bg-rsp-panel"
                     >
-                      <div className="p-5">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                          <h3 className="font-heading text-lg font-semibold">{example.title}</h3>
-                          <div className="flex shrink-0 flex-wrap gap-2">
-                            <CopyPromptButton prompt={example.prompt} label="Copy" />
-                            <UsePromptButton prompt={example.prompt} />
-                          </div>
+                      <div className="grid gap-5 p-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+                        <div className="overflow-hidden rounded-2xl border border-rsp-border bg-[#F3E8DA]">
+                          <img
+                            src={example.sampleImage}
+                            alt={example.sampleImageAlt}
+                            className="h-auto w-full object-contain"
+                          />
+                          <p className="border-t border-rsp-border bg-white/70 px-3 py-2 text-center text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-rsp-muted">
+                            Generated case image
+                          </p>
                         </div>
-                        <div className="mt-4 rounded-xl border border-white/10 bg-rsp-panel-strong p-4">
-                          <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-6 text-rsp-text">
-                            {example.prompt}
-                          </pre>
+                        <div>
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <h3 className="font-heading text-lg font-semibold">{example.title}</h3>
+                            <div className="flex shrink-0 flex-wrap gap-2">
+                              <CopyPromptButton prompt={example.prompt} label="Copy" />
+                              <UsePromptButton prompt={example.prompt} />
+                            </div>
+                          </div>
+                          <div className="mt-4 rounded-xl border border-white/10 bg-rsp-panel-strong p-4">
+                            <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-6 text-rsp-text">
+                              {example.prompt}
+                            </pre>
+                          </div>
                         </div>
                       </div>
                     </div>
