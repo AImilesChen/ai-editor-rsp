@@ -69,18 +69,20 @@ export default function CookieConsentBanner() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:right-5 sm:px-0 sm:pb-5" role="region" aria-label="Cookie consent">
-      <div className={`mx-auto rounded-3xl border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_18px_54px_rgba(69,42,16,0.18)] backdrop-blur sm:p-4 ${isManaging ? "max-w-2xl" : "max-w-xl"}`}>
-        <div className="grid gap-3">
+    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:left-5 sm:px-0 sm:pb-5" role="region" aria-label="Cookie consent">
+      <div className={`rounded-3xl border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_18px_54px_rgba(69,42,16,0.18)] backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-5xl"}`}>
+        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a36c2d]">Cookie preferences</p>
-            <h2 className="mt-1.5 font-heading text-lg font-bold leading-snug text-rsp-text">Choose optional cookies</h2>
-            <p className="mt-1.5 text-xs leading-5 text-[#6f5a42] sm:text-sm">
-              Essential cookies keep login, credits, security, and generation state working. Optional analytics load only after you agree.
-            </p>
+            <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:gap-3">
+              <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a36c2d]">Cookie preferences</p>
+              <h2 className="shrink-0 font-heading text-base font-bold leading-snug text-rsp-text">Choose optional cookies</h2>
+              <p className="text-xs leading-5 text-[#6f5a42]">
+                Essential cookies keep login, credits, and security working. Optional analytics load only after you agree.
+              </p>
+            </div>
 
             {isManaging ? (
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <label className="rounded-2xl border border-[#ead8bb] bg-white/70 p-3">
                   <div className="flex items-start gap-3">
                     <input type="checkbox" checked disabled className="mt-1 h-4 w-4 accent-[#b86b20]" />
@@ -99,7 +101,7 @@ export default function CookieConsentBanner() {
                     </span>
                   </div>
                 </label>
-                <label className="rounded-2xl border border-[#ead8bb] bg-white/70 p-3 sm:col-span-2">
+                <label className="rounded-2xl border border-[#ead8bb] bg-white/70 p-3">
                   <div className="flex items-start gap-3">
                     <input type="checkbox" checked={marketing} onChange={(event) => setMarketing(event.target.checked)} className="mt-1 h-4 w-4 accent-[#b86b20]" />
                     <span>
@@ -114,15 +116,15 @@ export default function CookieConsentBanner() {
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
             {isManaging ? (
-              <button type="button" onClick={() => closeWith({ analytics, marketing })} className="rounded-full bg-rsp-text px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
+              <button type="button" onClick={() => closeWith({ analytics, marketing })} className="rounded-full bg-rsp-text px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
                 Save preferences
               </button>
             ) : (
-              <button type="button" onClick={() => closeWith({ analytics: true, marketing: true })} className="rounded-full bg-rsp-text px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
+              <button type="button" onClick={() => closeWith({ analytics: true, marketing: true })} className="rounded-full bg-rsp-text px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
                 Accept all
               </button>
             )}
-            <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="rounded-full border border-[#d9bd91] bg-white px-4 py-2.5 text-sm font-semibold text-rsp-text transition hover:bg-[#fff3de]">
+            <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="rounded-full border border-[#d9bd91] bg-white px-4 py-2 text-sm font-semibold text-rsp-text transition hover:bg-[#fff3de]">
               Reject non-essential
             </button>
             <button type="button" onClick={() => setIsManaging((value) => !value)} className="rounded-full px-2 py-2 text-xs font-semibold text-[#8a5520] underline-offset-4 transition hover:underline sm:text-sm">
