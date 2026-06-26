@@ -53,7 +53,7 @@ function hasAnyRefundPending(data: AuthResponse | null) {
   return isPaidPlan(userPlan) && refundPendingStatuses.has(status);
 }
 
-export default function PricingPlanAction({ planName, cta }: { planName: string; cta: string }) {
+export default function PricingPlanAction({ planName, cta, emphasis = "standard" }: { planName: string; cta: string; emphasis?: "free" | "standard" | "featured" }) {
   const [auth, setAuth] = useState<AuthResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -146,6 +146,12 @@ export default function PricingPlanAction({ planName, cta }: { planName: string;
 
   const href = isFree ? "/generate" : `/checkout?plan=${planSlug}`;
   const label = !loaded ? cta : cta;
+  const actionClass =
+    emphasis === "featured"
+      ? "mt-7 w-full rounded-full bg-rsp-primary px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary shadow-[0_14px_28px_rgba(184,107,32,0.28)] transition hover:-translate-y-0.5 hover:opacity-95"
+      : emphasis === "free"
+        ? "mt-7 w-full rounded-full border border-rsp-primary/45 bg-white px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#fff3de]"
+        : "mt-7 w-full rounded-full border border-rsp-primary/35 bg-[#fff7eb] px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#f3e4cd]";
 
-  return <Link href={href} className="rsp-button-primary mt-7 w-full text-center">{label}</Link>;
+  return <Link href={href} className={actionClass}>{label}</Link>;
 }

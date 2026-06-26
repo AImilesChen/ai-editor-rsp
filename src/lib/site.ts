@@ -32,7 +32,7 @@ export const pricingPlans = [
     price: "USD $14.99",
     cadence: "/mo",
     quota: "300 credits/month",
-    cta: "Choose Creator",
+    cta: "Start with Creator",
     badge: "Most Popular",
     featured: true,
     audience: "Best for creators who generate images every week.",

@@ -24,6 +24,29 @@ const pricingFaq = [
   ["Can I use generated images commercially?", "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use."],
 ];
 
+const resultExamples = [
+  {
+    label: "Portraits",
+    title: "Profile images",
+    src: "/images/prompt-cases/ai-headshot-case.webp",
+    alt: "AI generated professional headshot sample",
+  },
+  {
+    label: "Products",
+    title: "Commerce shots",
+    src: "/images/prompt-cases/product-photography-case.webp",
+    alt: "AI generated product photography sample",
+  },
+  {
+    label: "Social",
+    title: "Creator visuals",
+    src: "/images/generated/lofi-girl-vibes.webp",
+    alt: "AI generated social media visual sample",
+  },
+];
+
+const trustItems = ["No card required for free credits", "Secure hosted checkout", "Cancel anytime", "7-day refund if mostly unused"];
+
 function PricingAmount({ price, cadence }: { price: string; cadence: string }) {
   if (price.startsWith("USD ")) {
     return (
@@ -50,45 +73,96 @@ export default function PricingPage() {
       <main className="pt-20">
         <section className="bg-[radial-gradient(circle_at_18%_12%,rgba(184,115,51,0.14),transparent_28%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_100%)] px-4 pb-12 pt-8 md:px-8 md:pb-16 md:pt-10">
           <div className="mx-auto max-w-screen-2xl">
-            <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(320px,0.48fr)] lg:items-end">
+            <div className="mb-6 grid gap-5 lg:grid-cols-[minmax(0,0.86fr)_minmax(340px,0.5fr)] lg:items-end">
               <div>
                 <p className="eyebrow">Credits plans</p>
                 <h1 className="mt-3 max-w-4xl font-heading text-4xl font-normal leading-[1.05] tracking-[-0.04em] text-rsp-text md:text-6xl">
-                  Choose credits and start creating images
+                  Simple pricing for AI image creation
                 </h1>
+                <p className="mt-4 max-w-3xl text-base leading-7 text-rsp-muted md:text-lg">
+                  Start free, then choose monthly credits for portraits, product shots, social visuals, and uploaded-image edits.
+                </p>
               </div>
-              <div className="rounded-[24px] border border-rsp-secondary/25 bg-white/70 p-4 text-sm leading-6 text-rsp-muted shadow-sm">
-                <strong className="text-rsp-text">Start free first.</strong> New users get 3 credits after sign-in. Upgrade only when you need more image credits.
+              <div className="rounded-[24px] border border-rsp-secondary/25 bg-white/75 p-4 text-sm leading-6 text-rsp-muted shadow-sm">
+                <strong className="text-rsp-text">Start free with 3 credits.</strong> Upgrade only when you need more room for weekly image creation.
               </div>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {pricingPlans.map((plan) => (
-                <article
-                  key={plan.name}
-                  className={`glass-card flex min-h-[520px] flex-col p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}
-                >
-                  <p className="mb-3 text-sm font-bold text-rsp-secondary">{plan.badge}</p>
-                  <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
-                  <PricingAmount price={plan.price} cadence={plan.cadence} />
-                  <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
-                  {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
-                  {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
-                  <ul className="mt-5 flex-1 space-y-3 text-sm leading-6 text-rsp-muted">{plan.features.map((f) => <li key={f}>• {f}</li>)}</ul>
-                  <PricingPlanAction planName={plan.name} cta={plan.cta} />
-                </article>
+            <div className="mb-6 grid overflow-hidden rounded-[28px] border border-rsp-border bg-white/70 shadow-sm md:grid-cols-4">
+              {trustItems.map((item) => (
+                <div key={item} className="border-b border-rsp-border px-4 py-3 text-sm font-semibold text-rsp-text last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
+                  <span className="mr-2 text-rsp-secondary">✓</span>{item}
+                </div>
               ))}
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {pricingPlans.map((plan) => {
+                const isFeatured = "featured" in plan && Boolean(plan.featured);
+                const isFree = plan.name === "Free";
+                return (
+                  <article
+                    key={plan.name}
+                    className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur ${
+                      isFeatured
+                        ? "border-rsp-secondary bg-[#fff4e3] shadow-[0_26px_70px_rgba(138,78,24,0.18)] xl:-mt-3 xl:min-h-[532px]"
+                        : "border-rsp-border"
+                    }`}
+                  >
+                    {isFeatured ? (
+                      <div className="absolute -top-4 left-6 rounded-full bg-rsp-primary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_22px_rgba(184,107,32,0.26)]">
+                        Most popular
+                      </div>
+                    ) : null}
+                    <p className={`mb-3 text-sm font-bold ${isFeatured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{isFeatured ? "Best value" : plan.badge}</p>
+                    <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
+                    <PricingAmount price={plan.price} cadence={plan.cadence} />
+                    <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
+                    {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
+                    {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
+                    <ul className="mt-5 flex-1 space-y-2.5 text-sm leading-6 text-rsp-muted">
+                      {plan.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2"><span className="text-rsp-secondary">+</span><span>{f}</span></li>)}
+                    </ul>
+                    <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : isFree ? "free" : "standard"} />
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
 
         <section className="section-pad bg-rsp-surface">
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+              <div>
+                <p className="eyebrow">What credits create</p>
+                <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text">See the kind of image work your credits cover</h2>
+                <p className="mt-4 text-sm leading-7 text-rsp-muted">
+                  Use one balance across text-to-image, ready prompts, and uploaded-image edits. These examples make the plans feel concrete before the detailed rules.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {resultExamples.map((example) => (
+                  <article key={example.src} className="overflow-hidden rounded-[28px] border border-rsp-border bg-white shadow-sm">
+                    <img src={example.src} alt={example.alt} className="aspect-[4/3] w-full object-cover" />
+                    <div className="p-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-rsp-secondary">{example.label}</p>
+                      <h3 className="mt-1 font-heading text-2xl font-normal text-rsp-text">{example.title}</h3>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-pad bg-[#f5eee4]">
           <div className="mx-auto grid max-w-screen-2xl gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div>
               <p className="eyebrow">How credits work</p>
               <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text">Transparent usage after the plans</h2>
               <p className="mt-4 text-sm leading-7 text-rsp-muted">
-                Credits are used when you generate or edit images. The plan cards stay first so you can compare price and quota without scrolling through explanations.
+                The plan cards stay first so you can compare price and quota quickly. Details are grouped here after the decision area.
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-3">
@@ -108,8 +182,19 @@ export default function PricingPage() {
         <section className="section-pad bg-rsp-surface">
           <div className="mx-auto max-w-4xl">
             <p className="eyebrow text-center">Pricing FAQ</p>
-            <div className="mt-8 grid gap-4">
-              {pricingFaq.map(([q, a]) => <article key={q} className="glass-card p-5"><h2 className="font-heading text-2xl font-normal text-rsp-text">{q}</h2><p className="mt-2 leading-7 text-rsp-muted">{a}</p></article>)}
+            <h2 className="mt-3 text-center font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text">Questions before you choose a plan</h2>
+            <div className="mt-8 grid gap-3">
+              {pricingFaq.map(([q, a], index) => (
+                <details key={q} open={index < 2} className="group rounded-[24px] border border-rsp-border bg-white/75 p-5 shadow-sm">
+                  <summary className="cursor-pointer list-none font-heading text-2xl font-normal text-rsp-text marker:hidden">
+                    <span className="flex items-center justify-between gap-4">
+                      {q}
+                      <span className="text-lg text-rsp-secondary transition group-open:rotate-45">+</span>
+                    </span>
+                  </summary>
+                  <p className="mt-3 leading-7 text-rsp-muted">{a}</p>
+                </details>
+              ))}
             </div>
           </div>
         </section>
