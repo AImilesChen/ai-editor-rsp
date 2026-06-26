@@ -73,27 +73,14 @@ export default function PricingPage() {
       <main className="pt-20">
         <section className="bg-[radial-gradient(circle_at_18%_12%,rgba(184,115,51,0.14),transparent_28%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_100%)] px-4 pb-12 pt-8 md:px-8 md:pb-16 md:pt-10">
           <div className="mx-auto max-w-screen-2xl">
-            <div className="mb-6 grid gap-5 lg:grid-cols-[minmax(0,0.86fr)_minmax(340px,0.5fr)] lg:items-end">
-              <div>
-                <p className="eyebrow">Credits plans</p>
-                <h1 className="mt-3 max-w-4xl font-heading text-4xl font-normal leading-[1.05] tracking-[-0.04em] text-rsp-text md:text-6xl">
-                  Simple pricing for AI image creation
-                </h1>
-                <p className="mt-4 max-w-3xl text-base leading-7 text-rsp-muted md:text-lg">
-                  Start free, then choose monthly credits for portraits, product shots, social visuals, and uploaded-image edits.
-                </p>
-              </div>
-              <div className="rounded-[24px] border border-rsp-secondary/25 bg-white/75 p-4 text-sm leading-6 text-rsp-muted shadow-sm">
-                <strong className="text-rsp-text">Start free with 3 credits.</strong> Upgrade only when you need more room for weekly image creation.
-              </div>
-            </div>
-
-            <div className="mb-6 grid overflow-hidden rounded-[28px] border border-rsp-border bg-white/70 shadow-sm md:grid-cols-4">
-              {trustItems.map((item) => (
-                <div key={item} className="border-b border-rsp-border px-4 py-3 text-sm font-semibold text-rsp-text last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
-                  <span className="mr-2 text-rsp-secondary">✓</span>{item}
-                </div>
-              ))}
+            <div className="mb-7 max-w-4xl">
+              <p className="eyebrow">Credits plans</p>
+              <h1 className="mt-3 max-w-4xl font-heading text-4xl font-normal leading-[1.05] tracking-[-0.04em] text-rsp-text md:text-6xl">
+                Simple pricing for AI image creation
+              </h1>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-rsp-muted md:text-lg">
+                Start free with 3 credits, then choose monthly credits for portraits, product shots, social visuals, and uploaded-image edits.
+              </p>
             </div>
 
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -105,12 +92,12 @@ export default function PricingPage() {
                     key={plan.name}
                     className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur ${
                       isFeatured
-                        ? "border-rsp-secondary bg-[#fff4e3] shadow-[0_26px_70px_rgba(138,78,24,0.18)] xl:-mt-3 xl:min-h-[532px]"
+                        ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
                         : "border-rsp-border"
                     }`}
                   >
                     {isFeatured ? (
-                      <div className="absolute -top-4 left-6 rounded-full bg-rsp-primary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_22px_rgba(184,107,32,0.26)]">
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_22px_rgba(184,107,32,0.26)]">
                         Most popular
                       </div>
                     ) : null}
@@ -127,6 +114,15 @@ export default function PricingPage() {
                   </article>
                 );
               })}
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-[24px] border border-rsp-border bg-white/55 px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted shadow-sm md:text-sm md:normal-case md:tracking-normal">
+              {trustItems.map((item) => (
+                <span key={item} className="inline-flex items-center gap-1.5">
+                  <span className="text-rsp-secondary">✓</span>
+                  {item}
+                </span>
+              ))}
             </div>
           </div>
         </section>
