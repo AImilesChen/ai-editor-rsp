@@ -51,7 +51,7 @@ function falImageToImageModel() {
 }
 
 function falHeadshotModel() {
-  return process.env.FAL_HEADSHOT_IMAGE_MODEL || "fal-ai/flux-pro/kontext";
+  return process.env.FAL_HEADSHOT_IMAGE_MODEL || process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/flux/dev/image-to-image";
 }
 
 function isHeadshotInput(input: GenerateRequest) {
@@ -115,7 +115,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
     "Avoid text overlays unless explicitly requested.",
   ].filter(Boolean).join("\n");
   const editStrength = isHeadshotEdit
-    ? clampStrength(numericEnv("FAL_HEADSHOT_IDENTITY_STRENGTH", usesKontext ? 0.76 : 0.42))
+    ? clampStrength(numericEnv("FAL_HEADSHOT_IDENTITY_STRENGTH", usesKontext ? 0.76 : 0.58))
     : clampStrength(numericEnv("FAL_REFERENCE_EDIT_STRENGTH", 0.45));
 
   const baseBody = {
