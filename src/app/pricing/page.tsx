@@ -27,7 +27,7 @@ const pricingFaq = [
 function PricingAmount({ price, cadence }: { price: string; cadence: string }) {
   if (price.startsWith("USD ")) {
     return (
-      <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="text-sm font-bold uppercase tracking-[0.18em] text-rsp-secondary">USD</span>
         <span className="font-heading text-5xl font-normal leading-none text-rsp-text">{price.replace("USD ", "")}</span>
         <span className="text-rsp-muted">{cadence}</span>
@@ -36,7 +36,7 @@ function PricingAmount({ price, cadence }: { price: string; cadence: string }) {
   }
 
   return (
-    <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+    <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
       <span className="font-heading text-5xl font-normal leading-none text-rsp-text">{price}</span>
       <span className="text-rsp-muted">{cadence}</span>
     </div>
@@ -48,45 +48,63 @@ export default function PricingPage() {
     <>
       <Header />
       <main className="pt-20">
-        <section className="section-pad bg-[radial-gradient(circle_at_18%_16%,rgba(184,115,51,0.14),transparent_28%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_100%)]">
-          <div className="mx-auto max-w-screen-2xl text-center">
-            <p className="eyebrow">Credits plans</p>
-            <h1 className="mx-auto mt-4 max-w-4xl font-heading text-5xl font-normal leading-tight tracking-[-0.04em] text-rsp-text md:text-7xl">Simple credits for AI image generation</h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">Choose a monthly credit plan for generating images, editing uploaded photos, and exploring ready-made prompts.</p>
-            <p className="mx-auto mt-4 max-w-2xl text-sm font-semibold text-rsp-secondary">Start free with 3 credits after sign-in. Upgrade only when you need more image credits.</p>
-          </div>
-        </section>
-        <section className="section-pad">
-          <div className="mx-auto mb-8 max-w-screen-2xl rounded-[28px] border border-rsp-secondary/25 bg-rsp-secondary/10 p-5 text-sm leading-6 text-rsp-muted md:p-6">
-            <h2 className="font-heading text-2xl font-normal text-rsp-text">How credits work</h2>
-            <p className="mt-2">Credits are used when you generate or edit images.</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <p><strong className="text-rsp-text">1 credit:</strong> portrait text-to-image</p>
-              <p><strong className="text-rsp-text">2 credits:</strong> square or landscape text-to-image, or portrait image edit</p>
-              <p><strong className="text-rsp-text">4 credits:</strong> square or landscape image edit</p>
+        <section className="bg-[radial-gradient(circle_at_18%_12%,rgba(184,115,51,0.14),transparent_28%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_100%)] px-4 pb-12 pt-8 md:px-8 md:pb-16 md:pt-10">
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(320px,0.48fr)] lg:items-end">
+              <div>
+                <p className="eyebrow">Credits plans</p>
+                <h1 className="mt-3 max-w-4xl font-heading text-4xl font-normal leading-[1.05] tracking-[-0.04em] text-rsp-text md:text-6xl">
+                  Choose credits and start creating images
+                </h1>
+              </div>
+              <div className="rounded-[24px] border border-rsp-secondary/25 bg-white/70 p-4 text-sm leading-6 text-rsp-muted shadow-sm">
+                <strong className="text-rsp-text">Start free first.</strong> New users get 3 credits after sign-in. Upgrade only when you need more image credits.
+              </div>
             </div>
-            <p className="mt-4 font-semibold text-rsp-secondary">Free credits are available after sign-in. No payment required to try.</p>
-          </div>
-          <div className="mx-auto grid max-w-screen-2xl gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {pricingPlans.map((plan) => (
-              <article key={plan.name} className={`glass-card flex flex-col p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}>
-                <p className="mb-3 text-sm font-bold text-rsp-secondary">{plan.badge}</p>
-                <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
-                <PricingAmount price={plan.price} cadence={plan.cadence} />
-                <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
-                {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
-                {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
-                <ul className="mt-6 flex-1 space-y-3 text-sm leading-6 text-rsp-muted">{plan.features.map((f) => <li key={f}>• {f}</li>)}</ul>
-                <PricingPlanAction planName={plan.name} cta={plan.cta} />
-              </article>
-            ))}
-          </div>
-          <div className="mx-auto mt-8 grid max-w-screen-2xl gap-3 md:grid-cols-3">
-            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Payments are processed through a secure hosted checkout after sign-in. AI Editor RSP does not store your payment details.</div>
-            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Cancel anytime:</strong> Monthly credits are valid for the current billing period and do not roll over.</div>
-            <div className="border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">AI usage:</strong> {legalDisclaimer}</div>
+
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {pricingPlans.map((plan) => (
+                <article
+                  key={plan.name}
+                  className={`glass-card flex min-h-[520px] flex-col p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}
+                >
+                  <p className="mb-3 text-sm font-bold text-rsp-secondary">{plan.badge}</p>
+                  <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
+                  <PricingAmount price={plan.price} cadence={plan.cadence} />
+                  <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
+                  {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
+                  {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
+                  <ul className="mt-5 flex-1 space-y-3 text-sm leading-6 text-rsp-muted">{plan.features.map((f) => <li key={f}>• {f}</li>)}</ul>
+                  <PricingPlanAction planName={plan.name} cta={plan.cta} />
+                </article>
+              ))}
+            </div>
           </div>
         </section>
+
+        <section className="section-pad bg-rsp-surface">
+          <div className="mx-auto grid max-w-screen-2xl gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <div>
+              <p className="eyebrow">How credits work</p>
+              <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text">Transparent usage after the plans</h2>
+              <p className="mt-4 text-sm leading-7 text-rsp-muted">
+                Credits are used when you generate or edit images. The plan cards stay first so you can compare price and quota without scrolling through explanations.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">1 credit</strong>Portrait text-to-image</div>
+              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">2 credits</strong>Square or landscape text-to-image, or portrait image edit</div>
+              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">4 credits</strong>Square or landscape image edit</div>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-8 grid max-w-screen-2xl gap-3 md:grid-cols-3">
+            <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Payments are processed through a secure hosted checkout after sign-in. AI Editor RSP does not store your payment details.</div>
+            <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Cancel anytime:</strong> Monthly credits are valid for the current billing period and do not roll over.</div>
+            <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">AI usage:</strong> {legalDisclaimer}</div>
+          </div>
+        </section>
+
         <section className="section-pad bg-rsp-surface">
           <div className="mx-auto max-w-4xl">
             <p className="eyebrow text-center">Pricing FAQ</p>
