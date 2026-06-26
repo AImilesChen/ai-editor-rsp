@@ -39,8 +39,9 @@ function falModel() {
 }
 
 function falQueueRequestModel(model = falModel()) {
-  // fal.ai returns queue status/result URLs under fal-ai/flux even when the
-  // submission endpoint is fal-ai/flux/dev. Keep non-flux model paths intact.
+  // fal.ai can submit on a specific model route but return queue URLs under
+  // the model family route. Match that family route for polling existing jobs.
+  if (model.startsWith("fal-ai/flux-pro/")) return "fal-ai/flux-pro";
   if (model.startsWith("fal-ai/flux/")) return "fal-ai/flux";
   return model;
 }
