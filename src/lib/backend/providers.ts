@@ -97,9 +97,9 @@ export function buildFalRequestBody(input: GenerateRequest) {
       ? [
           "The uploaded image is the mandatory identity anchor. Keep the exact same adult person as the source photo.",
           "Preserve recognizable face identity, facial structure, age, skin tone, hairstyle/hairline, expression, and natural facial details. Identity preservation has higher priority than changing outfit, background, or composition.",
-          "Transform only presentation details into a realistic professional LinkedIn/business headshot: clean blazer or requested professional outfit, no crossbody bag, polished grooming, plain neutral grey studio background, no trees, no street, no outdoor park, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
+          "Treat the submitted reference as a headshot-preprocessed crop, not as a composition to preserve. Produce a tight shoulders-up LinkedIn/business headshot with the face large, centered, and clearly recognizable.",
+          "Transform presentation details into a realistic professional profile photo: clean blazer or requested professional outfit, no crossbody bag, no visible hands, no lower body, polished grooming, plain neutral grey studio background, no trees, no street, no outdoor park, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
           "Do not invent a new person, do not change ethnicity, do not change facial geometry, do not over-beautify into a different face, and do not keep hats/sunglasses/casual fashion when the user asks for professional attire.",
-          "If the source photo is full-body or outdoors, crop/reframe toward a shoulders-up professional headshot while preserving the same person's face.",
         ].join(" ")
       : "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
     : "Create a new image from the user-provided text prompt.";

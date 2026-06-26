@@ -111,6 +111,38 @@ function readImageAspect(src: string) {
   });
 }
 
+function createHeadshotReferenceCrop(src: string) {
+  return new Promise<string>((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const sourceWidth = image.naturalWidth || 1;
+      const sourceHeight = image.naturalHeight || 1;
+      const targetAspect = 3 / 4;
+      const isPortraitOrSquare = sourceHeight >= sourceWidth * 0.95;
+      const cropHeight = isPortraitOrSquare ? Math.round(sourceHeight * 0.68) : Math.round(sourceHeight * 0.9);
+      const cropWidth = Math.min(sourceWidth, Math.round(cropHeight * targetAspect));
+      const cropX = Math.round((sourceWidth - cropWidth) / 2);
+      const cropY = isPortraitOrSquare ? 0 : Math.round(sourceHeight * 0.03);
+      const canvas = document.createElement("canvas");
+      canvas.width = 768;
+      canvas.height = 1024;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        resolve(src);
+        return;
+      }
+      context.fillStyle = "#d8d8d8";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = "high";
+      context.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.92));
+    };
+    image.onerror = () => resolve(src);
+    image.src = src;
+  });
+}
+
 function composeTextPrompt(basePrompt: string, style?: string | null, lighting?: string | null, shot?: string | null) {
   const parts = [basePrompt.trim()];
   if (style) parts.push(`Style: ${style}.`);
@@ -146,6 +178,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [headshotReferenceImage, setHeadshotReferenceImage] = useState<string | null>(null);
   const [uploadedName, setUploadedName] = useState<string | null>(null);
   const [uploadedAspect, setUploadedAspect] = useState<number | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -157,19 +190,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
 
   const activeTasks = mode === "edit" ? editTasks : textTasks;
-  const imageForRequest = mode === "edit" ? uploadedImage : null;
+  const headshotPrompt = editTasks[0].prompt;
+  const isHeadshotMode = mode === "edit" && task === "Professional headshot";
+  const imageForRequest = mode === "edit" ? (isHeadshotMode ? headshotReferenceImage || uploadedImage : uploadedImage) : null;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
   const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
   const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
-  const headshotPrompt = editTasks[0].prompt;
-  const isHeadshotMode = mode === "edit" && task === "Professional headshot";
   const promptPlaceholder = isHeadshotMode
     ? "Optional: add outfit, background, or lighting details. Leave blank to use the default professional headshot prompt."
     : mode === "edit"
       ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
       : "Describe the image you want to create, or start from a ready prompt below.";
   const userPrompt = prompt.trim();
-  const headshotIdentityGuard = "Keep the exact same person from the uploaded photo. Preserve face identity, facial structure, age, skin tone, hairstyle, expression, and recognizable natural details. Do not invent a new face; identity preservation is more important than outfit, background, or lighting changes. This must be a shoulders-up professional headshot, not a full-body outdoor portrait.";
+  const headshotIdentityGuard = "Keep the exact same person from the uploaded photo. Preserve face identity, facial structure, age, skin tone, hairstyle, expression, and recognizable natural details. The submitted reference is pre-cropped toward the face and upper torso for headshot quality. Generate a tight shoulders-up professional headshot with the face large and centered; do not preserve full-body pose, outdoor background, crossbody bag, hands, or lower body.";
   const effectivePrompt = isHeadshotMode
     ? userPrompt
       ? `${headshotIdentityGuard} ${headshotPrompt} User requested details: ${userPrompt}. Apply the requested professional outfit, background, lighting, and framing exactly where possible while keeping the uploaded person's identity consistent. If the source is outdoor or full-body, replace the scene with the requested studio background and crop/reframe into a business headshot.`
@@ -245,6 +278,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setTask(item.label);
     setPrompt(item.label === "Professional headshot" ? "" : composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
     if (mode === "edit" && item.label === "Professional headshot") {
+      setRatio("3:4");
       setEditScope("whole");
       setEditRegion(null);
     }
@@ -286,11 +320,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     try {
       const dataUrl = await readFileAsDataUrl(file);
       const aspect = await readImageAspect(dataUrl);
+      const croppedHeadshotReference = await createHeadshotReferenceCrop(dataUrl);
       setUploadedImage(dataUrl);
+      setHeadshotReferenceImage(croppedHeadshotReference);
       setUploadedAspect(aspect);
       setUploadedName(file.name);
       if (mode === "edit") {
-        setRatio("auto");
+        setRatio(task === "Professional headshot" ? "3:4" : "auto");
         setEditScope(task === "Professional headshot" ? "whole" : "selected");
       }
       setGeneratedImage(null);
@@ -426,6 +462,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     if (!generatedImage) return;
     setMode("edit");
     setUploadedImage(generatedImage);
+    setHeadshotReferenceImage(null);
     readImageAspect(generatedImage).then(setUploadedAspect);
     setUploadedName("Generated result");
     setGeneratedImage(null);
@@ -445,6 +482,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
   const removePhoto = () => {
     setUploadedImage(null);
+    setHeadshotReferenceImage(null);
     setUploadedName(null);
     setUploadedAspect(null);
     setGeneratedImage(null);
@@ -572,7 +610,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         />
         {isHeadshotMode && uploadedImage && (
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
-            Identity-first mode: the uploaded face is the anchor. Outfit, background, and lighting are changed around the same person.
+            Headshot preprocessing is on: we first crop toward the face and upper torso, then change outfit, background, and lighting around the same person.
           </p>
         )}
 
