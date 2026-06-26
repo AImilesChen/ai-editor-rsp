@@ -37,7 +37,7 @@ export default function PrivacyPage() {
               <li><strong>Authentication data:</strong> Google OAuth response data needed to sign you in, email magic link tokens, and security/session cookies.</li>
               <li><strong>Generation data:</strong> prompts, selected style/aspect settings, uploaded input images when you choose to upload a photo, generated results, safety checks, and credit usage.</li>
               <li><strong>Billing data:</strong> selected plan, checkout status, payment identifiers, subscription status, refunds, and credit grants when you choose a paid plan. We do not store full card numbers on our servers.</li>
-              <li><strong>Technical data:</strong> IP address, browser/device information, logs, abuse-prevention signals, and Cloudflare security/performance data.</li>
+              <li><strong>Technical data:</strong> IP address, browser/device information, logs, abuse-prevention signals, Cloudflare security/performance data, and optional analytics data when you consent to analytics cookies.</li>
             </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">How We Use Information</h2>
@@ -45,13 +45,14 @@ export default function PrivacyPage() {
               <li>To provide login, account access, credits, image generation, and result delivery.</li>
               <li>To process billing, subscription changes, refunds, support requests, and abuse prevention after payment is enabled.</li>
               <li>To run safety checks, prevent prohibited content, detect repeated violations, and protect the service.</li>
-              <li>To maintain site reliability, resolve errors, prevent fraud, and improve user experience.</li>
+              <li>To maintain site reliability, resolve errors, prevent fraud, and improve user experience when analytics consent is enabled.</li>
               <li>To send transactional email such as magic links, account notices, payment notices, and support responses.</li>
             </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Third-Party Services</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li><strong>Cloudflare:</strong> hosting, security, storage, performance, and analytics services where enabled.</li>
+              <li><strong>Cloudflare:</strong> hosting, security, storage, performance, and infrastructure services.</li>
+              <li><strong>Analytics providers:</strong> Google Analytics, Microsoft Clarity, Plausible, or similar tools may process optional analytics data only after analytics consent and only when configured.</li>
               <li><strong>Google OAuth:</strong> sign-in with your Google account when you choose Google login.</li>
               <li><strong>Resend:</strong> email magic links and transactional email delivery.</li>
               <li><strong>AI model providers:</strong> third-party services used to process prompts, uploaded input images, and generation requests.</li>
@@ -61,7 +62,7 @@ export default function PrivacyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Cookies and Local State</h2>
             <p className="mb-4">
-              We use essential cookies for login, session integrity, credits state, OAuth security, and fraud prevention. See our <a className="text-brand-500 underline" href="/cookie-policy">Cookie Policy</a> for cookie names and purposes.
+              We use essential cookies for login, session integrity, credits state, OAuth security, and fraud prevention. Optional analytics cookies are only used after you consent. See our <a className="text-brand-500 underline" href="/cookie-policy">Cookie Policy</a> for cookie names, purposes, and preference controls.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Retention</h2>

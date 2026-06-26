@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createMetadata } from "@/lib/utils/metadata";
+import CookiePreferencesButton from "@/components/CookiePreferencesButton";
 import { SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
@@ -42,10 +43,15 @@ export default function CookiePolicyPage() {
               <li>Operate the website reliably through Cloudflare hosting and security services.</li>
             </ul>
 
-            <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Analytics Status</h2>
+            <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Optional Analytics</h2>
             <p className="mb-4">
-              The audited production pages do not currently load Google Analytics, Microsoft Clarity, Plausible, advertising pixels, or other optional third-party analytics scripts. Infrastructure providers such as Cloudflare may still process essential security, performance, and routing data. If optional analytics tools are enabled later, this policy and the Privacy Policy should be updated before or at launch.
+              AI Editor RSP may use optional analytics tools such as Google Analytics, Microsoft Clarity, Plausible, or similar services to understand page performance and improve the product. These optional analytics scripts are loaded only after you agree to analytics cookies in the preference banner.
             </p>
+            <ul className="list-disc pl-5 space-y-2 mb-4">
+              <li><strong>Essential:</strong> always active for login, sessions, credits, security, billing safety, and abuse prevention.</li>
+              <li><strong>Analytics:</strong> optional pageview, device, browser, and interaction signals used to improve the site.</li>
+              <li><strong>Marketing:</strong> reserved for future advertising pixels and not loaded unless enabled and configured.</li>
+            </ul>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Third-Party Cookies</h2>
             <p className="mb-4">
@@ -54,8 +60,11 @@ export default function CookiePolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Managing Cookies</h2>
             <p className="mb-4">
-              You can block or delete cookies in your browser settings. Disabling essential cookies may prevent login, credits tracking, generation requests, billing flows, or security checks from working correctly.
+              You can accept all optional cookies, reject non-essential cookies, or manage analytics and marketing preferences at any time. Disabling essential cookies may prevent login, credits tracking, generation requests, billing flows, or security checks from working correctly.
             </p>
+            <div className="mb-6">
+              <CookiePreferencesButton />
+            </div>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Contact Us</h2>
             <p className="mb-4">

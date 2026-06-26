@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono, Newsreader } from "next/font/google";
 import Analytics from "@/components/Analytics";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { site } from "@/lib/rsp-content";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <Analytics />
         {children}
+        <CookieConsentBanner />
       </body>
     </html>
   );
