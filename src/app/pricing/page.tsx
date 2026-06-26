@@ -24,6 +24,25 @@ const pricingFaq = [
   ["Can I use generated images commercially?", "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use."],
 ];
 
+function PricingAmount({ price, cadence }: { price: string; cadence: string }) {
+  if (price.startsWith("USD ")) {
+    return (
+      <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span className="text-sm font-bold uppercase tracking-[0.18em] text-rsp-secondary">USD</span>
+        <span className="font-heading text-5xl font-normal leading-none text-rsp-text">{price.replace("USD ", "")}</span>
+        <span className="text-rsp-muted">{cadence}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span className="font-heading text-5xl font-normal leading-none text-rsp-text">{price}</span>
+      <span className="text-rsp-muted">{cadence}</span>
+    </div>
+  );
+}
+
 export default function PricingPage() {
   return (
     <>
@@ -53,7 +72,7 @@ export default function PricingPage() {
               <article key={plan.name} className={`glass-card flex flex-col p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}>
                 <p className="mb-3 text-sm font-bold text-rsp-secondary">{plan.badge}</p>
                 <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
-                <div className="mt-4"><span className="font-heading text-5xl font-normal text-rsp-text">{plan.price}</span><span className="text-rsp-muted"> {plan.cadence}</span></div>
+                <PricingAmount price={plan.price} cadence={plan.cadence} />
                 <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
                 {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
                 {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}

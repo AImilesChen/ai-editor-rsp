@@ -7,8 +7,8 @@ export const PAYMENT_PROVIDER = "Creem";
 export const pricingPlans = [
   {
     name: "Free",
-    price: "$0",
-    cadence: "3 credits total",
+    price: "Free",
+    cadence: "3 credits included",
     quota: "3 credits total",
     cta: "Start free",
     badge: "No card required",
@@ -18,7 +18,7 @@ export const pricingPlans = [
   },
   {
     name: "Starter",
-    price: "$7.99",
+    price: "USD $7.99",
     cadence: "/mo",
     quota: "120 credits/month",
     cta: "Choose Starter",
@@ -29,7 +29,7 @@ export const pricingPlans = [
   },
   {
     name: "Creator",
-    price: "$14.99",
+    price: "USD $14.99",
     cadence: "/mo",
     quota: "300 credits/month",
     cta: "Choose Creator",
@@ -41,7 +41,7 @@ export const pricingPlans = [
   },
   {
     name: "Studio",
-    price: "$29.99",
+    price: "USD $29.99",
     cadence: "/mo",
     quota: "700 credits/month",
     cta: "Choose Studio",

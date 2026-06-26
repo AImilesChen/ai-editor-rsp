@@ -71,10 +71,10 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "$0", cadence: "", generations: "3 credits total", cta: "Start free", featured: false },
-  { name: "Starter", price: "$7.99", cadence: "/mo", generations: "Occasional image generation", cta: "Choose Starter", featured: false },
-  { name: "Creator", price: "$14.99", cadence: "/mo", generations: "Best for weekly creators", cta: "Choose Creator", featured: true },
-  { name: "Studio", price: "$29.99", cadence: "/mo", generations: "Frequent creative testing", cta: "Choose Studio", featured: false },
+  { name: "Free", price: "Free", cadence: "3 credits included", generations: "No payment required", cta: "Start free", featured: false },
+  { name: "Starter", price: "USD $7.99", cadence: "/mo", generations: "Occasional image generation", cta: "Choose Starter", featured: false },
+  { name: "Creator", price: "USD $14.99", cadence: "/mo", generations: "Best for weekly creators", cta: "Choose Creator", featured: true },
+  { name: "Studio", price: "USD $29.99", cadence: "/mo", generations: "Frequent creative testing", cta: "Choose Studio", featured: false },
 ];
 
 export const integrationStates = [

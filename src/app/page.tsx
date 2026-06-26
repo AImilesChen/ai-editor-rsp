@@ -12,6 +12,25 @@ export const metadata = {
   alternates: { canonical: site.url },
 };
 
+function HomePricingAmount({ price, cadence }: { price: string; cadence: string }) {
+  if (price.startsWith("USD ")) {
+    return (
+      <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-rsp-secondary">USD</span>
+        <span className="font-heading text-4xl font-normal leading-none">{price.replace("USD ", "")}</span>
+        <span className="text-rsp-muted">{cadence}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span className="font-heading text-4xl font-normal leading-none">{price}</span>
+      <span className="text-rsp-muted">{cadence}</span>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
     <>
@@ -41,7 +60,7 @@ export default function HomePage() {
           </div>
         </section>
         <section className="section-pad bg-rsp-surface">
-          <div className="mx-auto max-w-screen-2xl"><p className="eyebrow text-center">Pricing</p><h2 className="mt-3 text-center font-heading text-4xl font-normal tracking-[-0.03em]">Simple credits for AI image generation</h2><p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-6 text-rsp-muted">Start free with 3 credits after sign-in. Upgrade only when you need more image credits.</p><div className="mx-auto mt-6 max-w-4xl rounded-[24px] border border-rsp-secondary/25 bg-white/70 p-4 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Credit guide:</strong> 1 credit for portrait text-to-image, 2 credits for square/landscape text-to-image or portrait image edit, and 4 credits for square/landscape image edit.</div><div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{pricingPlans.map((plan) => <div key={plan.name} className={`glass-card p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}><p className="mb-2 text-sm font-bold text-rsp-secondary">{plan.featured ? "Most Popular" : ""}</p><h3 className="font-heading text-2xl font-normal">{plan.name}</h3><div className="mt-4"><span className="font-heading text-4xl font-normal">{plan.price}</span><span className="text-rsp-muted"> {plan.cadence}</span></div><p className="mt-4 text-rsp-muted">{plan.generations}</p><PricingPlanAction planName={plan.name} cta={plan.cta} /></div>)}</div></div>
+          <div className="mx-auto max-w-screen-2xl"><p className="eyebrow text-center">Pricing</p><h2 className="mt-3 text-center font-heading text-4xl font-normal tracking-[-0.03em]">Simple credits for AI image generation</h2><p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-6 text-rsp-muted">Start free with 3 credits after sign-in. Upgrade only when you need more image credits.</p><div className="mx-auto mt-6 max-w-4xl rounded-[24px] border border-rsp-secondary/25 bg-white/70 p-4 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Credit guide:</strong> 1 credit for portrait text-to-image, 2 credits for square/landscape text-to-image or portrait image edit, and 4 credits for square/landscape image edit.</div><div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{pricingPlans.map((plan) => <div key={plan.name} className={`glass-card p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}><p className="mb-2 text-sm font-bold text-rsp-secondary">{plan.featured ? "Most Popular" : ""}</p><h3 className="font-heading text-2xl font-normal">{plan.name}</h3><HomePricingAmount price={plan.price} cadence={plan.cadence} /><p className="mt-4 text-rsp-muted">{plan.generations}</p><PricingPlanAction planName={plan.name} cta={plan.cta} /></div>)}</div></div>
         </section>
         <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-3xl"><p className="eyebrow text-center">FAQ</p>{faqItems.map((item) => <div key={item.q} className="mt-5 glass-card p-5"><h3 className="font-heading text-xl font-normal tracking-[-0.02em]">{item.q}</h3><p className="mt-2 text-rsp-muted">{item.a}</p></div>)}</div></section>
       </main>
