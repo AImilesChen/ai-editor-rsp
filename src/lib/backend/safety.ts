@@ -176,14 +176,14 @@ export function checkOutputSafety(raw: unknown): PromptSafetyResult {
   if (!data || typeof data !== "object") return { decision: "allow", severity: "low", categories: [] };
 
   const flags = [
-    data.has_nsfw_concepts,
     data.nsfw,
     data.is_nsfw,
     data.unsafe,
   ];
 
-  // Some providers echo `safety_checker: true` to mean the checker was enabled,
-  // not that the output is unsafe. Only block on explicit unsafe/NSFW fields.
+  // FAL may return `has_nsfw_concepts` as a noisy detector score for otherwise
+  // valid portrait/headshot outputs. The provider safety checker already runs at
+  // generation time, so only block on explicit unsafe/NSFW result fields here.
   if (flags.some(hasUnsafeBoolean)) {
     return {
       decision: "block",
