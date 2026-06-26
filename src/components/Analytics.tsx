@@ -4,10 +4,15 @@ import Script from "next/script";
 import { useEffect, useState } from "react";
 import { CONSENT_EVENT, CONSENT_STORAGE_KEY } from "@/components/CookieConsentBanner";
 
-const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-const clarityId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
-const plausibleScriptUrl = process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL;
-const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+const DEFAULT_GA_MEASUREMENT_ID = "G-RF7ZQTBKBW";
+const DEFAULT_CLARITY_PROJECT_ID = "x57xd4laxk";
+const DEFAULT_PLAUSIBLE_SCRIPT_URL = "https://plausible.shipsolo.io/js/pa-DY_KqwMYVe82xYA2-O8Dt.js";
+const DEFAULT_PLAUSIBLE_DOMAIN = "aieditorrspediting.org";
+
+const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || DEFAULT_GA_MEASUREMENT_ID;
+const clarityId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID;
+const plausibleScriptUrl = process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL || DEFAULT_PLAUSIBLE_SCRIPT_URL;
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN || DEFAULT_PLAUSIBLE_DOMAIN;
 
 type ConsentChoice = {
   analytics?: boolean;
