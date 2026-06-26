@@ -169,10 +169,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
       : "Describe the image you want to create, or start from a ready prompt below.";
   const userPrompt = prompt.trim();
+  const headshotIdentityGuard = "Keep the exact same person from the uploaded photo. Preserve face identity, facial structure, age, skin tone, hairstyle, expression, and recognizable natural details. Do not invent a new face; identity preservation is more important than outfit, background, or lighting changes.";
   const effectivePrompt = isHeadshotMode
     ? userPrompt
-      ? `${headshotPrompt} User requested details: ${userPrompt}. Prioritize the requested professional outfit, studio/background, lighting, and framing while preserving the same person's identity and facial features.`
-      : headshotPrompt
+      ? `${headshotIdentityGuard} ${headshotPrompt} User requested details: ${userPrompt}. Apply the requested professional outfit, background, lighting, and framing only while keeping the uploaded person's identity consistent.`
+      : `${headshotIdentityGuard} ${headshotPrompt}`
     : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
   const canGenerate = Boolean(authenticated) && !needsUpload && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
@@ -569,6 +570,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           placeholder={promptPlaceholder}
           className={`${isHero ? "min-h-[76px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
         />
+        {isHeadshotMode && uploadedImage && (
+          <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
+            Identity-first mode: the uploaded face is the anchor. Outfit, background, and lighting are changed around the same person.
+          </p>
+        )}
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={clearPromptChoices} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>Write my own</button>

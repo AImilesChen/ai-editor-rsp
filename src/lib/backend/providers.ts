@@ -67,19 +67,29 @@ function jsonObject(value: unknown): FalQueuePayload {
   return value && typeof value === "object" ? value as FalQueuePayload : {};
 }
 
-export async function submitFalGeneration(input: GenerateRequest) {
-  const prompt = input.prompt?.trim();
-  if (!prompt || prompt.length < 20) {
-    return { ok: false as const, status: 400, error: "Prompt must be at least 20 characters." };
-  }
-  if (!falConfigured()) {
-    return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
-  }
+function numericEnv(name: string, fallback: number) {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
 
-  const isHeadshotEdit = input.imageDataUrl && input.style === "Professional headshot";
+function clampStrength(value: number) {
+  return Math.min(0.9, Math.max(0.1, value));
+}
+
+export function buildFalRequestBody(input: GenerateRequest) {
+  const prompt = input.prompt?.trim();
+  const isHeadshotEdit = Boolean(input.imageDataUrl && input.style === "Professional headshot");
   const referenceInstruction = input.imageDataUrl
     ? isHeadshotEdit
-      ? "Use the uploaded image as the primary identity reference. Preserve the same adult person's face, identity, age, facial structure, hairstyle, and natural expression, but transform the portrait into a realistic professional LinkedIn/business headshot. Follow requested outfit/background/lighting details even when they require changing casual clothes, sunglasses, hats, or outdoor backgrounds. Do not keep casual fashion styling if the user asks for professional attire."
+      ? [
+          "The uploaded image is the mandatory identity anchor. Keep the exact same adult person as the source photo.",
+          "Preserve recognizable face identity, facial structure, age, skin tone, hairstyle/hairline, expression, and natural facial details. Identity preservation has higher priority than changing outfit, background, or composition.",
+          "Transform only presentation details into a realistic professional LinkedIn/business headshot: clean blazer or requested professional outfit, polished grooming, soft studio or requested neutral background, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
+          "Do not invent a new person, do not change ethnicity, do not change facial geometry, do not over-beautify into a different face, and do not keep hats/sunglasses/casual fashion when the user asks for professional attire.",
+          "If the source photo is full-body or outdoors, crop/reframe toward a shoulders-up professional headshot while preserving the same person's face.",
+        ].join(" ")
       : "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
     : "Create a new image from the user-provided text prompt.";
   const regionInstruction = input.imageDataUrl && input.editRegion
@@ -93,16 +103,30 @@ export async function submitFalGeneration(input: GenerateRequest) {
     safePromptInstruction(),
     "Avoid text overlays unless explicitly requested.",
   ].filter(Boolean).join("\n");
+  const editStrength = isHeadshotEdit
+    ? clampStrength(numericEnv("FAL_HEADSHOT_IDENTITY_STRENGTH", 0.36))
+    : clampStrength(numericEnv("FAL_REFERENCE_EDIT_STRENGTH", 0.45));
 
-  const requestBody = {
+  return {
     prompt: enrichedPrompt,
     image_size: ratioToImageSize(input.ratio),
     num_images: 1,
     output_format: "jpeg",
     ...providerSafetyOptions(),
-    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: isHeadshotEdit ? 0.68 : 0.45 } : {}),
+    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: editStrength } : {}),
   };
+}
 
+export async function submitFalGeneration(input: GenerateRequest) {
+  const prompt = input.prompt?.trim();
+  if (!prompt || prompt.length < 20) {
+    return { ok: false as const, status: 400, error: "Prompt must be at least 20 characters." };
+  }
+  if (!falConfigured()) {
+    return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
+  }
+
+  const requestBody = buildFalRequestBody(input);
   const model = submitModel(input);
   const response = await fetch(`${FAL_QUEUE_BASE}/${model}`, {
     method: "POST",
