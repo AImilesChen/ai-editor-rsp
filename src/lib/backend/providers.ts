@@ -76,8 +76,11 @@ export async function submitFalGeneration(input: GenerateRequest) {
     return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
   }
 
+  const isHeadshotEdit = input.imageDataUrl && input.style === "Professional headshot";
   const referenceInstruction = input.imageDataUrl
-    ? "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
+    ? isHeadshotEdit
+      ? "Use the uploaded image as the primary identity reference. Preserve the same adult person's face, identity, age, facial structure, hairstyle, and natural expression, but transform the portrait into a realistic professional LinkedIn/business headshot. Follow requested outfit/background/lighting details even when they require changing casual clothes, sunglasses, hats, or outdoor backgrounds. Do not keep casual fashion styling if the user asks for professional attire."
+      : "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
     : "Create a new image from the user-provided text prompt.";
   const regionInstruction = input.imageDataUrl && input.editRegion
     ? `The user selected a local redraw area on the uploaded image: left ${input.editRegion.x.toFixed(1)}%, top ${input.editRegion.y.toFixed(1)}%, width ${input.editRegion.width.toFixed(1)}%, height ${input.editRegion.height.toFixed(1)}%. Prioritize changes inside this selected rectangle and keep the unselected area as unchanged as possible.`
@@ -97,7 +100,7 @@ export async function submitFalGeneration(input: GenerateRequest) {
     num_images: 1,
     output_format: "jpeg",
     ...providerSafetyOptions(),
-    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: 0.45 } : {}),
+    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: isHeadshotEdit ? 0.68 : 0.45 } : {}),
   };
 
   const model = submitModel(input);

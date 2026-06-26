@@ -168,7 +168,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     : mode === "edit"
       ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
       : "Describe the image you want to create, or start from a ready prompt below.";
-  const effectivePrompt = isHeadshotMode && !prompt.trim() ? headshotPrompt : prompt;
+  const userPrompt = prompt.trim();
+  const effectivePrompt = isHeadshotMode
+    ? userPrompt
+      ? `${headshotPrompt} User requested details: ${userPrompt}. Prioritize the requested professional outfit, studio/background, lighting, and framing while preserving the same person's identity and facial features.`
+      : headshotPrompt
+    : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
   const canGenerate = Boolean(authenticated) && !needsUpload && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
@@ -465,8 +470,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   return (
-    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? `grid items-start gap-0 xl:grid-cols-[460px_minmax(0,1fr)] ${uploadedImage ? "max-h-[760px]" : ""}` : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
-      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? `p-4 ${uploadedImage ? "max-h-[760px] overflow-y-auto" : ""}` : "p-4 md:p-5"}`}>
+    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[480px_minmax(0,1fr)]" : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-[820px] xl:overflow-y-auto xl:overscroll-contain" : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
@@ -492,16 +497,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </div>}
 
         {mode === "edit" && isHero && lockedMode === "edit" && (
-          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose a simple mode</p>
+          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.035] p-2.5">
+            <p className={`${uploadedImage ? "sr-only" : "mb-2"} text-xs font-semibold uppercase tracking-[0.16em] text-white/70`}>Choose a simple mode</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              <button type="button" onClick={() => applyTask(editTasks[0])} className={`rounded-xl border p-3 text-left transition ${task === editTasks[0].label ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
+              <button type="button" onClick={() => applyTask(editTasks[0])} className={`rounded-xl border ${uploadedImage ? "px-3 py-2" : "p-3"} text-left transition ${task === editTasks[0].label ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
                 <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Professional Headshot</span>{task === editTasks[0].label && <span className="text-[#86EFAC]">✓</span>}</span>
-                <span className="mt-1 block text-xs leading-5 text-white/58">For LinkedIn, resume, and business profile photos.</span>
+                {!uploadedImage && <span className="mt-1 block text-xs leading-5 text-white/58">For LinkedIn, resume, and business profile photos.</span>}
               </button>
-              <button type="button" onClick={clearPromptChoices} className={`rounded-xl border p-3 text-left transition ${!task && !prompt ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
+              <button type="button" onClick={clearPromptChoices} className={`rounded-xl border ${uploadedImage ? "px-3 py-2" : "p-3"} text-left transition ${!task && !prompt ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
                 <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Custom Edit</span>{!task && !prompt && <span className="text-[#86EFAC]">✓</span>}</span>
-                <span className="mt-1 block text-xs leading-5 text-white/58">Describe your own background, outfit, lighting, or cleanup edit.</span>
+                {!uploadedImage && <span className="mt-1 block text-xs leading-5 text-white/58">Describe your own background, outfit, lighting, or cleanup edit.</span>}
               </button>
             </div>
           </div>
@@ -515,7 +520,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 <span className={`${isHero ? "text-base" : "text-sm"} block font-semibold text-white`}>{uploadedName ? "Image uploaded" : "Upload image to start"}</span>
                 <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Drag and drop an image here, or browse files. PNG, JPG, or WebP under 5 MB.")}</span>
               </span>
-              {uploadedImage && <span className="mt-3 flex h-24 w-24 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
+              {uploadedImage && <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
             </label>
             <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
           </>
@@ -562,7 +567,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? "min-h-[96px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
+          className={`${isHero ? "min-h-[76px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
         />
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
@@ -610,7 +615,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
         </div>}
 
-        <div className={`${isHero ? "mt-4" : "mt-5"} flex flex-col gap-2`}>
+        <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
           {authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
@@ -674,7 +679,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Your generated image will appear here</p><p className="mt-2 text-sm leading-6 text-white/68">Choose a prompt and size, then generate your result. The background is only a muted example.</p></div></div>}
             </div>
           ) : uploadedImage ? (
-            <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
+            <div className={`relative flex ${isHero ? "min-h-[560px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
               <div
                 className={`${generatedImage ? "cursor-ew-resize" : editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(70vh,680px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
                 style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(70vh,680px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
