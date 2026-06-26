@@ -70,16 +70,14 @@ export default function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:left-5 sm:px-0 sm:pb-5" role="region" aria-label="Cookie consent">
-      <div className={`rounded-3xl border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_18px_54px_rgba(69,42,16,0.18)] backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-5xl"}`}>
-        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <div className={`rounded-3xl border border-[#ead8bb] bg-[#fffaf1]/95 p-4 shadow-[0_18px_54px_rgba(69,42,16,0.18)] backdrop-blur sm:p-5 ${isManaging ? "max-w-3xl" : "max-w-2xl"}`}>
+        <div className="grid gap-4">
           <div>
-            <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:gap-3">
-              <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a36c2d]">Cookie preferences</p>
-              <h2 className="shrink-0 font-heading text-base font-bold leading-snug text-rsp-text">Choose optional cookies</h2>
-              <p className="text-xs leading-5 text-[#6f5a42]">
-                Essential cookies keep login, credits, and security working. Optional analytics load only after you agree.
-              </p>
-            </div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a36c2d]">Cookie preferences</p>
+            <h2 className="mt-1.5 font-heading text-xl font-bold leading-tight text-rsp-text">Choose optional cookies</h2>
+            <p className="mt-2 max-w-[56ch] text-sm leading-6 text-[#5f4d39]">
+              Essential cookies keep login, credits, and security working. Optional analytics load only after you agree.
+            </p>
 
             {isManaging ? (
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -115,21 +113,21 @@ export default function CookieConsentBanner() {
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="rounded-full border border-[#d9bd91] bg-white px-4 py-2.5 text-sm font-semibold text-rsp-text transition hover:bg-[#fff3de]">
+              Reject non-essential
+            </button>
+            <button type="button" onClick={() => setIsManaging((value) => !value)} className="rounded-full border border-transparent bg-[#f3e4cd] px-4 py-2.5 text-sm font-semibold text-[#7a4819] transition hover:bg-[#ead4b2]">
+              {isManaging ? "Hide preferences" : "Manage preferences"}
+            </button>
             {isManaging ? (
-              <button type="button" onClick={() => closeWith({ analytics, marketing })} className="rounded-full bg-rsp-text px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
+              <button type="button" onClick={() => closeWith({ analytics, marketing })} className="rounded-full bg-rsp-text px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
                 Save preferences
               </button>
             ) : (
-              <button type="button" onClick={() => closeWith({ analytics: true, marketing: true })} className="rounded-full bg-rsp-text px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
+              <button type="button" onClick={() => closeWith({ analytics: true, marketing: true })} className="rounded-full bg-rsp-text px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2c241b]">
                 Accept all
               </button>
             )}
-            <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="rounded-full border border-[#d9bd91] bg-white px-4 py-2 text-sm font-semibold text-rsp-text transition hover:bg-[#fff3de]">
-              Reject non-essential
-            </button>
-            <button type="button" onClick={() => setIsManaging((value) => !value)} className="rounded-full px-2 py-2 text-xs font-semibold text-[#8a5520] underline-offset-4 transition hover:underline sm:text-sm">
-              Manage preferences
-            </button>
           </div>
         </div>
       </div>
