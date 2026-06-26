@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFalResult, getFalStatus } from "@/lib/backend/providers";
 import { getAuthUser } from "@/lib/backend/auth";
 import { refundCreditForUser } from "@/lib/backend/billing-store";
-import { archiveGenerationResult, getGenerationCreditChargeByRequestId } from "@/lib/backend/generation-store";
+import { archiveGenerationResult, getGenerationCreditChargeByRequestId, getGenerationProviderModelByRequestId } from "@/lib/backend/generation-store";
 import { getSession, recordSafetyStrike, refundCreditOnce, setSessionCookie } from "@/lib/backend/session";
 import { checkOutputSafety, logSafetyEvent } from "@/lib/backend/safety";
 
@@ -13,7 +13,8 @@ type RouteContext = {
 export async function GET(request: NextRequest, context: RouteContext) {
   const { requestId } = await context.params;
   const mode = request.nextUrl.searchParams.get("mode") || "status";
-  const result = mode === "result" ? await getFalResult(requestId) : await getFalStatus(requestId);
+  const providerModel = await getGenerationProviderModelByRequestId(requestId);
+  const result = mode === "result" ? await getFalResult(requestId, providerModel) : await getFalStatus(requestId, providerModel);
   if (!result.ok) {
     return NextResponse.json({ ok: false, error: result.error, raw: result.raw }, { status: result.status });
   }

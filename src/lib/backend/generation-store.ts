@@ -70,6 +70,15 @@ export async function getGenerationCreditChargeByRequestId(requestId: string) {
   return Math.max(1, row?.credits_charged || row?.credits_quoted || 1);
 }
 
+export async function getGenerationProviderModelByRequestId(requestId: string) {
+  const db = await billingDb();
+  if (!db) return null;
+  const row = await db.prepare("SELECT provider_model FROM generation_jobs WHERE provider_request_id = ? ORDER BY created_at DESC LIMIT 1")
+    .bind(requestId)
+    .first<{ provider_model: string | null }>();
+  return row?.provider_model || null;
+}
+
 export async function archiveGenerationResult(input: { requestId: string; user?: AuthUser | null; raw: unknown; provider: string; model: string }) {
   const db = await billingDb();
   const bucket = await assetsBucket();

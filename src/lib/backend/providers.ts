@@ -38,8 +38,7 @@ function falModel() {
   return process.env.FAL_MODEL || "fal-ai/flux/dev";
 }
 
-function falQueueRequestModel() {
-  const model = falModel();
+function falQueueRequestModel(model = falModel()) {
   // fal.ai returns queue status/result URLs under fal-ai/flux even when the
   // submission endpoint is fal-ai/flux/dev. Keep non-flux model paths intact.
   if (model.startsWith("fal-ai/flux/")) return "fal-ai/flux";
@@ -50,7 +49,16 @@ function falImageToImageModel() {
   return process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/flux/dev/image-to-image";
 }
 
+function falHeadshotModel() {
+  return process.env.FAL_HEADSHOT_IMAGE_MODEL || "fal-ai/flux-pro/kontext";
+}
+
+function isHeadshotInput(input: GenerateRequest) {
+  return Boolean(input.imageDataUrl && input.style === "Professional headshot");
+}
+
 function submitModel(input: GenerateRequest) {
+  if (isHeadshotInput(input)) return falHeadshotModel();
   return input.imageDataUrl ? falImageToImageModel() : falModel();
 }
 
@@ -80,13 +88,15 @@ function clampStrength(value: number) {
 
 export function buildFalRequestBody(input: GenerateRequest) {
   const prompt = input.prompt?.trim();
-  const isHeadshotEdit = Boolean(input.imageDataUrl && input.style === "Professional headshot");
+  const isHeadshotEdit = isHeadshotInput(input);
+  const model = submitModel(input);
+  const usesKontext = model.includes("kontext");
   const referenceInstruction = input.imageDataUrl
     ? isHeadshotEdit
       ? [
           "The uploaded image is the mandatory identity anchor. Keep the exact same adult person as the source photo.",
           "Preserve recognizable face identity, facial structure, age, skin tone, hairstyle/hairline, expression, and natural facial details. Identity preservation has higher priority than changing outfit, background, or composition.",
-          "Transform only presentation details into a realistic professional LinkedIn/business headshot: clean blazer or requested professional outfit, polished grooming, soft studio or requested neutral background, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
+          "Transform only presentation details into a realistic professional LinkedIn/business headshot: clean blazer or requested professional outfit, no crossbody bag, polished grooming, plain neutral grey studio background, no trees, no street, no outdoor park, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
           "Do not invent a new person, do not change ethnicity, do not change facial geometry, do not over-beautify into a different face, and do not keep hats/sunglasses/casual fashion when the user asks for professional attire.",
           "If the source photo is full-body or outdoors, crop/reframe toward a shoulders-up professional headshot while preserving the same person's face.",
         ].join(" ")
@@ -104,17 +114,31 @@ export function buildFalRequestBody(input: GenerateRequest) {
     "Avoid text overlays unless explicitly requested.",
   ].filter(Boolean).join("\n");
   const editStrength = isHeadshotEdit
-    ? clampStrength(numericEnv("FAL_HEADSHOT_IDENTITY_STRENGTH", 0.36))
+    ? clampStrength(numericEnv("FAL_HEADSHOT_IDENTITY_STRENGTH", usesKontext ? 0.76 : 0.42))
     : clampStrength(numericEnv("FAL_REFERENCE_EDIT_STRENGTH", 0.45));
 
-  return {
+  const baseBody = {
     prompt: enrichedPrompt,
     image_size: ratioToImageSize(input.ratio),
     num_images: 1,
     output_format: "jpeg",
     ...providerSafetyOptions(),
-    ...(input.imageDataUrl ? { image_url: input.imageDataUrl, strength: editStrength } : {}),
   };
+
+  if (!input.imageDataUrl) return baseBody;
+
+  return usesKontext
+    ? {
+        ...baseBody,
+        image_url: input.imageDataUrl,
+        image_prompt_strength: editStrength,
+        guidance_scale: numericEnv("FAL_HEADSHOT_GUIDANCE_SCALE", 6),
+      }
+    : {
+        ...baseBody,
+        image_url: input.imageDataUrl,
+        strength: editStrength,
+      };
 }
 
 export async function submitFalGeneration(input: GenerateRequest) {
@@ -158,26 +182,28 @@ export async function submitFalGeneration(input: GenerateRequest) {
   };
 }
 
-export async function getFalStatus(requestId: string) {
+export async function getFalStatus(requestId: string, model?: string | null) {
   if (!falConfigured()) {
     return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
   }
-  const response = await fetch(`${FAL_QUEUE_BASE}/${falQueueRequestModel()}/requests/${encodeURIComponent(requestId)}/status`, {
+  const requestModel = falQueueRequestModel(model || falModel());
+  const response = await fetch(`${FAL_QUEUE_BASE}/${requestModel}/requests/${encodeURIComponent(requestId)}/status`, {
     headers: { Authorization: `Key ${falKey()}` },
   });
   const data = jsonObject(await response.json().catch(() => ({})));
   if (!response.ok) return { ok: false as const, status: response.status, error: "fal.ai status request failed.", raw: data };
-  return { ok: true as const, provider: "fal.ai", model: falModel(), raw: data };
+  return { ok: true as const, provider: "fal.ai", model: requestModel, raw: data };
 }
 
-export async function getFalResult(requestId: string) {
+export async function getFalResult(requestId: string, model?: string | null) {
   if (!falConfigured()) {
     return { ok: false as const, status: 503, error: "FAL_API_KEY is not configured." };
   }
-  const response = await fetch(`${FAL_QUEUE_BASE}/${falQueueRequestModel()}/requests/${encodeURIComponent(requestId)}`, {
+  const requestModel = falQueueRequestModel(model || falModel());
+  const response = await fetch(`${FAL_QUEUE_BASE}/${requestModel}/requests/${encodeURIComponent(requestId)}`, {
     headers: { Authorization: `Key ${falKey()}` },
   });
   const data = jsonObject(await response.json().catch(() => ({})));
   if (!response.ok) return { ok: false as const, status: response.status, error: "fal.ai result request failed.", raw: data };
-  return { ok: true as const, provider: "fal.ai", model: falModel(), raw: data };
+  return { ok: true as const, provider: "fal.ai", model: requestModel, raw: data };
 }

@@ -6,7 +6,7 @@ import { promptCards as libraryPromptCards } from "@/lib/rsp-content";
 import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
 const editTasks = [
-  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Dress the person in a clean navy blazer and light shirt. Use a soft grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy." },
+  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
   { label: "Remove background", prompt: "Remove the background from the uploaded image, keep the subject edges clean and natural, and place the subject on a transparent or soft neutral backdrop." },
   { label: "Change background", prompt: "Keep the subject unchanged and replace only the background with a cozy lofi night-study room, warm lamp light, rain on the window, and soft film grain." },
   { label: "Replace object", prompt: "Replace the selected object with a premium desk lamp, matching the original perspective, lighting, shadows, and realistic texture." },
@@ -169,10 +169,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
       : "Describe the image you want to create, or start from a ready prompt below.";
   const userPrompt = prompt.trim();
-  const headshotIdentityGuard = "Keep the exact same person from the uploaded photo. Preserve face identity, facial structure, age, skin tone, hairstyle, expression, and recognizable natural details. Do not invent a new face; identity preservation is more important than outfit, background, or lighting changes.";
+  const headshotIdentityGuard = "Keep the exact same person from the uploaded photo. Preserve face identity, facial structure, age, skin tone, hairstyle, expression, and recognizable natural details. Do not invent a new face; identity preservation is more important than outfit, background, or lighting changes. This must be a shoulders-up professional headshot, not a full-body outdoor portrait.";
   const effectivePrompt = isHeadshotMode
     ? userPrompt
-      ? `${headshotIdentityGuard} ${headshotPrompt} User requested details: ${userPrompt}. Apply the requested professional outfit, background, lighting, and framing only while keeping the uploaded person's identity consistent.`
+      ? `${headshotIdentityGuard} ${headshotPrompt} User requested details: ${userPrompt}. Apply the requested professional outfit, background, lighting, and framing exactly where possible while keeping the uploaded person's identity consistent. If the source is outdoor or full-body, replace the scene with the requested studio background and crop/reframe into a business headshot.`
       : `${headshotIdentityGuard} ${headshotPrompt}`
     : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
