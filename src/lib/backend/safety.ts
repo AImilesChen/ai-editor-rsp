@@ -180,11 +180,10 @@ export function checkOutputSafety(raw: unknown): PromptSafetyResult {
     data.nsfw,
     data.is_nsfw,
     data.unsafe,
-    data.safety_checker,
-    data.safety,
-    data.moderation,
   ];
 
+  // Some providers echo `safety_checker: true` to mean the checker was enabled,
+  // not that the output is unsafe. Only block on explicit unsafe/NSFW fields.
   if (flags.some(hasUnsafeBoolean)) {
     return {
       decision: "block",
