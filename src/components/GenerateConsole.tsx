@@ -919,35 +919,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
         {showHeadshotSteps && (
-          <div className={`${isHero ? "mt-3" : "mt-4"} mx-auto grid max-w-5xl gap-3 lg:grid-cols-[1.15fr_.85fr]`}>
-            <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-[#86EFAC]/18 bg-[#102014]/24`}>
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C8FADC]">Headshot flow</p>
-                <p className="text-xs text-white/45">LinkedIn · resume · profile</p>
-              </div>
-              <div className="grid gap-1.5 text-xs leading-5 text-white/66 sm:grid-cols-2">
-                {[
-                  ["1", uploadedImage ? "Photo uploaded" : "Upload photo"],
-                  ["2", `${currentQuote.ratio} output`],
-                  ["3", "Optional details"],
-                  ["4", `${currentQuote.creditsCharged} credits`],
-                ].map(([step, label]) => (
-                  <div key={step} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/14 px-3 py-1.5">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#86EFAC] text-[10px] font-black text-[#102014]">{step}</span>
-                    <span>{label}</span>
-                  </div>
-                ))}
-              </div>
+          <div className={`${isHero ? "mt-3" : "mt-4"} mx-auto grid max-w-5xl gap-3 lg:grid-cols-[0.9fr_1.1fr]`}>
+            <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-[#86EFAC]/14 bg-[#102014]/20`}>
+              <p className="text-sm font-bold text-[#C8FADC]">Simple headshot workflow</p>
+              <p className="mt-2 text-sm leading-6 text-white/64">
+                Upload photo <span className="text-[#86EFAC]">→</span> add optional outfit or background details <span className="text-[#86EFAC]">→</span> generate a {currentQuote.ratio} professional headshot.
+              </p>
+              <p className="mt-2 text-xs font-semibold text-white/42">Current request: {currentQuote.creditsCharged} credits</p>
             </div>
             <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-white/10 bg-white/[0.035]`}>
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/68">Best results checklist</p>
-                <span className="text-xs text-[#C8FADC]">Photo tips</span>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-bold text-white/82">Best results checklist</p>
+                <span className="rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-xs font-semibold text-[#C8FADC]">Photo tips</span>
               </div>
-              <div className="grid gap-1.5 text-xs leading-5 text-white/62 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="grid gap-2 text-sm leading-6 text-white/66 sm:grid-cols-2">
                 {["Clear front-facing photo", "Good lighting, no sunglasses", "Face not heavily filtered", "Simple background works best"].map((tip) => (
-                  <div key={tip} className="flex items-center gap-2 rounded-xl bg-black/14 px-3 py-1.5">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#86EFAC]" />
+                  <div key={tip} className="flex items-start gap-2 rounded-xl bg-black/12 px-3 py-2">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#86EFAC]" />
                     <span>{tip}</span>
                   </div>
                 ))}
