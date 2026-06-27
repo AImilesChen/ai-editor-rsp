@@ -193,7 +193,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const headshotPrompt = editTasks[0].prompt;
   const isHeadshotMode = mode === "edit" && task === "Professional headshot";
   const imageForRequest = mode === "edit" ? (isHeadshotMode ? headshotReferenceImage || uploadedImage : uploadedImage) : null;
-  const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest, style: task }), [ratio, imageForRequest, task]);
+  const imageForQuote = isHeadshotMode ? imageForRequest || "data:image/png;base64," : imageForRequest;
+  const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForQuote, style: task }), [ratio, imageForQuote, task]);
   const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
   const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = isHeadshotMode
