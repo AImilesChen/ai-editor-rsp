@@ -46,10 +46,10 @@ export default function HomePage() {
         <section className="border-y border-rsp-border bg-rsp-surface px-4 py-5 md:px-8">
           <div className="mx-auto flex max-w-screen-2xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="eyebrow">Need to edit an uploaded image?</p>
-              <p className="mt-2 text-sm leading-6 text-rsp-muted">Upload a photo, describe the change you want, compare before and after, then download the edited result.</p>
+              <p className="eyebrow">Need a professional headshot?</p>
+              <p className="mt-2 text-sm leading-6 text-rsp-muted">Upload a face photo and create a polished AI headshot for LinkedIn, resumes, company bios, and business profiles.</p>
             </div>
-            <Link href="/image-editor" className="rsp-button-secondary shrink-0 px-5 py-3 text-sm">Open Image Editor →</Link>
+            <Link href="/ai-headshot-generator" className="rsp-button-secondary shrink-0 px-5 py-3 text-sm">Open AI Headshot →</Link>
           </div>
         </section>
 

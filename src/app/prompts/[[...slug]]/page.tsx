@@ -9,7 +9,7 @@ import { promptPages, promptLibraryMeta, categories } from "@/lib/data/prompt-pa
 import { site } from "@/lib/rsp-content";
 
 const activePrompts = prompts.filter((prompt) => prompt.status === "active");
-const professionalHeadshotHref = "/image-editor?preset=headshot#headshot-upload";
+const professionalHeadshotHref = "/ai-headshot-generator#headshot-upload";
 
 export async function generateStaticParams() {
   return [

@@ -50,6 +50,7 @@ type GenerateConsoleProps = {
   compactPromptBuilder?: boolean;
   previewHeadingLevel?: "h1" | "h2" | "h3";
   hidePreviewIntro?: boolean;
+  loginReturnPath?: string;
 };
 
 type EditRegion = {
@@ -178,7 +179,7 @@ function aspectFromRatio(ratio?: string) {
   }
 }
 
-export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, defaultPreset, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false }: GenerateConsoleProps) {
+export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, defaultPreset, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false, loginReturnPath }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const PreviewHeadingTag = previewHeadingLevel;
   const isHero = variant === "hero";
@@ -186,6 +187,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const isHeadshotOnly = lockedMode === "edit" && defaultPreset === "headshot";
   const defaultHeadshotTask = defaultPreset === "headshot" ? editTasks[0] : null;
   const [mode, setMode] = useState<"edit" | "text">(initialMode);
+  const editLoginPath = loginReturnPath || "/reference-edit";
   const [prompt, setPrompt] = useState("");
   const [task, setTask] = useState<string | null>(defaultHeadshotTask?.label || null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -409,7 +411,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const runGenerate = async () => {
     const trimmedPrompt = effectivePrompt.trim();
     if (!authenticated) {
-      window.location.href = mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate";
+      window.location.href = mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate";
       return;
     }
     if (needsUpload) {
@@ -441,7 +443,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       const data = await response.json() as GenerateResponse;
       if (!response.ok || !data.ok) {
         if (response.status === 401) {
-          window.location.href = mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate";
+          window.location.href = mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate";
           return;
         }
         throw new Error(data.error || "Generation request failed.");
@@ -747,7 +749,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </a>
             </>
           ) : (
-            <a href={mode === "edit" ? "/login?next=/image-editor" : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
+            <a href={mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
           )}
           {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
         </div>
