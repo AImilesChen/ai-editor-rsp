@@ -15,14 +15,24 @@ const editTasks = [
 ];
 
 const textTasks = [
-  { label: "Portrait", prompt: builderPromptCards[0]?.text || "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
-  { label: "Product photo", prompt: "A premium product photography scene with clean background, warm studio lighting, realistic shadows, refined composition, and commercial-ready detail." },
-  { label: "Social post", prompt: "A scroll-stopping social media visual with strong composition, bold focal point, clean negative space for text, and polished creator branding." },
-  { label: "Study room", prompt: "A cozy lofi night-study desk scene with warm lamp light, rain outside the window, soft film grain, calm creator atmosphere, and editorial composition." },
-  { label: "Anime", prompt: "A detailed anime illustration with expressive character design, atmospheric background, refined color palette, and cinematic composition." },
-  { label: "Logo poster", prompt: "A modern logo poster concept with clear brand mark, premium layout, strong contrast, clean typography space, and minimal visual clutter." },
-  { label: "Lifestyle scene", prompt: "A realistic lifestyle scene with natural human activity, beautiful environment, authentic details, and commercial editorial polish." },
+  { label: "Portrait", useCase: "Profile / editorial", ratio: "4:5", style: "Photorealistic", lighting: "Soft studio light", shot: "Close-up", prompt: builderPromptCards[0]?.text || "A cinematic editorial portrait with soft rim light, textured backdrop, subtle film grain, expressive eyes, and high-end magazine color grading." },
+  { label: "Product photo", useCase: "Shop / landing page", ratio: "1:1", style: "Luxury", lighting: "Soft studio light", shot: "Product hero shot", prompt: "A premium product photography scene with clean background, warm studio lighting, realistic shadows, refined composition, and commercial-ready detail." },
+  { label: "Social post", useCase: "Instagram / ads", ratio: "4:5", style: "Editorial", lighting: "Natural daylight", shot: "Wide shot", prompt: "A scroll-stopping social media visual with strong composition, bold focal point, clean negative space for text, and polished creator branding." },
+  { label: "Study room", useCase: "Blog / YouTube", ratio: "16:9", style: "Cinematic", lighting: "Film lighting", shot: "Wide shot", prompt: "A cozy lofi night-study desk scene with warm lamp light, rain outside the window, soft film grain, calm creator atmosphere, and editorial composition." },
+  { label: "Anime", useCase: "Character art", ratio: "3:4", style: "Anime", lighting: "Neon light", shot: "Half body", prompt: "A detailed anime illustration with expressive character design, atmospheric background, refined color palette, and cinematic composition." },
+  { label: "Logo poster", useCase: "Brand concept", ratio: "1:1", style: "Minimal", lighting: "Dramatic shadow", shot: "Product hero shot", prompt: "A modern logo poster concept with clear brand mark, premium layout, strong contrast, clean typography space, and minimal visual clutter." },
+  { label: "Lifestyle scene", useCase: "Commercial visual", ratio: "5:4", style: "Photorealistic", lighting: "Golden hour", shot: "Wide shot", prompt: "A realistic lifestyle scene with natural human activity, beautiful environment, authentic details, and commercial editorial polish." },
 ];
+
+const ratioUseLabels: Record<string, string> = {
+  "1:1": "Avatar",
+  "3:4": "Portrait",
+  "4:5": "Social",
+  "5:4": "Product",
+  "9:16": "Story",
+  "16:9": "Cover",
+  "4:3": "Standard",
+};
 
 const styleOptions = ["Photorealistic", "Cinematic", "Anime", "3D", "Editorial", "Minimal", "Vintage", "Luxury"];
 const lightingOptions = ["Golden hour", "Soft studio light", "Neon light", "Dramatic shadow", "Natural daylight", "Film lighting"];
@@ -193,7 +203,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
   const [selectedShot, setSelectedShot] = useState<string | null>(null);
-  const [ratio, setRatio] = useState(initialMode === "text" ? "" : defaultPreset === "headshot" ? "3:4" : "auto");
+  const [ratio, setRatio] = useState(initialMode === "text" ? "1:1" : defaultPreset === "headshot" ? "3:4" : "auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
   const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -218,6 +228,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const imageForRequest = mode === "edit" ? (isHeadshotMode ? headshotReferenceImage || uploadedImage : uploadedImage) : null;
   const imageForQuote = isHeadshotMode ? imageForRequest || "data:image/png;base64," : imageForRequest;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForQuote, style: task }), [ratio, imageForQuote, task]);
+  const creditLabel = `${currentQuote.creditsCharged} ${currentQuote.creditsCharged === 1 ? "credit" : "credits"}`;
   const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
   const editPreviewAspect = isHeadshotMode ? aspectFromRatio(currentQuote.ratio) || (3 / 4) : uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = isHeadshotMode
@@ -310,12 +321,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setSelectedLighting(null);
     setSelectedShot(null);
     if (nextMode === "edit") setRatio("auto");
-    if (nextMode === "text") setRatio("");
+    if (nextMode === "text") setRatio("1:1");
   };
 
-  const applyTask = (item: { label: string; prompt: string }) => {
+  const applyTask = (item: { label: string; prompt: string; ratio?: string; style?: string; lighting?: string; shot?: string }) => {
     if (isHeadshotOnly && item.label !== "Professional headshot") return;
     setTask(item.label);
+    if (mode === "text") {
+      const nextStyle = item.style || selectedStyle;
+      const nextLighting = item.lighting || selectedLighting;
+      const nextShot = item.shot || selectedShot;
+      setSelectedStyle(nextStyle || null);
+      setSelectedLighting(nextLighting || null);
+      setSelectedShot(nextShot || null);
+      setPrompt(composeTextPrompt(item.prompt, nextStyle, nextLighting, nextShot));
+      if (item.ratio) setRatio(item.ratio);
+      return;
+    }
     setPrompt(item.label === "Professional headshot" ? "" : composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
     if (mode === "edit" && item.label === "Professional headshot") {
       setRatio("3:4");
@@ -337,7 +359,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setSelectedStyle(null);
     setSelectedLighting(null);
     setSelectedShot(null);
-    if (mode === "text") setRatio("");
+    if (mode === "text") setRatio("1:1");
     setPrompt("");
   };
 
@@ -673,7 +695,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
-          {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
+          <div className="flex items-center gap-3">
+            {isHero && compactPromptBuilder && mode === "text" && (
+              <button type="button" onClick={() => applyTask(textTasks[0])} className="text-xs font-bold text-[#86EFAC] transition hover:text-[#A7F3D0]">
+                Try example
+              </button>
+            )}
+            {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
+          </div>
         </div>
         <textarea
           id="prompt"
@@ -688,13 +717,24 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </p>
         )}
 
-        {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={clearPromptChoices} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>Write my own</button>
-          {visiblePromptTasks.map((item) => (
-            <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
-          ))}
-          {isHero && compactPromptBuilder && <a href="/generate" className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-semibold text-white/60 no-underline hover:border-white/25">More options →</a>}
-        </div>}
+        {(!isHero || mode === "text") && (
+          <div className={`${isHero ? "mt-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3" : "mt-3"}`}>
+            {isHero && compactPromptBuilder && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Popular ready prompts</p>}
+            <div className={isHero && compactPromptBuilder ? "grid gap-2 sm:grid-cols-2" : "flex flex-wrap gap-2"}>
+              <button type="button" onClick={clearPromptChoices} className={`${isHero && compactPromptBuilder ? "rounded-xl px-3 py-2 text-left" : "rounded-full px-3 py-2"} border text-sm font-semibold transition ${!task && !selectedStyle && !selectedLighting && !selectedShot && prompt.length === 0 ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25 hover:text-white"}`}>
+                <span className="flex items-center justify-between gap-2"><span>Write my own</span>{!task && prompt.length === 0 && <span>✓</span>}</span>
+                {isHero && compactPromptBuilder && <span className="mt-1 block text-xs font-medium opacity-70">Start blank</span>}
+              </button>
+              {visiblePromptTasks.map((item) => (
+                <button type="button" key={item.label} onClick={() => applyTask(item)} className={`${isHero && compactPromptBuilder ? "rounded-xl px-3 py-2 text-left" : "rounded-full px-3 py-2"} border text-sm font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25 hover:text-white"}`}>
+                  <span className="flex items-center justify-between gap-2"><span>{item.label}</span>{task === item.label && <span>✓</span>}</span>
+                  {isHero && compactPromptBuilder && <span className="mt-1 block text-xs font-medium opacity-70">{String(textTasks.find((taskItem) => taskItem.label === item.label)?.useCase || "Ready template")}</span>}
+                </button>
+              ))}
+              {isHero && compactPromptBuilder && <a href="/generate" className="rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-sm font-semibold text-white/60 no-underline hover:border-white/25 hover:text-white">More options →</a>}
+            </div>
+          </div>
+        )}
 
 
 
@@ -720,12 +760,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Choose image size" : "Ratio"}</p>
+        {mode === "text" && <div className={`${isHero ? "mt-3" : "mt-5"}`}>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Image size" : "Ratio"}</p>
+            {isHero && <span className="text-xs font-semibold text-white/48">{currentQuote.sizeLabel} · {creditLabel}</span>}
+          </div>
           <div className={`${isHero ? "grid-cols-4 gap-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
             {visibleRatios.map((item) => (
-              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
-                <span className="block">{item.label}</span>
+              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-2 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25 hover:text-white"}`}>
+                <span className="block text-sm font-black leading-none">{item.label}</span>
+                <span className={`mt-1 block text-[10px] font-bold ${ratio === item.ratio ? "text-[#102014]/70" : "text-white/42"}`}>{ratioUseLabels[item.ratio] || "Image"}</span>
                 {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{item.textCredits} cr</span>}
               </button>
             ))}
@@ -736,13 +780,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
           {isHeadshotMode && (
             <p className="rounded-2xl border border-[#86EFAC]/16 bg-[#102014]/35 px-3 py-2 text-center text-xs font-semibold text-[#C8FADC]">
-              Current output: {currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits
+              Current output: {currentQuote.sizeLabel} · {creditLabel}
             </p>
           )}
           {authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Enter or choose a prompt") : creditsRemaining < currentQuote.creditsCharged ? `Need ${creditLabel}` : mode === "edit" && task === "Professional headshot" ? `Create professional headshot · ${creditLabel}` : mode === "edit" ? `Generate edit · ${creditLabel}` : `Generate image · ${creditLabel}`}
               </button>
               <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
                 View generation history
@@ -762,12 +806,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 ? "Upload a face photo first to start the professional headshot flow."
                 : "Upload a reference image first, or switch to Create from Text."
               : creditsRemaining < currentQuote.creditsCharged
-                ? `This request needs ${currentQuote.creditsCharged} credits. You have ${creditsRemaining} credits.`
+                ? `This request needs ${creditLabel}. You have ${creditsRemaining} ${creditsRemaining === 1 ? "credit" : "credits"}.`
                 : isHeadshotMode
-                  ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
+                  ? `Professional headshot uses ${creditLabel}. We keep your face as the anchor while replacing outfit, background, and framing.`
                   : mode === "edit"
-                    ? `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
-                  : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`}
+                    ? `Reference edit uses ${creditLabel}. The uploaded image is treated as the visual anchor.`
+                  : `Text-to-image uses ${creditLabel} for the selected size.`}
         </p>
       </aside>
 
@@ -803,7 +847,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Your generated image will appear here</p><p className="mt-2 text-sm leading-6 text-white/68">Choose a prompt and size, then generate your result. The background is only a muted example.</p></div></div>}
+              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>{task ? `${task} preview` : "Start with a ready prompt"}</p><p className="mt-2 text-sm leading-6 text-white/68">{task ? `This template is set for ${currentQuote.sizeLabel}. Adjust the prompt or click Generate image when ready.` : "Pick a popular prompt on the left to fill the text, style, lighting, shot, and size automatically."}</p>{task && <p className="mt-3 inline-flex rounded-full border border-[#86EFAC]/25 bg-[#102014]/65 px-3 py-1 text-xs font-bold text-[#C8FADC]">Ready to generate · {creditLabel}</p>}</div></div>}
             </div>
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
@@ -915,9 +959,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
         {!generatedImage && (
-          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.035] text-xs text-white/52 md:flex-row md:items-center md:justify-between`}>
-            <span>{mode === "edit" ? "Generate an edit before downloading." : "Your generated image will appear here after you choose a prompt and size."}</span>
-            <span className="rounded-full border border-white/10 px-4 py-2 font-bold text-white/35">Download result</span>
+          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.035] text-xs text-white/56 md:flex-row md:items-center md:justify-between`}>
+            <span>{mode === "edit" ? "Generate an edit before downloading." : task ? "Template selected. Generate once to unlock download, open full size, and variations." : "Choose a ready prompt or write your own prompt to start."}</span>
+            <span className="font-bold text-white/40">Download appears after generation</span>
           </div>
         )}
         {showHeadshotSteps && (
@@ -927,7 +971,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               <p className="mt-2 text-sm leading-6 text-white/64">
                 Upload photo <span className="text-[#86EFAC]">→</span> add optional outfit or background details <span className="text-[#86EFAC]">→</span> generate a {currentQuote.ratio} professional headshot.
               </p>
-              <p className="mt-2 text-xs font-semibold text-white/42">Current request: {currentQuote.creditsCharged} credits</p>
+              <p className="mt-2 text-xs font-semibold text-white/42">Current request: {creditLabel}</p>
             </div>
             <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-white/10 bg-white/[0.035]`}>
               <div className="mb-3 flex items-center justify-between gap-2">
