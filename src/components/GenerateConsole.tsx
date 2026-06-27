@@ -34,6 +34,10 @@ const ratioUseLabels: Record<string, string> = {
   "4:3": "Standard",
 };
 
+const styleOptions = ["Photorealistic", "Cinematic", "Anime", "3D", "Editorial", "Minimal", "Vintage", "Luxury"];
+const lightingOptions = ["Golden hour", "Soft studio light", "Neon light", "Dramatic shadow", "Natural daylight", "Film lighting"];
+const shotOptions = ["Close-up", "Half body", "Full body", "Wide shot", "Top view", "Product hero shot"];
+
 const previewImages: Record<string, string> = {
   "Professional headshot": "/images/prompt-cases/examples/ai-headshot-linkedin-corporate-headshot.webp",
   "Remove background": "/images/generated/double-exposure-travel-rishikesh.webp",
@@ -158,6 +162,14 @@ function composeTextPrompt(basePrompt: string, style?: string | null, lighting?:
   return parts.filter(Boolean).join(" ");
 }
 
+function stripBuilderNotes(prompt: string) {
+  return prompt
+    .replace(/\s*Style:\s*[^.]+\./gi, "")
+    .replace(/\s*Lighting:\s*[^.]+\./gi, "")
+    .replace(/\s*Shot:\s*[^.]+\./gi, "")
+    .trim();
+}
+
 function aspectFromRatio(ratio?: string) {
   switch (ratio) {
     case "1:1":
@@ -233,11 +245,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
   const canGenerate = Boolean(authenticated) && !needsUpload && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
-  const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 3) : activeTasks;
+  const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
+  const compactOptionGroups = [
+    { kind: "style" as const, label: "Style", options: styleOptions.slice(0, 5), value: selectedStyle, setter: setSelectedStyle },
+    { kind: "lighting" as const, label: "Lighting", options: lightingOptions.slice(0, 4), value: selectedLighting, setter: setSelectedLighting },
+    { kind: "shot" as const, label: "Shot", options: shotOptions.slice(0, 4), value: selectedShot, setter: setSelectedShot },
+  ];
   const visibleRatios = isHeadshotMode
     ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
     : isHero && compactPromptBuilder
-      ? GENERATION_RATIOS.filter((item) => ["4:5", "1:1", "16:9"].includes(item.ratio))
+      ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
       : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
   const primaryHeadshotRatios = visibleRatios.filter((item) => ["3:4", "1:1", "4:5"].includes(item.ratio));
   const advancedHeadshotRatios = visibleRatios.filter((item) => !["3:4", "1:1", "4:5"].includes(item.ratio));
@@ -311,14 +328,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     if (isHeadshotOnly && item.label !== "Professional headshot") return;
     setTask(item.label);
     if (mode === "text") {
-      if (isHero && compactPromptBuilder) {
-        setSelectedStyle(null);
-        setSelectedLighting(null);
-        setSelectedShot(null);
-        setPrompt(item.prompt);
-        if (item.ratio) setRatio(item.ratio);
-        return;
-      }
       const nextStyle = item.style || selectedStyle;
       const nextLighting = item.lighting || selectedLighting;
       const nextShot = item.shot || selectedShot;
@@ -352,6 +361,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setSelectedShot(null);
     if (mode === "text") setRatio("1:1");
     setPrompt("");
+  };
+
+  const applyPromptModifier = (kind: "style" | "lighting" | "shot", option: string, currentValue: string | null, setter: (value: string | null) => void) => {
+    const nextValue = currentValue === option ? null : option;
+    setter(nextValue);
+    if (mode !== "text") return;
+    const baseTask = task ? textTasks.find((item) => item.label === task)?.prompt || stripBuilderNotes(prompt) : stripBuilderNotes(prompt);
+    const nextStyle = kind === "style" ? nextValue : selectedStyle;
+    const nextLighting = kind === "lighting" ? nextValue : selectedLighting;
+    const nextShot = kind === "shot" ? nextValue : selectedShot;
+    if (baseTask || nextStyle || nextLighting || nextShot) setPrompt(composeTextPrompt(baseTask, nextStyle, nextLighting, nextShot));
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -674,9 +694,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
           <div className="flex items-center gap-3">
-            {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Prompt library →</a>}
+            {isHero && compactPromptBuilder && mode === "text" && (
+              <button type="button" onClick={() => applyTask(textTasks[0])} className="text-xs font-bold text-[#86EFAC] transition hover:text-[#A7F3D0]">
+                Try example
+              </button>
+            )}
+            {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
           </div>
         </div>
         <textarea
@@ -693,25 +718,54 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         {(!isHero || mode === "text") && (
-          <div className={isHero ? "mt-3" : "mt-3"}>
-            {isHero && compactPromptBuilder && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/60">Examples</p>}
-            <div className="flex flex-wrap gap-2">
+          <div className={`${isHero ? "mt-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3" : "mt-3"}`}>
+            {isHero && compactPromptBuilder && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Popular ready prompts</p>}
+            <div className={isHero && compactPromptBuilder ? "grid gap-2 sm:grid-cols-2" : "flex flex-wrap gap-2"}>
+              <button type="button" onClick={clearPromptChoices} className={`${isHero && compactPromptBuilder ? "rounded-xl px-3 py-2 text-left" : "rounded-full px-3 py-2"} border text-sm font-semibold transition ${!task && !selectedStyle && !selectedLighting && !selectedShot && prompt.length === 0 ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25 hover:text-white"}`}>
+                <span className="flex items-center justify-between gap-2"><span>Write my own</span>{!task && prompt.length === 0 && <span>✓</span>}</span>
+                {isHero && compactPromptBuilder && <span className="mt-1 block text-xs font-medium opacity-70">Start blank</span>}
+              </button>
               {visiblePromptTasks.map((item) => (
-                <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border px-3 py-2 text-xs font-bold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25 hover:text-white"}`}>
-                  {item.label}{task === item.label ? " ✓" : ""}
+                <button type="button" key={item.label} onClick={() => applyTask(item)} className={`${isHero && compactPromptBuilder ? "rounded-xl px-3 py-2 text-left" : "rounded-full px-3 py-2"} border text-sm font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25 hover:text-white"}`}>
+                  <span className="flex items-center justify-between gap-2"><span>{item.label}</span>{task === item.label && <span>✓</span>}</span>
+                  {isHero && compactPromptBuilder && <span className="mt-1 block text-xs font-medium opacity-70">{String(textTasks.find((taskItem) => taskItem.label === item.label)?.useCase || "Ready template")}</span>}
                 </button>
               ))}
+              {isHero && compactPromptBuilder && <a href="/generate" className="rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-sm font-semibold text-white/60 no-underline hover:border-white/25 hover:text-white">More options →</a>}
             </div>
           </div>
         )}
 
+
+
+        {isHero && compactPromptBuilder && mode === "text" && (
+          <div className="mt-4 space-y-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+            {compactOptionGroups.map((group) => (
+              <div key={group.label}>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">{group.label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.options.map((option) => (
+                    <button
+                      type="button"
+                      key={option}
+                      onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
+                      className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {mode === "text" && <div className={`${isHero ? "mt-3" : "mt-5"}`}>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Image size" : "Ratio"}</p>
             {isHero && <span className="text-xs font-semibold text-white/48">{currentQuote.sizeLabel} · {creditLabel}</span>}
           </div>
-          <div className={`${isHero ? "grid-cols-3 gap-1.5" : "grid-cols-4 gap-2"} grid`}>
+          <div className={`${isHero ? "grid-cols-4 gap-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
             {visibleRatios.map((item) => (
               <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-2 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25 hover:text-white"}`}>
                 <span className="block text-sm font-black leading-none">{item.label}</span>
@@ -772,7 +826,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               <PreviewHeadingTag className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
                 {mode === "edit" ? "Edit uploaded images with AI" : compactPromptBuilder ? "Generate AI images with ready-made prompts" : "Create AI images from ready prompts"}
               </PreviewHeadingTag>
-              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe the change you want, and compare the before-and-after result before downloading." : compactPromptBuilder ? "Write a prompt, choose a simple size, then generate. Use an example only if you do not want to start blank." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
+              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe the change you want, and compare the before-and-after result before downloading." : compactPromptBuilder ? "Pick a prompt, customize the style, lighting, shot, and size, then create a polished AI image in seconds." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
@@ -793,7 +847,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>{task ? `${task} preview` : "Your image will appear here"}</p><p className="mt-2 text-sm leading-6 text-white/68">{task ? `Example selected. You can edit the prompt or generate directly.` : "Write a prompt or choose one example on the left, then generate."}</p>{task && <p className="mt-3 inline-flex rounded-full border border-[#86EFAC]/25 bg-[#102014]/65 px-3 py-1 text-xs font-bold text-[#C8FADC]">Ready · {creditLabel}</p>}</div></div>}
+              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>{task ? `${task} preview` : "Start with a ready prompt"}</p><p className="mt-2 text-sm leading-6 text-white/68">{task ? `This template is set for ${currentQuote.sizeLabel}. Adjust the prompt or click Generate image when ready.` : "Pick a popular prompt on the left to fill the text, style, lighting, shot, and size automatically."}</p>{task && <p className="mt-3 inline-flex rounded-full border border-[#86EFAC]/25 bg-[#102014]/65 px-3 py-1 text-xs font-bold text-[#C8FADC]">Ready to generate · {creditLabel}</p>}</div></div>}
             </div>
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
