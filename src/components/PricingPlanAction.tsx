@@ -148,10 +148,10 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
   const label = !loaded ? cta : cta;
   const actionClass =
     emphasis === "featured"
-      ? "mt-7 w-full rounded-full bg-rsp-primary px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary shadow-[0_14px_28px_rgba(184,107,32,0.28)] transition hover:-translate-y-0.5 hover:opacity-95"
+      ? "mt-7 block w-full rounded-full bg-rsp-primary px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-on-primary shadow-[0_14px_28px_rgba(184,107,32,0.28)] transition hover:-translate-y-0.5 hover:opacity-95"
       : emphasis === "free"
-        ? "mt-7 w-full rounded-full border border-rsp-primary/45 bg-white px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#fff3de]"
-        : "mt-7 w-full rounded-full border border-rsp-primary/35 bg-[#fff7eb] px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#f3e4cd]";
+        ? "mt-7 block w-full rounded-full border border-rsp-primary/45 bg-white px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#fff3de]"
+        : "mt-7 block w-full rounded-full border border-rsp-primary/35 bg-[#fff7eb] px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#f3e4cd]";
 
   return <Link href={href} className={actionClass}>{label}</Link>;
 }
