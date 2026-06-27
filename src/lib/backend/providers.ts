@@ -43,6 +43,7 @@ function falQueueRequestModel(model = falModel()) {
   // the model family route. Match that family route for polling existing jobs.
   if (model.startsWith("fal-ai/flux-pro/")) return "fal-ai/flux-pro";
   if (model.startsWith("fal-ai/flux/")) return "fal-ai/flux";
+  if (model.startsWith("fal-ai/nano-banana-pro/")) return "fal-ai/nano-banana-pro";
   return model;
 }
 
