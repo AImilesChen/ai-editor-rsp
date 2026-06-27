@@ -158,7 +158,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
     return {
       prompt: enrichedPrompt,
       image_urls: [input.imageDataUrl],
-      aspect_ratio: isHeadshotEdit ? "3:4" : ratioToFalAspectRatio(input.ratio),
+      aspect_ratio: ratioToFalAspectRatio(input.ratio),
       num_images: 1,
       output_format: "jpeg",
       safety_tolerance: process.env.FAL_NANO_BANANA_SAFETY_TOLERANCE || "4",

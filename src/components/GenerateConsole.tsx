@@ -159,6 +159,25 @@ function stripBuilderNotes(prompt: string) {
     .trim();
 }
 
+function aspectFromRatio(ratio?: string) {
+  switch (ratio) {
+    case "1:1":
+      return 1;
+    case "3:4":
+    case "4:5":
+      return 3 / 4;
+    case "4:3":
+    case "5:4":
+      return 4 / 3;
+    case "9:16":
+      return 9 / 16;
+    case "16:9":
+      return 16 / 9;
+    default:
+      return null;
+  }
+}
+
 export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, defaultPreset, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const PreviewHeadingTag = previewHeadingLevel;
@@ -197,7 +216,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const imageForQuote = isHeadshotMode ? imageForRequest || "data:image/png;base64," : imageForRequest;
   const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForQuote, style: task }), [ratio, imageForQuote, task]);
   const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
-  const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
+  const editPreviewAspect = isHeadshotMode ? aspectFromRatio(currentQuote.ratio) || (3 / 4) : uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = isHeadshotMode
     ? "Optional: add outfit, background, or lighting details. Leave blank to use the default professional headshot prompt."
     : mode === "edit"
@@ -218,9 +237,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     { kind: "lighting" as const, label: "Lighting", options: lightingOptions.slice(0, 4), value: selectedLighting, setter: setSelectedLighting },
     { kind: "shot" as const, label: "Shot", options: shotOptions.slice(0, 4), value: selectedShot, setter: setSelectedShot },
   ];
-  const visibleRatios = isHero && compactPromptBuilder
+  const visibleRatios = isHeadshotMode
     ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
-    : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
+    : isHero && compactPromptBuilder
+      ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
+      : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
   const showHeadshotSteps = mode === "edit" && isHeadshotMode;
   const showEditAreaControls = mode === "edit" && !isHeadshotMode && (uploadedImage || !isHero);
   const quoteForRatio = (nextRatio: string) => quoteGenerationCredits({ ratio: nextRatio, imageDataUrl: imageForRequest || "data:image/png;base64,", style: task }).creditsCharged;
@@ -601,14 +622,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               <span className="text-[11px] font-semibold text-white/45">{currentQuote.sizeLabel}</span>
             </div>
             <div className={`grid ${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"}`}>
-              {visibleRatios.map((item) => (
-                <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
-                  <span className="block">{item.label}</span>
-                  {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{quoteForRatio(item.ratio)} credits</span>}
-                </button>
-              ))}
+              {visibleRatios.map((item) => {
+                const ratioCredits = quoteForRatio(item.ratio);
+                const isRecommendedHeadshotRatio = isHeadshotMode && item.ratio === "3:4";
+                return (
+                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
+                    <span className="block">{item.label}</span>
+                    {(isHeadshotMode || !isHero) && <span className="mt-1 block font-mono text-[10px] opacity-75">{isRecommendedHeadshotRatio ? "Recommended · " : ""}{ratioCredits} cr</span>}
+                  </button>
+                );
+              })}
             </div>
-            {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">{isHeadshotMode ? "Professional headshot uses a stronger photo edit model and starts at 4 credits." : "Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels."}</p>}
+            {(isHeadshotMode || !isHero) && (
+              <p className="mt-2 text-xs leading-5 text-white/50">{isHeadshotMode ? `Selected output: ${currentQuote.sizeLabel}. The generated file will use ${currentQuote.ratio} and charge ${currentQuote.creditsCharged} credits.` : "Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels."}</p>
+            )}
           </div>
         )}
 
@@ -879,7 +906,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div className="grid gap-2 text-xs leading-5 text-white/68 sm:grid-cols-2 xl:grid-cols-4">
               {[
                 ["1", uploadedImage ? "Photo uploaded" : "Upload your photo"],
-                ["2", "Portrait 3:4 selected"],
+                ["2", `${currentQuote.ratio} selected`],
                 ["3", "Optional outfit or background details"],
                 ["4", `Create result · ${currentQuote.creditsCharged} credits`],
               ].map(([step, label]) => (
