@@ -635,7 +635,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? "min-h-[76px] p-3 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[76px] p-3 text-sm leading-6") : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
         />
         {isHeadshotMode && uploadedImage && (
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
@@ -708,7 +708,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {!authenticated
             ? "3 free credits after sign-in. No payment required. Credits are used only when you generate or edit an image."
             : needsUpload
-              ? "Upload a reference image first, or switch to Create from Text."
+              ? isHeadshotOnly
+                ? "Upload a face photo first to start the professional headshot flow."
+                : "Upload a reference image first, or switch to Create from Text."
               : creditsRemaining < currentQuote.creditsCharged
                 ? `This request needs ${currentQuote.creditsCharged} credits. You have ${creditsRemaining} credits.`
                 : isHeadshotMode
