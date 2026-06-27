@@ -555,25 +555,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {showHeadshotSteps && (
-          <div className="mb-3 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/35 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#C8FADC]">Professional headshot flow</p>
-            <div className="grid gap-2 text-xs leading-5 text-white/68">
-              {[
-                ["1", uploadedImage ? "Photo uploaded" : "Upload your photo"],
-                ["2", "Portrait 3:4 selected"],
-                ["3", "Optional outfit or background details"],
-                ["4", `Create result · ${currentQuote.creditsCharged} credits`],
-              ].map(([step, label]) => (
-                <div key={step} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/16 px-3 py-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#86EFAC] text-[11px] font-black text-[#102014]">{step}</span>
-                  <span>{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {mode === "edit" && (
           <>
             <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
@@ -860,6 +841,27 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.035] text-xs text-white/52 md:flex-row md:items-center md:justify-between`}>
             <span>{mode === "edit" ? "Generate an edit before downloading." : "Your generated image will appear here after you choose a prompt and size."}</span>
             <span className="rounded-full border border-white/10 px-4 py-2 font-bold text-white/35">Download result</span>
+          </div>
+        )}
+        {showHeadshotSteps && (
+          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto max-w-5xl rounded-2xl border border-[#86EFAC]/18 bg-[#102014]/28`}>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C8FADC]">Professional headshot flow</p>
+              <p className="text-xs text-white/50">Built for LinkedIn, resume, and business profile photos.</p>
+            </div>
+            <div className="grid gap-2 text-xs leading-5 text-white/68 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                ["1", uploadedImage ? "Photo uploaded" : "Upload your photo"],
+                ["2", "Portrait 3:4 selected"],
+                ["3", "Optional outfit or background details"],
+                ["4", `Create result · ${currentQuote.creditsCharged} credits`],
+              ].map(([step, label]) => (
+                <div key={step} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/16 px-3 py-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#86EFAC] text-[11px] font-black text-[#102014]">{step}</span>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </section>
