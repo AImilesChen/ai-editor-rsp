@@ -22,31 +22,43 @@ const headshotPrompts = [
     title: "LinkedIn professional headshot",
     description: "A polished profile photo with confident expression, clean business outfit, soft studio lighting, and neutral office background.",
     keyword: "LinkedIn headshot generator",
+    image: "/images/headshot-examples/linkedin-professional-headshot.webp",
+    imageAlt: "LinkedIn professional AI headshot example generated from a casual profile photo",
   },
   {
     title: "Corporate team profile photo",
     description: "Consistent company bio style with natural skin tone, professional blazer, bright background, and trustworthy business portrait framing.",
     keyword: "corporate headshot generator",
+    image: "/images/headshot-examples/corporate-team-profile-photo.webp",
+    imageAlt: "Corporate AI headshot example for a company team profile photo",
   },
   {
     title: "Resume and CV headshot",
     description: "Clean front-facing professional portrait suitable for resume, CV, portfolio, and job application profile photos.",
     keyword: "AI resume photo generator",
+    image: "/images/headshot-examples/resume-cv-headshot.webp",
+    imageAlt: "AI resume photo generator example with a clean professional headshot",
   },
   {
     title: "Founder or consultant portrait",
     description: "Executive-style headshot with premium lighting, subtle depth of field, approachable smile, and confident business presence.",
     keyword: "business portrait generator",
+    image: "/images/headshot-examples/founder-consultant-portrait.webp",
+    imageAlt: "Business portrait generator example for a founder or consultant profile",
   },
   {
     title: "White background profile photo",
     description: "Simple high-contrast professional profile image with white or light gray background for directories and company pages.",
     keyword: "professional profile picture maker",
+    image: "/images/headshot-examples/white-background-profile-photo.webp",
+    imageAlt: "Professional profile picture maker example with a clean light background",
   },
   {
     title: "Studio business headshot",
     description: "Modern studio portrait with realistic facial details, sharp eyes, balanced lighting, and polished professional styling.",
     keyword: "AI professional photo generator",
+    image: "/images/headshot-examples/studio-business-headshot.webp",
+    imageAlt: "AI professional photo generator studio business headshot example",
   },
 ];
 
@@ -162,15 +174,36 @@ export default function ImageEditorPage() {
               </p>
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {headshotPrompts.map((item) => (
-                <article key={item.title} className="flex min-h-[220px] flex-col rounded-[28px] border border-rsp-border bg-white p-5 shadow-[0_18px_42px_rgba(46,32,18,0.07)]">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-rsp-terracotta">{item.keyword}</p>
-                  <h3 className="mt-3 text-xl font-semibold tracking-[-0.02em] text-rsp-text">{item.title}</h3>
-                  <p className="mt-3 flex-1 text-sm leading-6 text-rsp-muted">{item.description}</p>
-                  <Link href="#headshot-upload" className="mt-5 inline-flex w-fit rounded-full border border-rsp-border px-4 py-2 text-sm font-bold text-rsp-text no-underline transition hover:border-rsp-terracotta hover:text-rsp-terracotta">
-                    Use this style ↑
-                  </Link>
+            <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {headshotPrompts.map((item, index) => (
+                <article key={item.title} className="group flex overflow-hidden rounded-[30px] border border-rsp-border bg-white shadow-[0_18px_42px_rgba(46,32,18,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_54px_rgba(46,32,18,0.11)]">
+                  <div className="flex w-full flex-col">
+                    <div className="relative m-3 overflow-hidden rounded-[24px] bg-[#EDE3D8]">
+                      <img
+                        src={item.image}
+                        alt={item.imageAlt}
+                        width={1024}
+                        height={1280}
+                        loading={index < 3 ? "eager" : "lazy"}
+                        className="aspect-[4/5] h-auto w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      />
+                      <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-text shadow-[0_8px_18px_rgba(46,32,18,0.12)]">
+                        Example result
+                      </div>
+                      <div className="absolute bottom-3 left-3 right-3 rounded-2xl border border-white/45 bg-[#1E1711]/72 p-3 text-white shadow-[0_14px_30px_rgba(30,23,17,0.22)] backdrop-blur">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#86EFAC]">Generated headshot style</p>
+                        <p className="mt-1 text-sm font-semibold leading-5">{item.title}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-1 flex-col p-5 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-rsp-terracotta">{item.keyword}</p>
+                      <h3 className="mt-3 text-xl font-semibold tracking-[-0.02em] text-rsp-text">{item.title}</h3>
+                      <p className="mt-3 flex-1 text-sm leading-6 text-rsp-muted">{item.description}</p>
+                      <Link href="#headshot-upload" className="mt-5 inline-flex w-fit rounded-full border border-rsp-border px-4 py-2 text-sm font-bold text-rsp-text no-underline transition hover:border-rsp-terracotta hover:text-rsp-terracotta">
+                        Use this style ↑
+                      </Link>
+                    </div>
+                  </div>
                 </article>
               ))}
             </div>
