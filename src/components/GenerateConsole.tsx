@@ -208,6 +208,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [editRegion, setEditRegion] = useState<EditRegion | null>(null);
   const [regionStart, setRegionStart] = useState<{ x: number; y: number } | null>(null);
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
+  const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
 
   const activeTasks = mode === "edit" ? editTasks : textTasks;
   const headshotPrompt = editTasks[0].prompt;
@@ -242,6 +243,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     : isHero && compactPromptBuilder
       ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
       : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
+  const primaryHeadshotRatios = visibleRatios.filter((item) => ["3:4", "1:1", "4:5"].includes(item.ratio));
+  const advancedHeadshotRatios = visibleRatios.filter((item) => !["3:4", "1:1", "4:5"].includes(item.ratio));
+  const displayedEditRatios = isHeadshotMode ? primaryHeadshotRatios : visibleRatios;
   const showHeadshotSteps = mode === "edit" && isHeadshotMode;
   const showEditAreaControls = mode === "edit" && !isHeadshotMode && (uploadedImage || !isHero);
 
@@ -615,24 +619,38 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         {mode === "edit" && (
-          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
-            <div className="mb-3 flex items-center justify-between gap-2">
+          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-2.5`}>
+            <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-white/78">Image size</p>
-              {isHeadshotMode && <span className="rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-xs font-semibold text-[#C8FADC]">3:4 best</span>}
+              {isHeadshotMode && <span className="text-xs font-semibold text-white/48">{currentQuote.sizeLabel}</span>}
             </div>
-            <div className={`grid ${isHero ? "grid-cols-3 gap-2" : "grid-cols-4 gap-2"}`}>
-              {visibleRatios.map((item) => {
+            <div className={`grid ${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"}`}>
+              {displayedEditRatios.map((item) => {
                 const isRecommendedHeadshotRatio = isHeadshotMode && item.ratio === "3:4";
                 return (
-                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-2.5" : "py-3"} text-center transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/72 hover:border-white/25 hover:text-white"}`}>
+                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-2" : "py-2.5"} text-center transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/72 hover:border-white/25 hover:text-white"}`}>
                     <span className="block text-base font-black leading-none tracking-[-0.01em]">{item.label}</span>
-                    {isRecommendedHeadshotRatio && <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.08em] opacity-75">Best</span>}
+                    {isRecommendedHeadshotRatio && <span className="mt-0.5 block text-[9px] font-black uppercase tracking-[0.08em] opacity-75">Best</span>}
                   </button>
                 );
               })}
+              {isHeadshotMode && (
+                <button type="button" onClick={() => setShowMoreHeadshotRatios((value) => !value)} className="rounded-xl border border-white/10 bg-white/[0.025] px-2 py-2 text-center text-xs font-bold text-white/58 transition hover:border-white/25 hover:text-white">
+                  {showMoreHeadshotRatios ? "Less" : "More"}
+                </button>
+              )}
             </div>
-            {(isHeadshotMode || !isHero) && (
-              <p className="mt-3 rounded-xl border border-white/10 bg-black/16 px-3 py-2 text-sm font-semibold leading-5 text-white/76">{isHeadshotMode ? `${currentQuote.sizeLabel} · ${currentQuote.creditsCharged} credits` : "Auto keeps the source feel. Square and landscape sizes may use more credits."}</p>
+            {isHeadshotMode && showMoreHeadshotRatios && (
+              <div className="mt-2 grid grid-cols-4 gap-1.5">
+                {advancedHeadshotRatios.map((item) => (
+                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-lg border px-2 py-1.5 text-center text-xs font-bold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/12 text-white/58 hover:border-white/25 hover:text-white"}`}>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {!isHeadshotMode && !isHero && (
+              <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel. Square and landscape sizes may use more credits.</p>
             )}
           </div>
         )}
@@ -714,6 +732,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </div>}
 
         <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
+          {isHeadshotMode && (
+            <p className="rounded-2xl border border-[#86EFAC]/16 bg-[#102014]/35 px-3 py-2 text-center text-xs font-semibold text-[#C8FADC]">
+              Current output: {currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits
+            </p>
+          )}
           {authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
@@ -896,23 +919,39 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
         {showHeadshotSteps && (
-          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto max-w-5xl rounded-2xl border border-[#86EFAC]/18 bg-[#102014]/28`}>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C8FADC]">Professional headshot flow</p>
-              <p className="text-xs text-white/50">Built for LinkedIn, resume, and business profile photos.</p>
+          <div className={`${isHero ? "mt-3" : "mt-4"} mx-auto grid max-w-5xl gap-3 lg:grid-cols-[1.15fr_.85fr]`}>
+            <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-[#86EFAC]/18 bg-[#102014]/24`}>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C8FADC]">Headshot flow</p>
+                <p className="text-xs text-white/45">LinkedIn · resume · profile</p>
+              </div>
+              <div className="grid gap-1.5 text-xs leading-5 text-white/66 sm:grid-cols-2">
+                {[
+                  ["1", uploadedImage ? "Photo uploaded" : "Upload photo"],
+                  ["2", `${currentQuote.ratio} output`],
+                  ["3", "Optional details"],
+                  ["4", `${currentQuote.creditsCharged} credits`],
+                ].map(([step, label]) => (
+                  <div key={step} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/14 px-3 py-1.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#86EFAC] text-[10px] font-black text-[#102014]">{step}</span>
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid gap-2 text-xs leading-5 text-white/68 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["1", uploadedImage ? "Photo uploaded" : "Upload your photo"],
-                ["2", `${currentQuote.ratio} selected`],
-                ["3", "Optional outfit or background details"],
-                ["4", `Create result · ${currentQuote.creditsCharged} credits`],
-              ].map(([step, label]) => (
-                <div key={step} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/16 px-3 py-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#86EFAC] text-[11px] font-black text-[#102014]">{step}</span>
-                  <span>{label}</span>
-                </div>
-              ))}
+            <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-white/10 bg-white/[0.035]`}>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/68">Best results checklist</p>
+                <span className="text-xs text-[#C8FADC]">Photo tips</span>
+              </div>
+              <div className="grid gap-1.5 text-xs leading-5 text-white/62 sm:grid-cols-2 lg:grid-cols-1">
+                {["Clear front-facing photo", "Good lighting, no sunglasses", "Face not heavily filtered", "Simple background works best"].map((tip) => (
+                  <div key={tip} className="flex items-center gap-2 rounded-xl bg-black/14 px-3 py-1.5">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#86EFAC]" />
+                    <span>{tip}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
