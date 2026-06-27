@@ -69,7 +69,7 @@ export default function CookieConsentBanner() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:right-auto sm:top-auto sm:px-0 sm:pb-0" role="region" aria-label="Cookie consent">
+    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:bottom-auto sm:right-5 sm:top-24 sm:left-auto sm:px-0 sm:pb-0" role="region" aria-label="Cookie consent">
       <div className={`ml-auto rounded-[20px] border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_18px_54px_rgba(69,42,16,0.18)] backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-sm"}`}>
         <div className="grid gap-2">
           <div>
