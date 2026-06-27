@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
-  const quote = quoteGenerationCredits({ ratio: body.ratio, imageDataUrl: body.imageDataUrl });
+  const quote = quoteGenerationCredits({ ratio: body.ratio, imageDataUrl: body.imageDataUrl, style: body.style });
   if (["refund_requested", "refunded", "disputed"].includes(billingAccount.subscriptionStatus)) {
     const response = NextResponse.json({
       ok: false,

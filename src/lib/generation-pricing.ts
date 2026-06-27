@@ -43,14 +43,18 @@ function generationSizeLabel(requestedRatio: string, imageSize: GenerationQuote[
   return `Landscape ${requestedRatio}`;
 }
 
-export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: string | null }): GenerationQuote {
+export function isProfessionalHeadshotStyle(style?: string | null) {
+  return String(style || "").trim().toLowerCase() === "professional headshot";
+}
+
+export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: string | null; style?: string | null }): GenerationQuote {
   const requestedRatio = input.ratio || "4:5";
   const ratio = normalizeGenerationRatio(requestedRatio);
   const mode = input.imageDataUrl ? "image-to-image" : "text-to-image";
   const imageSize = ratioToImageSize(ratio);
   const isSmallSize = imageSize === "portrait_4_3" || imageSize === "landscape_4_3";
   const sizeMultiplier: 1 | 2 = isSmallSize ? 1 : 2;
-  const baseCredits = mode === "image-to-image" ? 2 : 1;
+  const baseCredits = isProfessionalHeadshotStyle(input.style) && mode === "image-to-image" ? 4 : mode === "image-to-image" ? 2 : 1;
   return {
     ratio,
     requestedRatio,

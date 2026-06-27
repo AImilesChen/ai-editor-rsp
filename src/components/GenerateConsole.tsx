@@ -193,7 +193,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const headshotPrompt = editTasks[0].prompt;
   const isHeadshotMode = mode === "edit" && task === "Professional headshot";
   const imageForRequest = mode === "edit" ? (isHeadshotMode ? headshotReferenceImage || uploadedImage : uploadedImage) : null;
-  const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest }), [ratio, imageForRequest]);
+  const currentQuote = useMemo(() => quoteGenerationCredits({ ratio, imageDataUrl: imageForRequest, style: task }), [ratio, imageForRequest, task]);
   const previewImage = task ? previewImages[task] || "/images/generated/lofi-girl-vibes.webp" : "/images/generated/lofi-girl-vibes.webp";
   const editPreviewAspect = uploadedAspect ? Math.min(1.8, Math.max(0.56, uploadedAspect)) : (16 / 9);
   const promptPlaceholder = isHeadshotMode
@@ -219,6 +219,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const visibleRatios = isHero && compactPromptBuilder
     ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
     : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
+  const showHeadshotSteps = mode === "edit" && isHeadshotMode;
+  const showEditAreaControls = mode === "edit" && !isHeadshotMode && (uploadedImage || !isHero);
+  const quoteForRatio = (nextRatio: string) => quoteGenerationCredits({ ratio: nextRatio, imageDataUrl: imageForRequest || "data:image/png;base64,", style: task }).creditsCharged;
 
   useEffect(() => {
     fetch("/api/session")
@@ -509,8 +512,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   return (
-    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[480px_minmax(0,1fr)]" : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
-      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-[820px] xl:overflow-y-auto xl:overscroll-contain" : "p-4 md:p-5"}`}>
+    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-none" : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
@@ -551,6 +554,25 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
+        {showHeadshotSteps && (
+          <div className="mb-3 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/35 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#C8FADC]">Professional headshot flow</p>
+            <div className="grid gap-2 text-xs leading-5 text-white/68">
+              {[
+                ["1", uploadedImage ? "Photo uploaded" : "Upload your photo"],
+                ["2", "Portrait 3:4 selected"],
+                ["3", "Optional outfit or background details"],
+                ["4", `Create result · ${currentQuote.creditsCharged} credits`],
+              ].map(([step, label]) => (
+                <div key={step} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/16 px-3 py-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#86EFAC] text-[11px] font-black text-[#102014]">{step}</span>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {mode === "edit" && (
           <>
             <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
@@ -575,15 +597,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {visibleRatios.map((item) => (
                 <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
                   <span className="block">{item.label}</span>
-                  {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{item.imageCredits} cr</span>}
+                  {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{quoteForRatio(item.ratio)} credits</span>}
                 </button>
               ))}
             </div>
-            {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
+            {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">{isHeadshotMode ? "Professional headshot uses a stronger photo edit model and starts at 4 credits." : "Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels."}</p>}
           </div>
         )}
 
-        {mode === "edit" && (uploadedImage || !isHero) && (
+        {showEditAreaControls && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose edit area</p>
@@ -663,7 +685,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && task === "Professional headshot" ? `Generate headshot (${currentQuote.creditsCharged} cr)` : mode === "edit" ? `Generate edit (${currentQuote.creditsCharged} cr)` : `Generate image (${currentQuote.creditsCharged} cr)`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Add a prompt to generate") : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
               </button>
               <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
                 View generation history
@@ -682,13 +704,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               ? "Upload a reference image first, or switch to Create from Text."
               : creditsRemaining < currentQuote.creditsCharged
                 ? `This request needs ${currentQuote.creditsCharged} credits. You have ${creditsRemaining} credits.`
-                : mode === "edit"
-                  ? `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
+                : isHeadshotMode
+                  ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
+                  : mode === "edit"
+                    ? `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
                   : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`}
         </p>
       </aside>
 
-      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5" : "min-h-[500px] p-3 md:p-5") : "min-h-[520px] p-4 md:p-6"}`}>
+      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : "min-h-[520px] p-4 md:p-6"}`}>
         <div className={`${isHero ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
@@ -711,7 +735,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         </div>}
 
-        <div className={`${isHero ? "mt-2" : "mt-6"} mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
+        <div className={`${isHero ? "mt-2" : "mt-6"} mx-auto max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
             <div className={`relative ${isHero ? "aspect-[16/6.8]" : "aspect-[16/8.5]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
               <img src={generatedImage || previewImage} alt="Generated image preview" className={`h-full w-full object-cover transition ${generatedImage ? "brightness-105 contrast-105 saturate-110" : "scale-[1.02] opacity-45 brightness-75 saturate-75"}`} draggable={false} />
@@ -723,10 +747,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-white/12 bg-black/58 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Your generated image will appear here</p><p className="mt-2 text-sm leading-6 text-white/68">Choose a prompt and size, then generate your result. The background is only a muted example.</p></div></div>}
             </div>
           ) : uploadedImage ? (
-            <div className={`relative flex ${isHero ? "min-h-[560px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
+            <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
               <div
-                className={`${generatedImage ? "cursor-ew-resize" : editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(70vh,680px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
-                style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(70vh,680px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
+                className={`${generatedImage ? "cursor-ew-resize" : editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(76vh,760px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
+                style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(76vh,760px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
                 role={generatedImage ? "slider" : editScope === "selected" ? "application" : undefined}
                 aria-label={generatedImage ? "Drag to compare before and after edit" : editScope === "selected" ? "Draw edit area on uploaded image" : undefined}
                 aria-valuemin={generatedImage ? 12 : undefined}
@@ -750,7 +774,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                   </div>
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/6" />
-                {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">After · generated result</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
+                {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">{isHeadshotMode ? "After · professional headshot" : "After · generated result"}</span><span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/62 px-4 py-1.5 text-xs font-bold text-white/85 shadow-lg backdrop-blur-sm">Drag to compare before / after</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
                 {!generatedImage && editScope === "selected" && editRegion && (
                   <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
                 )}

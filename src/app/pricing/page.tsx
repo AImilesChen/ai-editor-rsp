@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const pricingFaq = [
   ["How do free credits work?", "You get 3 free credits after sign-in. No payment is required to try the generator."],
-  ["What uses credits?", "Credits are used when you generate or edit an image. Portrait text-to-image starts at 1 credit, while larger sizes or uploaded-image edits may use more credits."],
+  ["What uses credits?", "Credits are used when you generate or edit an image. Portrait text-to-image starts at 1 credit, regular uploaded-image edits start at 2 credits, and professional headshots start at 4 credits."],
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
   ["Can I get a refund?", "Self-service refunds are available within 7 days of purchase if no more than 20% of paid credits from that billing period have been used. A confirmed refund revokes paid-plan credits but preserves any unused one-time free signup credits."],
@@ -161,10 +161,11 @@ export default function PricingPage() {
                 The plan cards stay first so you can compare price and quota quickly. Details are grouped here after the decision area.
               </p>
             </div>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-4">
               <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">1 credit</strong>Portrait text-to-image</div>
-              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">2 credits</strong>Square or landscape text-to-image, or portrait image edit</div>
-              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">4 credits</strong>Square or landscape image edit</div>
+              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">2 credits</strong>Square or landscape text-to-image, or regular portrait image edit</div>
+              <div className="rounded-[24px] border border-rsp-border bg-[#fff4e3] p-5 text-sm leading-6 text-rsp-muted shadow-sm"><strong className="block text-rsp-text">4 credits</strong>Professional headshot with uploaded photo</div>
+              <div className="rounded-[24px] border border-rsp-border bg-white/75 p-5 text-sm leading-6 text-rsp-muted"><strong className="block text-rsp-text">4+ credits</strong>Larger uploaded-image edits</div>
             </div>
           </div>
 
