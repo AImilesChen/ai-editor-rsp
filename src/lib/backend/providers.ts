@@ -1,5 +1,5 @@
 import { providerSafetyOptions, safePromptInstruction } from "@/lib/backend/safety";
-import { ratioToImageSize } from "@/lib/generation-pricing";
+import { normalizeGenerationRatio, ratioToImageSize } from "@/lib/generation-pricing";
 
 const FAL_QUEUE_BASE = "https://queue.fal.run";
 
@@ -51,11 +51,27 @@ function falImageToImageModel() {
 }
 
 function falHeadshotModel() {
-  return process.env.FAL_HEADSHOT_IMAGE_MODEL || process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/flux/dev/image-to-image";
+  // GPT Image 2 on fal.ai is currently text-to-image only. For uploaded-photo
+  // professional headshots we need an edit endpoint that accepts reference
+  // images, so default headshots to Nano Banana Pro Edit while keeping the env
+  // override for future provider changes.
+  return process.env.FAL_HEADSHOT_IMAGE_MODEL || process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/nano-banana-pro/edit";
 }
 
 function isHeadshotInput(input: GenerateRequest) {
   return Boolean(input.imageDataUrl && input.style === "Professional headshot");
+}
+
+function isFalGptImage2Model(model: string) {
+  return model === "fal-ai/gpt-image-2" || model === "openai/gpt-image-2" || model.endsWith("/gpt-image-2");
+}
+
+function isNanoBananaEditModel(model: string) {
+  return model.includes("nano-banana") && model.endsWith("/edit");
+}
+
+function ratioToFalAspectRatio(ratio?: string) {
+  return ratio === "auto" ? "3:4" : normalizeGenerationRatio(ratio);
 }
 
 function submitModel(input: GenerateRequest) {
@@ -127,6 +143,32 @@ export function buildFalRequestBody(input: GenerateRequest) {
   };
 
   if (!input.imageDataUrl) return baseBody;
+
+  if (isFalGptImage2Model(model)) {
+    // fal.ai GPT Image 2 is text-to-image only in the current OpenAPI schema;
+    // it does not accept reference images. Do not send image_urls/image_url here.
+    return {
+      ...baseBody,
+      quality: process.env.FAL_GPT_IMAGE_2_QUALITY || "medium",
+    };
+  }
+
+  if (isNanoBananaEditModel(model)) {
+    return {
+      prompt: enrichedPrompt,
+      image_urls: [input.imageDataUrl],
+      aspect_ratio: isHeadshotEdit ? "3:4" : ratioToFalAspectRatio(input.ratio),
+      num_images: 1,
+      output_format: "jpeg",
+      safety_tolerance: process.env.FAL_NANO_BANANA_SAFETY_TOLERANCE || "4",
+      resolution: process.env.FAL_NANO_BANANA_RESOLUTION || "1K",
+      sync_mode: false,
+      limit_generations: true,
+      system_prompt: isHeadshotEdit
+        ? "You are an expert professional headshot retoucher. Preserve the uploaded person's identity while replacing clothing, background, and framing for a realistic business portrait. Never preserve bags, full-body pose, hands, street scenery, trees, or outdoor background when a professional headshot is requested."
+        : "",
+    };
+  }
 
   return usesKontext
     ? {

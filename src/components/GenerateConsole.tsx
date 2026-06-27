@@ -171,7 +171,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
   const [selectedShot, setSelectedShot] = useState<string | null>(null);
-  const [ratio, setRatio] = useState(initialMode === "text" ? "" : "auto");
+  const [ratio, setRatio] = useState(initialMode === "text" ? "" : defaultPreset === "headshot" ? "3:4" : "auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
   const [creditsRemaining, setCreditsRemaining] = useState(0);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -243,7 +243,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setMode("edit");
       setTask(matchedPrompt?.title || headshotTask.label);
       setPrompt(matchedPrompt?.prompt || promptParam || "");
-      setRatio("auto");
+      setRatio("3:4");
       return;
     }
 
