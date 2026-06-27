@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GenerateConsole from "@/components/GenerateConsole";
-import ReferenceEditExplainer from "@/components/ReferenceEditExplainer";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "AI Image Editor — AI Editor RSP",
-  description: "Upload a photo to create a professional headshot, or switch to a simple custom AI image edit.",
+  title: "Professional Headshot Generator — AI Editor RSP",
+  description: "Upload your photo and generate a polished professional headshot for LinkedIn, resumes, and business profiles.",
   alternates: { canonical: `${SITE_URL}/image-editor` },
 };
 
@@ -25,7 +24,7 @@ export default function ReferenceEditPage() {
                 Upload a photo. Create a professional headshot.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-rsp-muted md:text-base">
-                Choose Professional Headshot, upload your photo, then generate. Use Custom Edit when you want a different image change.
+                A focused headshot flow: upload your photo, keep 3:4 portrait framing, add optional outfit or background details, then generate.
               </p>
             </div>
 
@@ -38,8 +37,6 @@ export default function ReferenceEditPage() {
             </p>
           </div>
         </section>
-
-        <ReferenceEditExplainer />
       </main>
       <Footer />
     </>

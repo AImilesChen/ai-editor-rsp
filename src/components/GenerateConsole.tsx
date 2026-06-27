@@ -164,6 +164,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const PreviewHeadingTag = previewHeadingLevel;
   const isHero = variant === "hero";
   const initialMode = lockedMode || defaultMode;
+  const isHeadshotOnly = lockedMode === "edit" && defaultPreset === "headshot";
   const defaultHeadshotTask = defaultPreset === "headshot" ? editTasks[0] : null;
   const [mode, setMode] = useState<"edit" | "text">(initialMode);
   const [prompt, setPrompt] = useState("");
@@ -245,6 +246,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     if (lockedMode === "edit") {
       const headshotTask = editTasks[0];
       setMode("edit");
+      if (isHeadshotOnly || presetParam === "headshot") {
+        setTask(headshotTask.label);
+        setPrompt("");
+        setRatio("3:4");
+        setEditScope("whole");
+        setEditRegion(null);
+        return;
+      }
       setTask(matchedPrompt?.title || headshotTask.label);
       setPrompt(matchedPrompt?.prompt || promptParam || "");
       setRatio("3:4");
@@ -261,7 +270,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setTask(null);
     setPrompt(promptParam || "");
     setRatio("4:5");
-  }, [lockedMode]);
+  }, [lockedMode, isHeadshotOnly]);
 
   const switchMode = (nextMode: "edit" | "text") => {
     if (lockedMode && nextMode !== lockedMode) return;
@@ -279,6 +288,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   const applyTask = (item: { label: string; prompt: string }) => {
+    if (isHeadshotOnly && item.label !== "Professional headshot") return;
     setTask(item.label);
     setPrompt(item.label === "Professional headshot" ? "" : composeTextPrompt(item.prompt, selectedStyle, selectedLighting, selectedShot));
     if (mode === "edit" && item.label === "Professional headshot") {
@@ -289,6 +299,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   const clearPromptChoices = () => {
+    if (isHeadshotOnly) {
+      setTask(editTasks[0].label);
+      setPrompt("");
+      setRatio("3:4");
+      setEditScope("whole");
+      setEditRegion(null);
+      return;
+    }
     setTask(null);
     setSelectedStyle(null);
     setSelectedLighting(null);
@@ -539,7 +557,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         </div>}
 
-        {mode === "edit" && isHero && lockedMode === "edit" && (
+        {isHeadshotOnly && (
+          <div className="mb-3 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/35 p-3 text-xs leading-5 text-[#C8FADC]">
+            <p className="font-semibold uppercase tracking-[0.16em]">Professional headshot only</p>
+            <p className="mt-1 text-white/58">Upload a face photo, keep 3:4 portrait framing, and generate a business-ready profile image.</p>
+          </div>
+        )}
+
+        {mode === "edit" && isHero && lockedMode === "edit" && !isHeadshotOnly && (
           <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.035] p-2.5">
             <p className={`${uploadedImage ? "sr-only" : "mb-2"} text-xs font-semibold uppercase tracking-[0.16em] text-white/70`}>Choose a simple mode</p>
             <div className="grid gap-2 sm:grid-cols-2">
