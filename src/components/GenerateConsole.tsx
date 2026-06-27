@@ -244,7 +244,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       : GENERATION_RATIOS.filter((item) => mode === "edit" || item.ratio !== "auto");
   const showHeadshotSteps = mode === "edit" && isHeadshotMode;
   const showEditAreaControls = mode === "edit" && !isHeadshotMode && (uploadedImage || !isHero);
-  const quoteForRatio = (nextRatio: string) => quoteGenerationCredits({ ratio: nextRatio, imageDataUrl: imageForRequest || "data:image/png;base64,", style: task }).creditsCharged;
 
   useEffect(() => {
     fetch("/api/session")
@@ -617,24 +616,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         {mode === "edit" && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose image size</p>
-              <span className="text-[11px] font-semibold text-white/45">{currentQuote.sizeLabel}</span>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-white/78">Image size</p>
+              {isHeadshotMode && <span className="rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-xs font-semibold text-[#C8FADC]">3:4 best</span>}
             </div>
-            <div className={`grid ${isHero ? "grid-cols-4 gap-1.5" : "grid-cols-4 gap-2"}`}>
+            <div className={`grid ${isHero ? "grid-cols-3 gap-2" : "grid-cols-4 gap-2"}`}>
               {visibleRatios.map((item) => {
-                const ratioCredits = quoteForRatio(item.ratio);
                 const isRecommendedHeadshotRatio = isHeadshotMode && item.ratio === "3:4";
                 return (
-                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/25"}`}>
-                    <span className="block">{item.label}</span>
-                    {(isHeadshotMode || !isHero) && <span className="mt-1 block font-mono text-[10px] opacity-75">{isRecommendedHeadshotRatio ? "Recommended · " : ""}{ratioCredits} cr</span>}
+                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-2.5" : "py-3"} text-center transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/72 hover:border-white/25 hover:text-white"}`}>
+                    <span className="block text-base font-black leading-none tracking-[-0.01em]">{item.label}</span>
+                    {isRecommendedHeadshotRatio && <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.08em] opacity-75">Best</span>}
                   </button>
                 );
               })}
             </div>
             {(isHeadshotMode || !isHero) && (
-              <p className="mt-2 text-xs leading-5 text-white/50">{isHeadshotMode ? `Selected output: ${currentQuote.sizeLabel}. The generated file will use ${currentQuote.ratio} and charge ${currentQuote.creditsCharged} credits.` : "Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels."}</p>
+              <p className="mt-3 rounded-xl border border-white/10 bg-black/16 px-3 py-2 text-sm font-semibold leading-5 text-white/76">{isHeadshotMode ? `${currentQuote.sizeLabel} · ${currentQuote.creditsCharged} credits` : "Auto keeps the source feel. Square and landscape sizes may use more credits."}</p>
             )}
           </div>
         )}
