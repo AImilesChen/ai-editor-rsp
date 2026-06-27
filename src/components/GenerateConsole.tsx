@@ -557,7 +557,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   return (
-    <div className={`min-w-0 overflow-hidden border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-none" : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>

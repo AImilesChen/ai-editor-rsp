@@ -139,10 +139,10 @@ export default function ImageEditorPage() {
       <Header />
       <script type="application/ld+json">{JSON.stringify([faqJsonLd, softwareJsonLd])}</script>
       <main className="pt-20">
-        <section id="try-reference-edit" className="relative scroll-mt-24 overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)] px-4 py-6 md:px-8 md:py-10">
+        <section id="try-reference-edit" className="relative scroll-mt-24 overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(184,115,51,0.16),transparent_30%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_52%,#FBF7F0_100%)] px-4 py-8 md:px-8 md:py-12">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(94,63,36,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(94,63,36,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
-          <div className="relative mx-auto max-w-screen-2xl">
-            <div className="mb-5 max-w-4xl">
+          <div className="relative mx-auto max-w-screen-xl">
+            <div className="mb-6 max-w-4xl">
               <p className="eyebrow text-[10px]">AI professional headshot generator</p>
               <h1 className="mt-3 font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-rsp-text md:text-6xl">
                 Upload a photo. Create a professional headshot.
@@ -156,15 +156,15 @@ export default function ImageEditorPage() {
               <GenerateConsole headingLevel="h2" previewHeadingLevel="h2" variant="hero" defaultMode="edit" lockedMode="edit" defaultPreset="headshot" hidePreviewIntro loginReturnPath="/ai-headshot-generator" />
             </div>
 
-            <p className="mt-4 rounded-[24px] border border-rsp-border bg-white/76 p-4 text-xs leading-5 text-rsp-muted shadow-[0_10px_28px_rgba(46,32,18,0.06)] backdrop-blur">
+            <p className="mt-4 rounded-[24px] border border-rsp-border bg-white/76 px-5 py-3 text-xs leading-5 text-rsp-muted shadow-[0_10px_28px_rgba(46,32,18,0.06)] backdrop-blur">
               Upload your own photo or an image you have permission to edit. AI tries to preserve identity, but results may vary.
             </p>
           </div>
         </section>
 
-        <section className="bg-[#FBF7F0] px-4 py-12 md:px-8 md:py-16">
+        <section className="bg-[#FBF7F0] px-4 py-10 md:px-8 md:py-14">
           <div className="mx-auto max-w-screen-xl">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl border-t border-rsp-border/70 pt-10">
               <p className="eyebrow text-[10px]">Professional headshot prompts</p>
               <h2 className="mt-3 font-heading text-3xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">
                 Popular AI headshot styles for work profiles
@@ -174,8 +174,8 @@ export default function ImageEditorPage() {
               </p>
             </div>
 
-            <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {headshotPrompts.map((item, index) => (
+            <div className="mt-8 grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {headshotPrompts.map((item) => (
                 <article key={item.title} className="group flex overflow-hidden rounded-[30px] border border-rsp-border bg-white shadow-[0_18px_42px_rgba(46,32,18,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_54px_rgba(46,32,18,0.11)]">
                   <div className="flex w-full flex-col">
                     <div className="relative m-3 overflow-hidden rounded-[24px] bg-[#EDE3D8]">
@@ -184,15 +184,11 @@ export default function ImageEditorPage() {
                         alt={item.imageAlt}
                         width={1024}
                         height={1280}
-                        loading={index < 3 ? "eager" : "lazy"}
+                        loading="eager"
                         className="aspect-[4/5] h-auto w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                       />
                       <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-text shadow-[0_8px_18px_rgba(46,32,18,0.12)]">
                         Example result
-                      </div>
-                      <div className="absolute bottom-3 left-3 right-3 rounded-2xl border border-white/45 bg-[#1E1711]/72 p-3 text-white shadow-[0_14px_30px_rgba(30,23,17,0.22)] backdrop-blur">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#86EFAC]">Generated headshot style</p>
-                        <p className="mt-1 text-sm font-semibold leading-5">{item.title}</p>
                       </div>
                     </div>
                     <div className="flex flex-1 flex-col p-5 pt-2">
