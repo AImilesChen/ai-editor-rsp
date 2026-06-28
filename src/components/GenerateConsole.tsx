@@ -693,31 +693,34 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {visiblePromptTasks.map((item) => (
             <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}>{item.label}</button>
           ))}
-          {isHero && compactPromptBuilder && <a href="/generate" className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-semibold text-white/60 no-underline hover:border-white/25">More options →</a>}
         </div>}
 
-
-
         {isHero && compactPromptBuilder && mode === "text" && (
-          <div className="mt-4 space-y-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-            {compactOptionGroups.map((group) => (
-              <div key={group.label}>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">{group.label}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {group.options.map((option) => (
-                    <button
-                      type="button"
-                      key={option}
-                      onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
-                      className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}
-                    >
-                      {option}
-                    </button>
-                  ))}
+          <details className="group mt-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-bold text-white/70 transition hover:text-white">
+              <span>Tune style, lighting, or shot</span>
+              <span className="text-[#86EFAC] transition group-open:rotate-45">＋</span>
+            </summary>
+            <div className="mt-3 space-y-3 border-t border-white/10 pt-3">
+              {compactOptionGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">{group.label}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {group.options.map((option) => (
+                      <button
+                        type="button"
+                        key={option}
+                        onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
+                        className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </details>
         )}
 
         {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
