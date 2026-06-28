@@ -16,25 +16,29 @@ const editUseCases = [
     title: "Remove people from travel photos",
     description: "Clean background distractions while keeping the main subject, lighting, and scene natural.",
     prompt: "Remove the people in the background and keep the main subject unchanged.",
-    image: "/images/generated/double-exposure-travel-rishikesh.webp",
+    image: "/images/image-editor-cases/remove-people-before-after.webp",
+    alt: "Before and after AI photo edit showing background people removed while the main subject stays unchanged",
   },
   {
     title: "Remove unwanted objects",
     description: "Select a distracting object and reconstruct the surrounding texture, shadows, and perspective.",
     prompt: "Remove the selected object and fill the area naturally.",
-    image: "/images/generated/cinematic-movie-poster.webp",
+    image: "/images/image-editor-cases/remove-object-before-after.webp",
+    alt: "Before and after AI photo edit showing a distracting object removed from a product photo",
   },
   {
     title: "Clean product backgrounds",
     description: "Make product shots look simpler, cleaner, and more sales-ready without changing the product.",
     prompt: "Clean up the background and keep the product sharp and unchanged.",
-    image: "/images/generated/diwali-light-portrait.webp",
+    image: "/images/image-editor-cases/clean-product-background-before-after.webp",
+    alt: "Before and after AI photo edit showing a cluttered product background cleaned into a studio background",
   },
   {
     title: "Remove text or marks",
     description: "Remove unwanted text, stains, or marks from images you own or have permission to edit.",
     prompt: "Remove the unwanted text or mark and reconstruct the background naturally.",
-    image: "/images/generated/lofi-girl-vibes.webp",
+    image: "/images/image-editor-cases/remove-text-marks-before-after.webp",
+    alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
   },
 ];
 
@@ -78,8 +82,8 @@ export default function ImageEditorPage() {
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {editUseCases.map((item) => (
               <article key={item.title} className="flex h-full flex-col overflow-hidden rounded-[28px] border border-rsp-border bg-rsp-panel shadow-[0_16px_44px_rgba(58,41,30,0.08)]">
-                <div className="aspect-[4/3] overflow-hidden bg-rsp-surface">
-                  <img src={item.image} alt={`${item.title} example`} className="h-full w-full object-cover" />
+                <div className="aspect-[3/2] overflow-hidden bg-rsp-surface">
+                  <img src={item.image} alt={item.alt} className="h-full w-full object-cover" />
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <h3 className="font-heading text-2xl font-normal tracking-[-0.035em] text-rsp-text">{item.title}</h3>
