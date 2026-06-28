@@ -24,9 +24,11 @@ const textTasks = [
   { label: "Lifestyle scene", prompt: "A realistic lifestyle scene with natural human activity, beautiful environment, authentic details, and commercial editorial polish." },
 ];
 
-const styleOptions = ["Photorealistic", "Cinematic", "Anime", "3D", "Editorial", "Minimal", "Vintage", "Luxury"];
-const lightingOptions = ["Golden hour", "Soft studio light", "Neon light", "Dramatic shadow", "Natural daylight", "Film lighting"];
-const shotOptions = ["Close-up", "Half body", "Full body", "Wide shot", "Top view", "Product hero shot"];
+const styleOptions = ["Photorealistic", "Cinematic", "Anime", "3D Render", "Editorial", "Product Render", "Watercolor", "Pixel Art", "Minimalist", "Vintage Film", "Fantasy Art"];
+const lightingOptions = ["Golden hour", "Soft studio light", "Neon light", "Dramatic shadow", "Natural window light", "Studio flash", "Low key", "Backlit", "Moody candlelight"];
+const shotOptions = ["Close-up", "Half body", "Wide shot", "Full body", "Overhead", "Flat lay", "Product macro", "Environmental shot", "Portrait crop"];
+const compactPresetCount = 3;
+type PromptModifierKind = "style" | "lighting" | "shot";
 
 const previewImages: Record<string, string> = {
   "Professional headshot": "/images/prompt-cases/examples/ai-headshot-linkedin-corporate-headshot.webp",
@@ -211,6 +213,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [regionStart, setRegionStart] = useState<{ x: number; y: number } | null>(null);
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
   const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
+  const [expandedLookGroups, setExpandedLookGroups] = useState<Record<PromptModifierKind, boolean>>({ style: false, lighting: false, shot: false });
 
   const activeTasks = mode === "edit" ? editTasks : textTasks;
   const headshotPrompt = editTasks[0].prompt;
@@ -236,10 +239,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const canGenerate = Boolean(authenticated) && !needsUpload && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
-    { kind: "style" as const, label: "Style", options: styleOptions.slice(0, 5), value: selectedStyle, setter: setSelectedStyle },
-    { kind: "lighting" as const, label: "Lighting", options: lightingOptions.slice(0, 4), value: selectedLighting, setter: setSelectedLighting },
-    { kind: "shot" as const, label: "Shot", options: shotOptions.slice(0, 4), value: selectedShot, setter: setSelectedShot },
-  ];
+    { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
+    { kind: "lighting" as const, label: "Lighting", options: lightingOptions, value: selectedLighting, setter: setSelectedLighting, moreLabel: "lighting" },
+    { kind: "shot" as const, label: "Shot", options: shotOptions, value: selectedShot, setter: setSelectedShot, moreLabel: "shots" },
+  ].map((group) => {
+    const primaryOptions = group.options.slice(0, compactPresetCount);
+    const overflowOptions = group.options.slice(compactPresetCount);
+    const selectedOverflow = group.value && overflowOptions.includes(group.value) ? group.value : null;
+    const displayedOptions = expandedLookGroups[group.kind]
+      ? group.options
+      : selectedOverflow
+        ? [...primaryOptions, selectedOverflow]
+        : primaryOptions;
+    return { ...group, primaryOptions, overflowOptions, displayedOptions, selectedOverflow };
+  });
   const visibleRatios = isHeadshotMode
     ? GENERATION_RATIOS.filter((item) => item.ratio !== "auto")
     : isHero && compactPromptBuilder
@@ -704,23 +717,42 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </div>
             </div>
             <div className="space-y-3.5">
-              {compactOptionGroups.map((group) => (
-                <div key={group.label}>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#F4DFC8]/78">{group.label}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {group.options.map((option) => (
-                      <button
-                        type="button"
-                        key={option}
-                        onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
-                        className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-[#100C08]/48 text-white/58 hover:border-[#D4A574]/45 hover:text-white"}`}
-                      >
-                        {group.value === option ? `✓ ${option}` : option}
-                      </button>
-                    ))}
+              {compactOptionGroups.map((group) => {
+                const isExpanded = expandedLookGroups[group.kind];
+                const previewMore = group.overflowOptions.slice(0, 3).join(", ");
+                return (
+                  <div key={group.label} className="rounded-2xl border border-white/[0.06] bg-black/12 p-2.5">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#F4DFC8]/78">{group.label}</p>
+                      {group.overflowOptions.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedLookGroups((current) => ({ ...current, [group.kind]: !current[group.kind] }))}
+                          className="rounded-full border border-[#D4A574]/20 bg-[#D4A574]/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#F4DFC8]/72 transition hover:border-[#D4A574]/45 hover:text-[#F4DFC8]"
+                          aria-expanded={isExpanded}
+                        >
+                          {isExpanded ? `Show fewer ${group.moreLabel} −` : `More ${group.moreLabel} +`}
+                        </button>
+                      )}
+                    </div>
+                    {!isExpanded && group.overflowOptions.length > 0 && (
+                      <p className="mb-2 truncate text-[10px] leading-4 text-white/38">More: {previewMore}{group.overflowOptions.length > 3 ? "…" : ""}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {group.displayedOptions.map((option) => (
+                        <button
+                          type="button"
+                          key={option}
+                          onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
+                          className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-[#100C08]/48 text-white/58 hover:border-[#D4A574]/45 hover:text-white"}`}
+                        >
+                          {group.value === option ? `✓ ${option}` : option}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
