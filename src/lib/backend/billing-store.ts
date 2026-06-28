@@ -663,7 +663,7 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
       .bind(targetPlan, updated.creditsRemaining, now, account.userId)
       .run();
     await upsertSubscription(db, account.userId, targetPlan, "active", account.subscriptionId, account.customerId, now, preview.periodStart, preview.periodEnd);
-    await insertCreditLedger(db, account.userId, "subscription_upgrade_proration_credit", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Prorated credits for subscription upgrade", { ...preview, creem: creemResult.payload });
+    await insertCreditLedger(db, account.userId, "subscription_upgrade_credit_topup", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Credits top-up after subscription upgrade", { ...preview, creem: creemResult.payload });
     return { ok: true as const, duplicate: false, account: await readD1Account(db, account.userId), preview, creem: creemResult.payload };
   }
 
@@ -671,7 +671,7 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
   if (!kv) return { ok: false as const, code: "BILLING_STORE_UNAVAILABLE", message: "No D1 DB or BILLING_KV binding." };
   await writeAccount(updated, kv);
   if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
-  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_proration_credit", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, creem: creemResult.payload, at: now }));
+  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_credit_topup", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, creem: creemResult.payload, at: now }));
   return { ok: true as const, duplicate: false, account: updated, preview, creem: creemResult.payload };
 }
 
@@ -705,7 +705,7 @@ async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: 
   const periodStart = period?.current_period_start ? Number(period.current_period_start) : undefined;
   const periodEnd = period?.current_period_end ? Number(period.current_period_end) : undefined;
   const fallbackEnd = now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
-  const effectiveStart = periodStart && periodStart < now ? periodStart : now - DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
+  const effectiveStart = periodStart && periodStart < now ? periodStart : now;
   const effectiveEnd = periodEnd && periodEnd > now ? periodEnd : fallbackEnd;
   const fullPeriod = Math.max(1, effectiveEnd - effectiveStart);
   const remainingMs = Math.max(0, effectiveEnd - now);
@@ -714,7 +714,8 @@ async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: 
   const targetCredits = CREEM_PLAN_CREDITS[targetPlan];
   const creditsDeltaMonthly = Math.max(0, targetCredits - currentCredits);
   const priceDeltaCents = Math.max(0, CREEM_PLAN_PRICES_CENTS[targetPlan] - CREEM_PLAN_PRICES_CENTS[account.plan]);
-  const creditsToGrant = Math.max(0, Math.round(creditsDeltaMonthly * remainingRatio));
+  const creditsToGrant = Math.max(0, targetCredits - account.creditsRemaining);
+  const nextCreditsBalance = Math.max(account.creditsRemaining, targetCredits);
   return {
     currentPlan: account.plan,
     targetPlan,
@@ -730,7 +731,7 @@ async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: 
     remainingDays: Math.ceil(remainingMs / (24 * 60 * 60 * 1000)),
     periodStart: periodStart || undefined,
     periodEnd: periodEnd || undefined,
-    nextCreditsBalance: account.creditsRemaining + creditsToGrant,
+    nextCreditsBalance,
   };
 }
 

@@ -224,7 +224,7 @@ export default function AccountBillingCenter() {
 
   const upgradeSubscription = async () => {
     if (!upgradeTargetPlan || !upgradePreview) return;
-    if (!confirm(`Upgrade to ${planTitle(upgradeTargetPlan)} now? Creem will charge the prorated difference for the rest of this billing period. We will add ${upgradePreview.creditsToGrant} prorated credits to your current balance.`)) return;
+    if (!confirm(`Upgrade to ${planTitle(upgradeTargetPlan)} now? Creem will charge the saved payment method immediately for the prorated price difference. No separate checkout page will open. We will top up your balance to ${upgradePreview.nextCreditsBalance} credits.`)) return;
     setUpgradeSubmitting(true);
     resetNotices();
     try {
@@ -249,7 +249,7 @@ export default function AccountBillingCenter() {
         } : current);
       }
       if (data.preview) setUpgradePreview(data.preview);
-      setMessage(`Plan upgraded to ${planTitle(upgradeTargetPlan)}. Added ${data.preview?.creditsToGrant ?? upgradePreview.creditsToGrant} prorated credits. New balance: ${data.preview?.nextCreditsBalance ?? data.account?.creditsRemaining ?? "updated"}.`);
+      setMessage(`Plan upgraded to ${planTitle(upgradeTargetPlan)}. Added ${data.preview?.creditsToGrant ?? upgradePreview.creditsToGrant} credits and topped up your balance to ${data.preview?.nextCreditsBalance ?? data.account?.creditsRemaining ?? "updated"}.`);
     } catch {
       setError("Upgrade could not be completed. Please try again.");
     } finally {
@@ -305,7 +305,7 @@ export default function AccountBillingCenter() {
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
-      {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: pay about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days and add {upgradePreview.creditsToGrant} prorated credits. New balance after upgrade: {upgradePreview.nextCreditsBalance} credits.</div> : null}
+      {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: Creem charges the saved payment method immediately, with no separate checkout page. Estimated prorated charge: about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days. We will add {upgradePreview.creditsToGrant} credits and top up your balance to {upgradePreview.nextCreditsBalance} credits.</div> : null}
       {refundNotice ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">{refundNotice}</div> : null}
       {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are temporarily unavailable while we confirm the refund status. We will update your account once the review is complete.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: paid-plan credits are no longer available.</div> : null}
@@ -341,7 +341,7 @@ export default function AccountBillingCenter() {
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article className="border border-rsp-border bg-rsp-surface p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Prorated upgrade</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and pay only the prorated price difference for the rest of this billing period. Extra credits are added by the same remaining-time ratio, not as a full new monthly grant.</p>
+          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and Creem charges the saved payment method for the prorated price difference. Your credits are topped up to the target plan balance for this billing period, so Studio shows 700 credits after upgrade unless your current balance is already higher.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>
