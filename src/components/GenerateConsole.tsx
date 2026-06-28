@@ -709,22 +709,22 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </div>}
 
         {isHero && compactPromptBuilder && mode === "text" && (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3">
-            <div className="mb-3 flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/78">Choose the look</p>
+          <div className="mt-3 rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.018))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="mb-2.5 flex items-center justify-between gap-3 border-b border-white/10 pb-2.5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/82">Choose the look</p>
             </div>
-            <div className="space-y-3.5">
+            <div className="space-y-2.5">
               {compactOptionGroups.map((group) => {
                 const isExpanded = expandedLookGroups[group.kind];
                 return (
-                  <div key={group.label} className="rounded-2xl border border-white/[0.06] bg-black/12 p-2.5">
+                  <div key={group.label} className="rounded-2xl border border-white/[0.055] bg-[#100C08]/38 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#F4DFC8]/78">{group.label}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#F4DFC8]/72">{group.label}</p>
                       {group.overflowOptions.length > 0 && (
                         <button
                           type="button"
                           onClick={() => setExpandedLookGroups((current) => ({ ...current, [group.kind]: !current[group.kind] }))}
-                          className="rounded-full border border-[#D4A574]/20 bg-[#D4A574]/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#F4DFC8]/72 transition hover:border-[#D4A574]/45 hover:text-[#F4DFC8]"
+                          className="rounded-full border border-white/10 bg-white/[0.025] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white/46 transition hover:border-[#D4A574]/35 hover:bg-[#D4A574]/8 hover:text-[#F4DFC8]/82"
                           aria-expanded={isExpanded}
                         >
                           {isExpanded ? `Show fewer ${group.moreLabel} −` : `More ${group.moreLabel} +`}
@@ -737,7 +737,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                           type="button"
                           key={option}
                           onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
-                          className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-[#100C08]/48 text-white/58 hover:border-[#D4A574]/45 hover:text-white"}`}
+                          className={`min-h-8 rounded-full border px-3 py-1.5 text-[11px] font-semibold leading-none transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-black/16 text-white/62 hover:border-[#D4A574]/38 hover:bg-white/[0.04] hover:text-white"}`}
                         >
                           {group.value === option ? `✓ ${option}` : option}
                         </button>
@@ -751,10 +751,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{isHero ? "Choose image size" : "Ratio"}</p>
-          <div className={`${isHero ? "grid-cols-4 gap-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/72">{isHero ? "Choose image size" : "Ratio"}</p>
+          <div className={`${isHero ? "grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
             {visibleRatios.map((item) => (
-              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-white/[0.035] text-white/58 hover:border-white/25 hover:text-white"}`}>
+              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-transparent bg-black/12 text-white/60 hover:border-white/18 hover:bg-white/[0.04] hover:text-white"}`}>
                 <span className="block">{ratio === item.ratio ? `✓ ${item.label}` : item.label}</span>
                 {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{item.textCredits} cr</span>}
               </button>
@@ -809,10 +809,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {isHero ? (
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
-              <PreviewHeadingTag className="mt-1 max-w-4xl font-heading text-4xl font-normal leading-[0.98] tracking-[-0.05em] text-white md:text-6xl">
+              <PreviewHeadingTag className="mt-1 max-w-4xl font-heading text-[2.55rem] font-normal leading-[1.02] tracking-[-0.05em] text-white md:text-[3.45rem] xl:text-[3.75rem]">
                 {mode === "edit" ? "Edit uploaded images with AI" : compactPromptBuilder ? "Generate AI images with ready-made prompts" : "Create AI images from ready prompts"}
               </PreviewHeadingTag>
-              <p className="mt-3 max-w-2xl text-base leading-6 text-white/70">{mode === "edit" ? "Upload a photo, describe the change you want, and compare the before-and-after result before downloading." : compactPromptBuilder ? "Pick a prompt, customize the style, lighting, shot, and size, then create a polished AI image in seconds." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-white/76">{mode === "edit" ? "Upload a photo, describe the change you want, and compare the before-and-after result before downloading." : compactPromptBuilder ? "Pick a prompt, customize the style, lighting, shot, and size, then create a polished AI image in seconds." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
             </div>
           ) : (
             <div className="mx-auto max-w-4xl text-center">
@@ -833,7 +833,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-md p-4" : "max-w-lg p-5"} rounded-3xl border border-[#86EFAC]/22 bg-black/64 shadow-2xl backdrop-blur-sm`}><p className={`${isHero ? "text-xl" : "text-2xl"} font-heading font-normal tracking-[-0.03em] text-white`}>Start with a prompt, then generate</p><p className="mt-2 text-sm leading-6 text-white/76">Choose a ready prompt or write your own. Style, lighting, shot, and size refine the final image.</p></div></div>}
+              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-[360px] p-4" : "max-w-lg p-5"} rounded-[26px] border border-white/14 bg-black/52 shadow-[0_22px_70px_rgba(0,0,0,0.38)] backdrop-blur-md`}><div className="mx-auto mb-3 h-1 w-12 rounded-full bg-[#86EFAC]/70" /><p className={`${isHero ? "text-[1.35rem]" : "text-2xl"} font-heading font-normal leading-tight tracking-[-0.03em] text-white`}>Start with a prompt, then generate</p><p className="mt-2 text-sm leading-6 text-white/70">Choose a ready prompt or write your own. Refine the look, then create.</p></div></div>}
             </div>
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
@@ -945,18 +945,21 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
         {!generatedImage && (
-          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(134,239,172,0.035))] text-xs text-white/64 sm:grid-cols-[1fr_auto] sm:items-center`}>
+          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/10 text-sm font-bold text-[#C8FADC]">↳</span>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
               <div>
-                <p className="text-sm font-bold text-white/82">Output tray</p>
-                <p className="mt-0.5 text-xs text-white/46">Result actions appear after generation.</p>
+                <p className="text-sm font-bold text-white/86">Output tray</p>
+                <p className="mt-0.5 text-xs text-white/48">Actions unlock when a result is ready.</p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] font-bold uppercase tracking-[0.08em] text-white/44">
-              <span className="rounded-full border border-white/10 bg-black/18 px-3 py-2">Preview</span>
-              <span className="rounded-full border border-white/10 bg-black/18 px-3 py-2">Download</span>
-              <span className="rounded-full border border-white/10 bg-black/18 px-3 py-2">Edit again</span>
+            <div className="grid grid-cols-3 gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">
+              {["Preview", "Download", "Edit again"].map((action) => (
+                <span key={action} className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-black/16 px-3 py-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/22" />
+                  {action}
+                </span>
+              ))}
             </div>
           </div>
         )}
