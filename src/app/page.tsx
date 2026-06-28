@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GenerateConsole from "@/components/GenerateConsole";
 import CopyPromptButton from "@/components/CopyPromptButton";
-import PricingPlanAction from "@/components/PricingPlanAction";
+import PricingPlanCards from "@/components/PricingPlanCards";
 import { faqItems, pricingPlans, promptCards, site } from "@/lib/rsp-content";
 
 export const metadata = {
@@ -12,24 +12,6 @@ export const metadata = {
   alternates: { canonical: site.url },
 };
 
-function HomePricingAmount({ price, cadence }: { price: string; cadence: string }) {
-  if (price.startsWith("USD ")) {
-    return (
-      <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="text-xs font-bold uppercase tracking-[0.16em] text-rsp-secondary">USD</span>
-        <span className="font-heading text-4xl font-normal leading-none">{price.replace("USD ", "")}</span>
-        <span className="text-rsp-muted">{cadence}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="font-heading text-4xl font-normal leading-none">{price}</span>
-      <span className="text-rsp-muted">{cadence}</span>
-    </div>
-  );
-}
 
 export default function HomePage() {
   return (
@@ -66,26 +48,7 @@ export default function HomePage() {
               <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text md:text-5xl">Simple credits for AI image generation</h2>
               <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-rsp-muted">Start free with 3 credits. Upgrade when you need more monthly image credits.</p>
             </div>
-            <div className="mt-8 grid items-stretch gap-5 md:grid-cols-2 lg:grid-cols-4">
-              {pricingPlans.map((plan) => (
-                <article key={plan.name} className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm ${plan.featured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}>
-                  {plan.featured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">Most Popular</div>}
-                  <div className="flex min-h-[190px] flex-col">
-                    <p className={`mb-2 text-xs font-bold uppercase tracking-[0.14em] ${plan.featured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{plan.badge}</p>
-                    <h3 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h3>
-                    <HomePricingAmount price={plan.price} cadence={plan.cadence} />
-                    <p className="mt-3 rounded-full border border-rsp-secondary/20 bg-rsp-secondary/8 px-3 py-1.5 text-sm font-bold text-rsp-secondary">{plan.quota}</p>
-                    <p className="mt-3 text-sm leading-6 text-rsp-muted">{plan.generations}</p>
-                  </div>
-                  <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-rsp-muted">
-                    {plan.features.map((feature) => <li key={feature} className="flex gap-2"><span className="text-rsp-secondary">✓</span><span>{feature}</span></li>)}
-                  </ul>
-                  <div className="mt-auto">
-                    <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={plan.featured ? "featured" : plan.name === "Free" ? "free" : "standard"} compact />
-                  </div>
-                </article>
-              ))}
-            </div>
+            <PricingPlanCards plans={pricingPlans} variant="home" />
             <div className="mx-auto mt-7 flex max-w-5xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-[24px] border border-rsp-secondary/20 bg-white/60 px-5 py-3 text-xs leading-5 text-rsp-muted shadow-sm">
               <span><strong className="text-rsp-text">Credit guide:</strong> 1 credit portrait text-to-image</span>
               <span className="hidden text-rsp-secondary/45 md:inline">•</span>

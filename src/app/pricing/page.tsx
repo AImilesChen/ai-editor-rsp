@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import PricingPlanAction from "@/components/PricingPlanAction";
+import PricingPlanCards from "@/components/PricingPlanCards";
 import { legalDisclaimer, pricingPlans, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -47,25 +47,6 @@ const resultExamples = [
 
 const trustItems = ["No card required for free credits", "Secure hosted checkout", "Cancel anytime", "7-day refund if mostly unused"];
 
-function PricingAmount({ price, cadence }: { price: string; cadence: string }) {
-  if (price.startsWith("USD ")) {
-    return (
-      <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="text-sm font-bold uppercase tracking-[0.18em] text-rsp-secondary">USD</span>
-        <span className="font-heading text-5xl font-normal leading-none text-rsp-text">{price.replace("USD ", "")}</span>
-        <span className="text-rsp-muted">{cadence}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="font-heading text-5xl font-normal leading-none text-rsp-text">{price}</span>
-      <span className="text-rsp-muted">{cadence}</span>
-    </div>
-  );
-}
-
 export default function PricingPage() {
   return (
     <>
@@ -83,38 +64,7 @@ export default function PricingPage() {
               </p>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {pricingPlans.map((plan) => {
-                const isFeatured = "featured" in plan && Boolean(plan.featured);
-                const isFree = plan.name === "Free";
-                return (
-                  <article
-                    key={plan.name}
-                    className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur ${
-                      isFeatured
-                        ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
-                        : "border-rsp-border"
-                    }`}
-                  >
-                    {isFeatured ? (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_22px_rgba(184,107,32,0.26)]">
-                        Most popular
-                      </div>
-                    ) : null}
-                    <p className={`mb-3 text-sm font-bold ${isFeatured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{isFeatured ? "Best value" : plan.badge}</p>
-                    <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
-                    <PricingAmount price={plan.price} cadence={plan.cadence} />
-                    <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
-                    {"audience" in plan ? <p className="mt-3 text-sm leading-6 text-rsp-text">{plan.audience}</p> : null}
-                    {"estimate" in plan ? <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted">{plan.estimate}</p> : null}
-                    <ul className="mt-5 flex-1 space-y-2.5 text-sm leading-6 text-rsp-muted">
-                      {plan.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2"><span className="text-rsp-secondary">+</span><span>{f}</span></li>)}
-                    </ul>
-                    <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : isFree ? "free" : "standard"} />
-                  </article>
-                );
-              })}
-            </div>
+            <PricingPlanCards plans={pricingPlans} />
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-[24px] border border-rsp-border bg-white/55 px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-rsp-muted shadow-sm md:text-sm md:normal-case md:tracking-normal">
               {trustItems.map((item) => (
