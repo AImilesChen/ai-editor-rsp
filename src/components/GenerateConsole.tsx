@@ -710,16 +710,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         {isHero && compactPromptBuilder && mode === "text" && (
           <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3">
-            <div className="mb-3 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/78">Choose the look</p>
-                <p className="mt-1 text-xs leading-5 text-white/58">Pick any visible preset to shape the prompt faster.</p>
-              </div>
+            <div className="mb-3 flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/78">Choose the look</p>
             </div>
             <div className="space-y-3.5">
               {compactOptionGroups.map((group) => {
                 const isExpanded = expandedLookGroups[group.kind];
-                const previewMore = group.overflowOptions.slice(0, 3).join(", ");
                 return (
                   <div key={group.label} className="rounded-2xl border border-white/[0.06] bg-black/12 p-2.5">
                     <div className="mb-2 flex items-center justify-between gap-2">
@@ -735,9 +731,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                         </button>
                       )}
                     </div>
-                    {!isExpanded && group.overflowOptions.length > 0 && (
-                      <p className="mb-2 truncate text-[10px] leading-4 text-white/38">More: {previewMore}{group.overflowOptions.length > 3 ? "…" : ""}</p>
-                    )}
                     <div className="flex flex-wrap gap-2">
                       {group.displayedOptions.map((option) => (
                         <button
@@ -952,9 +945,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
         {!generatedImage && (
-          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto flex max-w-5xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.035] text-xs text-white/64 md:flex-row md:items-center md:justify-between`}>
-            <span>{mode === "edit" ? "Generate an edit before downloading." : "Generated results and downloads appear here after you create an image."}</span>
-            <span className="rounded-full border border-white/10 bg-black/18 px-4 py-2 font-bold text-white/52">Download appears after generation</span>
+          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(134,239,172,0.035))] text-xs text-white/64 sm:grid-cols-[1fr_auto] sm:items-center`}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/10 text-sm font-bold text-[#C8FADC]">↳</span>
+              <div>
+                <p className="text-sm font-bold text-white/82">Output tray</p>
+                <p className="mt-0.5 text-xs text-white/46">Result actions appear after generation.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] font-bold uppercase tracking-[0.08em] text-white/44">
+              <span className="rounded-full border border-white/10 bg-black/18 px-3 py-2">Preview</span>
+              <span className="rounded-full border border-white/10 bg-black/18 px-3 py-2">Download</span>
+              <span className="rounded-full border border-white/10 bg-black/18 px-3 py-2">Edit again</span>
+            </div>
           </div>
         )}
         {showHeadshotSteps && (
