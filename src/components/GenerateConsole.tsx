@@ -7,6 +7,10 @@ import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pric
 
 const editTasks = [
   { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
+  { label: "Remove people", prompt: "Remove the unwanted people in the background. Keep the main subject, original camera angle, lighting, shadows, and scene structure natural. Fill the removed area cleanly so the edit is not noticeable." },
+  { label: "Remove object", prompt: "Remove the selected unwanted object from the photo. Preserve the surrounding background, lighting, shadows, texture, perspective, and all other parts of the image." },
+  { label: "Clean background", prompt: "Clean up distracting background elements and make the scene look natural, uncluttered, and polished. Preserve the main subject exactly." },
+  { label: "Remove text or marks", prompt: "Remove unwanted text, labels, stains, marks, or visual distractions from an image you own or have permission to edit. Reconstruct the background naturally and keep the rest unchanged." },
   { label: "Remove background", prompt: "Remove the background from the uploaded image, keep the subject edges clean and natural, and place the subject on a transparent or soft neutral backdrop." },
   { label: "Change background", prompt: "Keep the subject unchanged and replace only the background with a cozy lofi night-study room, warm lamp light, rain on the window, and soft film grain." },
   { label: "Replace object", prompt: "Replace the selected object with a premium desk lamp, matching the original perspective, lighting, shadows, and realistic texture." },
@@ -32,6 +36,10 @@ type PromptModifierKind = "style" | "lighting" | "shot";
 
 const previewImages: Record<string, string> = {
   "Professional headshot": "/images/prompt-cases/examples/ai-headshot-linkedin-corporate-headshot.webp",
+  "Remove people": "/images/generated/double-exposure-travel-rishikesh.webp",
+  "Remove object": "/images/generated/cinematic-movie-poster.webp",
+  "Clean background": "/images/generated/lofi-girl-vibes.webp",
+  "Remove text or marks": "/images/generated/diwali-light-portrait.webp",
   "Remove background": "/images/generated/double-exposure-travel-rishikesh.webp",
   "Change background": "/images/generated/lofi-girl-vibes.webp",
   "Replace object": "/images/generated/cinematic-movie-poster.webp",
@@ -53,6 +61,8 @@ type GenerateConsoleProps = {
   previewHeadingLevel?: "h1" | "h2" | "h3";
   hidePreviewIntro?: boolean;
   loginReturnPath?: string;
+  hidePromptLibraryLink?: boolean;
+  editorOnly?: boolean;
 };
 
 type EditRegion = {
@@ -181,17 +191,18 @@ function aspectFromRatio(ratio?: string) {
   }
 }
 
-export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, defaultPreset, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false, loginReturnPath }: GenerateConsoleProps) {
+export default function GenerateConsole({ headingLevel = "h1", variant = "full", defaultMode = "edit", lockedMode, defaultPreset, compactPromptBuilder = false, previewHeadingLevel = "h1", hidePreviewIntro = false, loginReturnPath, hidePromptLibraryLink = false, editorOnly = false }: GenerateConsoleProps) {
   const HeadingTag = headingLevel;
   const PreviewHeadingTag = previewHeadingLevel;
   const isHero = variant === "hero";
   const initialMode = lockedMode || defaultMode;
   const isHeadshotOnly = lockedMode === "edit" && defaultPreset === "headshot";
   const defaultHeadshotTask = defaultPreset === "headshot" ? editTasks[0] : null;
+  const defaultEditorTask = editorOnly ? editTasks[1] : null;
   const [mode, setMode] = useState<"edit" | "text">(initialMode);
   const editLoginPath = loginReturnPath || "/reference-edit";
-  const [prompt, setPrompt] = useState("");
-  const [task, setTask] = useState<string | null>(defaultHeadshotTask?.label || null);
+  const [prompt, setPrompt] = useState(defaultEditorTask?.prompt || "");
+  const [task, setTask] = useState<string | null>(defaultHeadshotTask?.label || defaultEditorTask?.label || null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
   const [selectedShot, setSelectedShot] = useState<string | null>(null);
@@ -208,14 +219,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [comparePosition, setComparePosition] = useState(50);
   const [isDraggingCompare, setIsDraggingCompare] = useState(false);
-  const [editScope, setEditScope] = useState<EditScope>("whole");
+  const [editScope, setEditScope] = useState<EditScope>(editorOnly ? "selected" : "whole");
   const [editRegion, setEditRegion] = useState<EditRegion | null>(null);
   const [regionStart, setRegionStart] = useState<{ x: number; y: number } | null>(null);
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
   const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
   const [expandedLookGroups, setExpandedLookGroups] = useState<Record<PromptModifierKind, boolean>>({ style: false, lighting: false, shot: false });
 
-  const activeTasks = mode === "edit" ? editTasks : textTasks;
+  const editorOnlyTasks = editTasks.filter((item) => ["Remove people", "Remove object", "Clean background", "Remove text or marks", "Remove background", "Change background"].includes(item.label));
+  const activeTasks = mode === "edit" ? (editorOnly ? editorOnlyTasks : editTasks) : textTasks;
   const headshotPrompt = editTasks[0].prompt;
   const isHeadshotMode = mode === "edit" && task === "Professional headshot";
   const imageForRequest = mode === "edit" ? (isHeadshotMode ? headshotReferenceImage || uploadedImage : uploadedImage) : null;
@@ -428,7 +440,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       return;
     }
     if (needsUpload) {
-      setError("Upload a reference image first, or switch to Create from text.");
+      setError(lockedMode === "edit" ? "Upload a photo first to start editing." : "Upload a reference image first, or switch to Create from Text.");
       setState("failed");
       return;
     }
@@ -575,7 +587,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : editorOnly ? "AI Photo Editor" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
@@ -686,7 +698,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Describe your image") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
-          {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
+          {!hidePromptLibraryLink && !(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
         </div>
         <textarea
           id="prompt"
@@ -790,7 +802,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             : needsUpload
               ? isHeadshotOnly
                 ? "Upload a face photo first to start the professional headshot flow."
-                : "Upload a reference image first, or switch to Create from Text."
+                : lockedMode === "edit"
+                  ? "Upload a photo first. This page is for editing uploaded images, not text-to-image generation."
+                  : "Upload a reference image first, or switch to Create from Text."
               : creditsRemaining < currentQuote.creditsCharged
                 ? `This request needs ${currentQuote.creditsCharged} credits. You have ${creditsRemaining} credits.`
                 : isHeadshotMode
@@ -803,7 +817,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
       <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : "min-h-[520px] p-4 md:p-6"}`}>
         <div className={`${isHero ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
-          <span className="ml-auto">{mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
+          <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
         {!hidePreviewIntro && <div className={`${isHero ? "mb-3" : "mb-5"}`}>
           {isHero ? (
@@ -817,8 +831,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : (
             <div className="mx-auto max-w-4xl text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
-              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{mode === "edit" ? "Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
+              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{editorOnly ? "Fix photos with AI" : mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Upload a photo, remove unwanted people or objects, select the edit area, then preview and download the cleaned result." : mode === "edit" ? "Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
             </div>
           )}
 

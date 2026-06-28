@@ -14,6 +14,7 @@ export default function Footer() {
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Product</h4>
           <Link className="footer-link" href="/">Generate</Link>
+          <Link className="footer-link" href="/image-editor">Image Editor</Link>
           <Link className="footer-link" href="/prompts">Prompt Library</Link>
           <Link className="footer-link" href="/ai-headshot-generator">AI Headshot</Link>
           <Link className="footer-link" href="/pricing">Pricing</Link>

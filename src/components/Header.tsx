@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const links = [
   { href: "/", label: "Generate" },
+  { href: "/image-editor", label: "Image Editor" },
   { href: "/prompts", label: "Prompts" },
   { href: "/ai-headshot-generator", label: "AI Headshot" },
   { href: "/pricing", label: "Pricing" },
@@ -47,6 +49,7 @@ type AuthMeResponse = {
 };
 
 export default function Header() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
@@ -122,10 +125,11 @@ export default function Header() {
           <span className="font-heading text-2xl font-normal tracking-[-0.03em] text-rsp-text">AI Editor RSP</span>
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
-          {links.map((link) => (
-            link.href === "/prompts" ? (
+          {links.map((link) => {
+            const isActive = link.href === "/" ? pathname === "/" : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return link.href === "/prompts" ? (
               <div key={link.href} className="group relative -my-4 py-4">
-                <Link href={link.href} className="inline-flex items-center gap-1 rounded-full px-2 py-2 text-sm font-semibold text-rsp-muted no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-text" aria-haspopup="true">
+                <Link href={link.href} className={`inline-flex items-center gap-1 rounded-full px-2 py-2 text-sm font-semibold no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-text ${isActive ? "bg-rsp-secondary/10 text-rsp-secondary" : "text-rsp-muted"}`} aria-haspopup="true">
                   {link.label}
                   <span aria-hidden="true" className="text-[10px] leading-none">▾</span>
                 </Link>
@@ -152,11 +156,11 @@ export default function Header() {
                 </div>
               </div>
             ) : (
-              <Link key={link.href} href={link.href} className="text-sm font-semibold text-rsp-muted no-underline transition hover:text-rsp-text">
+              <Link key={link.href} href={link.href} className={`rounded-full px-2 py-2 text-sm font-semibold no-underline transition hover:bg-rsp-secondary/10 hover:text-rsp-text ${isActive ? "bg-rsp-secondary/10 text-rsp-secondary" : "text-rsp-muted"}`}>
                 {link.label}
               </Link>
-            )
-          ))}
+            );
+          })}
           {creditBadge ? (
             <span className="border border-rsp-secondary/35 bg-rsp-secondary/10 px-3 py-2 font-mono text-xs font-semibold text-rsp-secondary">
               {creditBadge}

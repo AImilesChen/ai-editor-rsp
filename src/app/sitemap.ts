@@ -9,6 +9,7 @@ const BASE_URL = "https://aieditorrspediting.org";
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     { url: `${BASE_URL}/`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 1.0 },
+    { url: `${BASE_URL}/image-editor`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.96 },
     { url: `${BASE_URL}/generate`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.95 },
     { url: `${BASE_URL}/ai-headshot-generator`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.93 },
     { url: `${BASE_URL}/reference-edit`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.92 },
