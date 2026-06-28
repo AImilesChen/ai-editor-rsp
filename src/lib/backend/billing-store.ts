@@ -663,7 +663,8 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
       .bind(targetPlan, updated.creditsRemaining, now, account.userId)
       .run();
     await upsertSubscription(db, account.userId, targetPlan, "active", account.subscriptionId, account.customerId, now, preview.periodStart, preview.periodEnd);
-    await insertCreditLedger(db, account.userId, "subscription_upgrade_credit_topup", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Credits top-up after subscription upgrade", { ...preview, creem: creemResult.payload });
+    await upsertUpgradePayment(db, account.userId, account.subscriptionId || null, targetPlan, sourceId, preview, creemResult.payload, now);
+    await insertCreditLedger(db, account.userId, "subscription_upgrade_credit_delta", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Credits added after subscription upgrade", { ...preview, creem: creemResult.payload });
     return { ok: true as const, duplicate: false, account: await readD1Account(db, account.userId), preview, creem: creemResult.payload };
   }
 
@@ -671,7 +672,7 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
   if (!kv) return { ok: false as const, code: "BILLING_STORE_UNAVAILABLE", message: "No D1 DB or BILLING_KV binding." };
   await writeAccount(updated, kv);
   if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
-  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_credit_topup", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, creem: creemResult.payload, at: now }));
+  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_credit_delta", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, creem: creemResult.payload, at: now }));
   return { ok: true as const, duplicate: false, account: updated, preview, creem: creemResult.payload };
 }
 
@@ -714,8 +715,8 @@ async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: 
   const targetCredits = CREEM_PLAN_CREDITS[targetPlan];
   const creditsDeltaMonthly = Math.max(0, targetCredits - currentCredits);
   const priceDeltaCents = Math.max(0, CREEM_PLAN_PRICES_CENTS[targetPlan] - CREEM_PLAN_PRICES_CENTS[account.plan]);
-  const creditsToGrant = Math.max(0, targetCredits - account.creditsRemaining);
-  const nextCreditsBalance = Math.max(account.creditsRemaining, targetCredits);
+  const creditsToGrant = creditsDeltaMonthly;
+  const nextCreditsBalance = account.creditsRemaining + creditsToGrant;
   return {
     currentPlan: account.plan,
     targetPlan,
@@ -1093,6 +1094,111 @@ async function upsertSubscription(db: D1Database, userId: string, plan: BillingP
     ON CONFLICT(id) DO UPDATE SET creem_subscription_id = excluded.creem_subscription_id, creem_customer_id = excluded.creem_customer_id, plan = excluded.plan, status = excluded.status, current_period_start = COALESCE(excluded.current_period_start, subscriptions.current_period_start), current_period_end = COALESCE(excluded.current_period_end, subscriptions.current_period_end), updated_at = excluded.updated_at`)
     .bind(id, userId, subscriptionId || null, customerId || null, plan, status, periodStart || null, periodEnd || null, now, now)
     .run();
+}
+
+async function upsertUpgradePayment(db: D1Database, userId: string, subscriptionId: string | null, plan: BillingPlan, sourceId: string, preview: ProratedUpgradePreview, creemPayload: unknown, now = Date.now()) {
+  const payment = extractCreemUpgradePayment(creemPayload);
+  const paymentId = payment.transactionId || payment.invoiceId || `subscription_upgrade_${sourceId}`;
+  const amountCents = payment.amountCents ?? preview.estimatedProratedChargeCents;
+  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, creem_checkout_id, creem_transaction_id, creem_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      status = 'paid',
+      subscription_id = COALESCE(excluded.subscription_id, payments.subscription_id),
+      creem_checkout_id = COALESCE(excluded.creem_checkout_id, payments.creem_checkout_id),
+      creem_transaction_id = COALESCE(excluded.creem_transaction_id, payments.creem_transaction_id),
+      creem_invoice_id = COALESCE(excluded.creem_invoice_id, payments.creem_invoice_id),
+      currency = COALESCE(excluded.currency, payments.currency),
+      amount_cents = CASE WHEN excluded.amount_cents > 0 THEN excluded.amount_cents ELSE payments.amount_cents END,
+      raw_event_id = excluded.raw_event_id,
+      paid_at = COALESCE(payments.paid_at, excluded.paid_at),
+      updated_at = excluded.updated_at`)
+    .bind(paymentId, userId, subscriptionId, payment.checkoutId || null, payment.transactionId || null, payment.invoiceId || null, plan, payment.currency || "USD", amountCents, `subscription_upgrade_${sourceId}`, now, now, now)
+    .run();
+}
+
+function extractCreemUpgradePayment(payload: unknown): { transactionId?: string; invoiceId?: string; checkoutId?: string; amountCents?: number; currency?: string } {
+  const matches: Record<string, unknown>[] = [];
+  collectRecords(payload, matches, 0);
+  const transactionId = firstString(matches, ["transaction_id", "transactionId", "last_transaction_id", "lastTransactionId", "payment_id", "paymentId", "order_id", "orderId"])
+    || idFromNamedRecord(matches, ["transaction", "last_transaction", "payment", "order"]);
+  const invoiceId = firstString(matches, ["invoice_id", "invoiceId"])
+    || idFromNamedRecord(matches, ["invoice"]);
+  const checkoutId = firstString(matches, ["checkout_id", "checkoutId"])
+    || idFromNamedRecord(matches, ["checkout"]);
+  const amountCents = firstAmountCents(matches, ["amount_cents", "amountCents", "total_cents", "totalCents", "amount_paid_cents", "amountPaidCents", "prorated_amount_cents", "proratedAmountCents"])
+    ?? firstAmountDollars(matches, ["amount", "total", "total_amount", "totalAmount", "amount_paid", "amountPaid", "prorated_amount", "proratedAmount"]);
+  const currency = (firstString(matches, ["currency", "currency_code", "currencyCode"]) || "USD").toUpperCase();
+  return { transactionId: transactionId || undefined, invoiceId: invoiceId || undefined, checkoutId: checkoutId || undefined, amountCents, currency };
+}
+
+function collectRecords(value: unknown, output: Record<string, unknown>[], depth: number) {
+  if (!value || typeof value !== "object" || depth > 4) return;
+  if (Array.isArray(value)) {
+    for (const item of value) collectRecords(item, output, depth + 1);
+    return;
+  }
+  const record = value as Record<string, unknown>;
+  output.push(record);
+  for (const nested of Object.values(record)) collectRecords(nested, output, depth + 1);
+}
+
+function firstString(records: Record<string, unknown>[], keys: string[]) {
+  for (const record of records) {
+    for (const key of keys) {
+      const value = stringRecordValue(record[key]);
+      if (value) return value;
+    }
+  }
+  return null;
+}
+
+function idFromNamedRecord(records: Record<string, unknown>[], names: string[]) {
+  for (const record of records) {
+    for (const name of names) {
+      const camel = toCamelCase(name);
+      const nested = record[name] || record[camel];
+      if (nested && typeof nested === "object") {
+        const nestedRecord = nested as Record<string, unknown>;
+        const id = stringRecordValue(nestedRecord.id || nestedRecord[`${name}_id`] || nestedRecord[`${camel}Id`]);
+        if (id) return id;
+      }
+    }
+  }
+  return null;
+}
+
+function firstAmountCents(records: Record<string, unknown>[], keys: string[]) {
+  for (const record of records) {
+    for (const key of keys) {
+      const amount = numberRecordValue(record[key]);
+      if (typeof amount === "number" && amount > 0) return Math.round(amount);
+    }
+  }
+  return undefined;
+}
+
+function firstAmountDollars(records: Record<string, unknown>[], keys: string[]) {
+  for (const record of records) {
+    for (const key of keys) {
+      const amount = numberRecordValue(record[key]);
+      if (typeof amount === "number" && amount > 0) return amount > 1000 ? Math.round(amount) : Math.round(amount * 100);
+    }
+  }
+  return undefined;
+}
+
+function numberRecordValue(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value.trim());
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function toCamelCase(value: string) {
+  return value.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
 async function upsertPayment(db: D1Database, userId: string, input: CreditGrantInput, now = Date.now()) {
