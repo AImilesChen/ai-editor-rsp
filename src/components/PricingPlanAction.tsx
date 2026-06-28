@@ -19,9 +19,32 @@ function normalize(value?: string) {
   return (value || "").trim().toLowerCase();
 }
 
+const planRanks: Record<string, number> = {
+  free: 0,
+  starter: 1,
+  creator: 2,
+  studio: 3,
+};
+
 function isPaidPlan(plan?: string) {
   const value = normalize(plan);
   return Boolean(value && value !== "free");
+}
+
+function getPlanRank(plan?: string) {
+  return planRanks[normalize(plan)] ?? -1;
+}
+
+function getPlanLabel(plan?: string | null) {
+  const value = normalize(plan || undefined);
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : "your current plan";
+}
+
+function getBlockingPaidPlan(data: AuthResponse | null) {
+  const userPlan = normalize(data?.user?.plan);
+  const status = normalize(data?.user?.subscriptionStatus);
+  if (!isPaidPlan(userPlan) || endedPlanStatuses.has(status) || refundPendingStatuses.has(status)) return null;
+  return userPlan;
 }
 
 function shouldTreatAsCurrentPaidPlan(planName: string, data: AuthResponse | null) {
@@ -33,12 +56,6 @@ function shouldTreatAsCurrentPaidPlan(planName: string, data: AuthResponse | nul
   // already carries a paid plan but the subscription status is temporarily missing,
   // delayed, or not one of the active-like Creem states yet.
   return !endedPlanStatuses.has(status);
-}
-
-function hasAnyBlockingPaidPlan(data: AuthResponse | null) {
-  const userPlan = normalize(data?.user?.plan);
-  const status = normalize(data?.user?.subscriptionStatus);
-  return isPaidPlan(userPlan) && !endedPlanStatuses.has(status) && !refundPendingStatuses.has(status);
 }
 
 function hasRefundPendingForPlan(planName: string, data: AuthResponse | null) {
@@ -90,7 +107,13 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
   const isFree = planSlug === "free";
   const currentPlan = useMemo(() => shouldTreatAsCurrentPaidPlan(planName, auth), [auth, planName]);
   const signedIn = Boolean(auth?.authenticated);
-  const hasPaidPlan = Boolean(signedIn && hasAnyBlockingPaidPlan(auth));
+  const activePaidPlan = signedIn ? getBlockingPaidPlan(auth) : null;
+  const activePaidPlanLabel = getPlanLabel(activePaidPlan);
+  const hasPaidPlan = Boolean(activePaidPlan);
+  const currentRank = getPlanRank(activePaidPlan || undefined);
+  const targetRank = getPlanRank(planName);
+  const isUpgradeTarget = Boolean(hasPaidPlan && targetRank > currentRank);
+  const isLowerOrFreeTarget = Boolean(hasPaidPlan && targetRank < currentRank);
   const refundPendingForPlan = Boolean(signedIn && hasRefundPendingForPlan(planName, auth));
   const hasRefundPending = Boolean(signedIn && hasAnyRefundPending(auth));
 
@@ -131,6 +154,37 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
       <div className="mt-7">
         <Link href="/account/billing" className="rsp-button-primary w-full text-center">Refund pending</Link>
         <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "New checkout is paused during refund review." : "A refund review is already in progress. Paid credits are temporarily unavailable, so new checkout is paused."}</p>
+      </div>
+    );
+  }
+
+  if (hasPaidPlan && isFree) {
+    return (
+      <div className="mt-7">
+        <button type="button" disabled className="w-full cursor-default rounded-full border border-rsp-border bg-white/70 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-muted">
+          Included
+        </button>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "Your paid plan already includes credits." : "Free starter credits are replaced by your active paid plan."}</p>
+      </div>
+    );
+  }
+
+  if (hasPaidPlan && isUpgradeTarget) {
+    return (
+      <div className="mt-7">
+        <Link href="/account/billing" className="rsp-button-primary w-full text-center">Upgrade to {planName}</Link>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">{compact ? "Upgrade safely from Account → Billing." : `You are on ${activePaidPlanLabel}. Open Account → Billing to upgrade to ${planName} safely and avoid duplicate subscriptions.`}</p>
+      </div>
+    );
+  }
+
+  if (hasPaidPlan && isLowerOrFreeTarget) {
+    return (
+      <div className="mt-7">
+        <button type="button" disabled className="w-full cursor-not-allowed rounded-full border border-rsp-border bg-white/70 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-muted">
+          {isFree ? "Included" : "Downgrade in Billing"}
+        </button>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "Lower plans are managed from Billing." : `Switching down from ${activePaidPlanLabel} is handled from Account → Billing so credits and billing periods stay clear.`}</p>
       </div>
     );
   }
