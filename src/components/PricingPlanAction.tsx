@@ -138,8 +138,8 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
   if (hasPaidPlan && !isFree) {
     return (
       <div className="mt-7">
-        <Link href="/account/billing" className="rsp-button-primary w-full text-center">Manage billing</Link>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "Manage your current plan before switching." : "You already have an active plan. Use Account → Billing before changing plans so you do not start a second subscription by mistake."}</p>
+        <Link href="/account/billing" className="rsp-button-primary w-full text-center">Change plan in Billing</Link>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "Switch safely from Account → Billing." : `You currently have another active plan. Open Account → Billing to change to ${planName} safely without starting a second subscription.`}</p>
       </div>
     );
   }
