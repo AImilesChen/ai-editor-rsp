@@ -672,7 +672,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Write or choose a prompt") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Describe your image") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
           {!(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
         </div>
         <textarea
@@ -680,7 +680,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[76px] p-3 text-sm leading-6") : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/10 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/28 focus:ring-4`}
         />
         {isHeadshotMode && uploadedImage && (
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
@@ -696,22 +696,24 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </div>}
 
         {isHero && compactPromptBuilder && mode === "text" && (
-          <details className="group mt-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-bold text-white/70 transition hover:text-white">
-              <span>Tune style, lighting, or shot</span>
-              <span className="text-[#86EFAC] transition group-open:rotate-45">＋</span>
-            </summary>
-            <div className="mt-3 space-y-3 border-t border-white/10 pt-3">
+          <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3">
+            <div className="mb-3 flex items-start justify-between gap-3 border-b border-white/10 pb-2.5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose the look</p>
+                <p className="mt-1 text-xs leading-5 text-white/45">Visible presets help shape the prompt when you are not sure what to write.</p>
+              </div>
+            </div>
+            <div className="space-y-3">
               {compactOptionGroups.map((group) => (
                 <div key={group.label}>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">{group.label}</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#F4DFC8]/70">{group.label}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {group.options.map((option) => (
                       <button
                         type="button"
                         key={option}
                         onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
-                        className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/68 hover:border-white/25"}`}
+                        className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-[#100C08]/60 text-white/72 hover:border-[#D4A574]/45 hover:text-white"}`}
                       >
                         {option}
                       </button>
@@ -720,7 +722,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 </div>
               ))}
             </div>
-          </details>
+          </div>
         )}
 
         {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
