@@ -33,6 +33,17 @@ type ActionResponse = {
   status?: string;
   url?: string;
   subscriptionCanceled?: boolean;
+  account?: Partial<User>;
+  preview?: UpgradePreview;
+};
+
+type UpgradePreview = {
+  currentPlan: "starter" | "creator" | "studio";
+  targetPlan: "starter" | "creator" | "studio";
+  creditsToGrant: number;
+  nextCreditsBalance: number;
+  estimatedProratedChargeCents: number;
+  remainingDays: number;
 };
 
 const completedRefundStatuses = new Set(["refunded"]);
@@ -89,12 +100,30 @@ function statusLabel(status?: string) {
   return status;
 }
 
+function nextUpgradePlan(plan?: string) {
+  if (plan === "starter") return "creator" as const;
+  if (plan === "creator") return "studio" as const;
+  return null;
+}
+
+function planTitle(plan?: string | null) {
+  if (!plan) return "";
+  return plan.slice(0, 1).toUpperCase() + plan.slice(1);
+}
+
+function usd(cents?: number) {
+  if (typeof cents !== "number") return "";
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
 export default function AccountBillingCenter() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [refundSubmitting, setRefundSubmitting] = useState(false);
   const [cancelSubmitting, setCancelSubmitting] = useState(false);
   const [portalSubmitting, setPortalSubmitting] = useState(false);
+  const [upgradeSubmitting, setUpgradeSubmitting] = useState(false);
+  const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,11 +136,28 @@ export default function AccountBillingCenter() {
       .finally(() => setLoading(false));
   }, []);
 
+  const previewUserPlan = user?.plan;
+  const previewUserStatus = user?.subscriptionStatus;
+  const previewUserCredits = user?.creditsRemaining;
+
+  useEffect(() => {
+    const targetPlan = nextUpgradePlan(previewUserPlan);
+    if (!previewUserPlan || !targetPlan || canceledStatuses.has(previewUserStatus || "") || pendingRefundStatuses.has(previewUserStatus || "") || completedRefundStatuses.has(previewUserStatus || "")) {
+      setUpgradePreview(null);
+      return;
+    }
+    fetch(`/api/billing/upgrade-subscription?plan=${targetPlan}&t=${Date.now()}`, { cache: "no-store" })
+      .then((response) => response.json() as Promise<ActionResponse>)
+      .then((data) => setUpgradePreview(data.ok && data.preview ? data.preview : null))
+      .catch(() => setUpgradePreview(null));
+  }, [previewUserPlan, previewUserStatus, previewUserCredits]);
+
   const hasPaidPlan = Boolean(user && user.plan !== "free");
+  const upgradeTargetPlan = nextUpgradePlan(user?.plan);
   const refundPending = pendingRefundStatuses.has(user?.subscriptionStatus || "");
   const refundCompleted = completedRefundStatuses.has(user?.subscriptionStatus || "");
   const subscriptionCanceled = canceledStatuses.has(user?.subscriptionStatus || "");
-  const busy = refundSubmitting || cancelSubmitting || portalSubmitting;
+  const busy = refundSubmitting || cancelSubmitting || portalSubmitting || upgradeSubmitting;
   const refundStatus = user?.selfServiceRefund;
   const refundSelfServiceUnavailable = Boolean(
     hasPaidPlan &&
@@ -123,6 +169,7 @@ export default function AccountBillingCenter() {
   const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted || refundPending || refundSelfServiceUnavailable;
   const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted;
   const portalDisabled = loading || busy || !hasPaidPlan;
+  const upgradeDisabled = loading || busy || !hasPaidPlan || !upgradeTargetPlan || subscriptionCanceled || refundCompleted || refundPending || !upgradePreview;
 
   const resetNotices = () => {
     setMessage(null);
@@ -175,6 +222,41 @@ export default function AccountBillingCenter() {
     }
   };
 
+  const upgradeSubscription = async () => {
+    if (!upgradeTargetPlan || !upgradePreview) return;
+    if (!confirm(`Upgrade to ${planTitle(upgradeTargetPlan)} now? Creem will charge the prorated difference for the rest of this billing period. We will add ${upgradePreview.creditsToGrant} prorated credits to your current balance.`)) return;
+    setUpgradeSubmitting(true);
+    resetNotices();
+    try {
+      const response = await fetch("/api/billing/upgrade-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: upgradeTargetPlan }),
+      });
+      const data = await response.json().catch(() => null) as ActionResponse | null;
+      if (!response.ok || !data?.ok) {
+        setError(data?.message || "Upgrade could not be completed. Use Manage billing or contact support.");
+        return;
+      }
+      if (data.account) {
+        const updatedAccount = data.account;
+        setUser((current) => current ? {
+          ...current,
+          plan: updatedAccount.plan || current.plan,
+          creditsRemaining: typeof updatedAccount.creditsRemaining === "number" ? updatedAccount.creditsRemaining : current.creditsRemaining,
+          creditsHeld: updatedAccount.creditsHeld,
+          subscriptionStatus: updatedAccount.subscriptionStatus || current.subscriptionStatus,
+        } : current);
+      }
+      if (data.preview) setUpgradePreview(data.preview);
+      setMessage(`Plan upgraded to ${planTitle(upgradeTargetPlan)}. Added ${data.preview?.creditsToGrant ?? upgradePreview.creditsToGrant} prorated credits. New balance: ${data.preview?.nextCreditsBalance ?? data.account?.creditsRemaining ?? "updated"}.`);
+    } catch {
+      setError("Upgrade could not be completed. Please try again.");
+    } finally {
+      setUpgradeSubmitting(false);
+    }
+  };
+
   const cancelSubscription = async () => {
     if (!confirm("Cancel this subscription now? Future recurring billing will stop.")) return;
     setCancelSubmitting(true);
@@ -206,6 +288,9 @@ export default function AccountBillingCenter() {
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-3">
+          <button type="button" disabled={upgradeDisabled} onClick={upgradeSubscription} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-55">
+            {upgradeSubmitting ? "Upgrading…" : upgradeTargetPlan ? `Upgrade to ${planTitle(upgradeTargetPlan)}` : "Highest plan"}
+          </button>
           <button type="button" disabled={portalDisabled} onClick={openCustomerPortal} className="border border-rsp-border bg-white/70 px-4 py-3 text-sm font-semibold text-rsp-text disabled:cursor-not-allowed disabled:opacity-55">
             {portalSubmitting ? "Opening…" : "Manage billing"}
           </button>
@@ -220,6 +305,7 @@ export default function AccountBillingCenter() {
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
+      {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: pay about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days and add {upgradePreview.creditsToGrant} prorated credits. New balance after upgrade: {upgradePreview.nextCreditsBalance} credits.</div> : null}
       {refundNotice ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">{refundNotice}</div> : null}
       {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are temporarily unavailable while we confirm the refund status. We will update your account once the review is complete.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: paid-plan credits are no longer available.</div> : null}
@@ -254,12 +340,12 @@ export default function AccountBillingCenter() {
 
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article className="border border-rsp-border bg-rsp-surface p-5">
-          <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Open the secure billing portal to view invoices, update payment details, and manage your subscription.</p>
+          <h3 className="font-heading text-2xl font-normal text-rsp-text">Prorated upgrade</h3>
+          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and pay only the prorated price difference for the rest of this billing period. Extra credits are added by the same remaining-time ratio, not as a full new monthly grant.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
-          <h3 className="font-heading text-2xl font-normal text-rsp-text">Cancel subscription</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Canceling stops future renewals. Credits from the current billing period remain subject to the plan rules.</p>
+          <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>
+          <p className="mt-4 leading-7 text-rsp-muted">Open the secure billing portal to view invoices, update payment details, and manage your subscription.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund review</h3>

@@ -80,6 +80,13 @@ export async function cancelCreemSubscription(subscriptionId: string) {
   return creemJsonRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}/cancel`, {});
 }
 
+export async function upgradeCreemSubscription(subscriptionId: string, productId: string) {
+  return creemJsonRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}/upgrade`, {
+    product_id: productId,
+    update_behavior: "proration-charge-immediately",
+  });
+}
+
 export type CreemRefundLookupResult = {
   ok: boolean;
   refunded: boolean;

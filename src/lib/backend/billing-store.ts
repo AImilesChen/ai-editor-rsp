@@ -1,7 +1,7 @@
 import type { AuthUser } from "@/lib/backend/auth";
 import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/creem";
-import { cancelCreemSubscription, lookupCreemRefundStatus } from "@/lib/backend/creem";
+import { cancelCreemSubscription, creemProductId, CREEM_PLAN_CREDITS, lookupCreemRefundStatus, upgradeCreemSubscription } from "@/lib/backend/creem";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
 
 export type BillingAccount = {
@@ -22,6 +22,27 @@ export type BillingAccount = {
 const creditLockedStatuses = new Set<BillingAccount["subscriptionStatus"]>(["refund_requested", "refunded", "disputed"]);
 const SELF_SERVICE_REFUND_WINDOW_DAYS = 7;
 const SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE = 0.2;
+const BILLING_PLAN_ORDER: Record<BillingPlan, number> = { starter: 1, creator: 2, studio: 3 };
+const CREEM_PLAN_PRICES_CENTS: Record<BillingPlan, number> = { starter: 799, creator: 1499, studio: 2999 };
+const DEFAULT_BILLING_PERIOD_DAYS = 30;
+
+type ProratedUpgradePreview = {
+  currentPlan: BillingPlan;
+  targetPlan: BillingPlan;
+  currentCredits: number;
+  targetCredits: number;
+  creditsDeltaMonthly: number;
+  creditsToGrant: number;
+  currentPriceCents: number;
+  targetPriceCents: number;
+  priceDeltaCents: number;
+  estimatedProratedChargeCents: number;
+  remainingRatio: number;
+  remainingDays: number;
+  periodStart?: number;
+  periodEnd?: number;
+  nextCreditsBalance: number;
+};
 
 function publicBillingAccount(account: BillingAccount): BillingAccount {
   if (account.subscriptionStatus === "refunded") {
@@ -141,7 +162,10 @@ type SubscriptionRow = {
   id: string;
   creem_subscription_id: string | null;
   creem_customer_id: string | null;
+  plan?: BillingPlan | null;
   status: BillingAccount["subscriptionStatus"];
+  current_period_start?: number | null;
+  current_period_end?: number | null;
 };
 
 type WebhookRow = {
@@ -593,6 +617,64 @@ export async function submitSubscriptionCancellationForUser(user: AuthUser) {
   return { ok: true, duplicate: false, account: updated, creem: creemResult.payload };
 }
 
+export async function previewSubscriptionUpgradeForUser(user: AuthUser, targetPlan: BillingPlan) {
+  const account = await ensureBillingAccount(user);
+  if (!account) return { ok: false as const, code: "ACCOUNT_UNAVAILABLE", message: "Billing account is unavailable." };
+  if (!isUpgradeableAccountPlan(account.plan)) return { ok: false as const, code: "NO_PAID_PLAN", message: "Choose a paid plan before upgrading." };
+  if (!isActiveSubscriptionStatus(account.subscriptionStatus)) return { ok: false as const, code: "SUBSCRIPTION_NOT_ACTIVE", message: "Only active subscriptions can be upgraded." };
+  if (!account.subscriptionId) return { ok: false as const, code: "SUBSCRIPTION_ID_MISSING", message: "Creem subscription ID is not available for this account yet." };
+  if (BILLING_PLAN_ORDER[targetPlan] <= BILLING_PLAN_ORDER[account.plan]) {
+    return { ok: false as const, code: "TARGET_PLAN_NOT_HIGHER", message: "Select a higher plan to upgrade." };
+  }
+  return { ok: true as const, account, preview: await buildProratedUpgradePreview(account, targetPlan) };
+}
+
+export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: BillingPlan) {
+  const previewResult = await previewSubscriptionUpgradeForUser(user, targetPlan);
+  if (!previewResult.ok) return previewResult;
+
+  const { account, preview } = previewResult;
+  const productId = creemProductId(targetPlan);
+  if (!productId) return { ok: false as const, code: "CREEM_PRODUCT_NOT_CONFIGURED", message: "Target plan is not configured." };
+
+  const creemResult = await upgradeCreemSubscription(account.subscriptionId!, productId);
+  if (!creemResult.ok) {
+    return { ok: false as const, code: "CREEM_UPGRADE_FAILED", message: creemResult.message || "Creem subscription upgrade failed.", status: creemResult.status };
+  }
+
+  const db = await billingDb();
+  const now = Date.now();
+  const sourceId = `upgrade_${account.subscriptionId}_${account.plan}_to_${targetPlan}_${Math.floor(now / (1000 * 60 * 60))}`;
+  const updated: BillingAccount = {
+    ...account,
+    plan: targetPlan,
+    creditsRemaining: preview.nextCreditsBalance,
+    subscriptionStatus: "active",
+    updatedAt: now,
+  };
+
+  if (db) {
+    const existing = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'subscription_upgrade_proration_credit' AND source_id = ?")
+      .bind(account.userId, sourceId)
+      .first<{ id: string }>();
+    if (existing) return { ok: true as const, duplicate: true, account: await readD1Account(db, account.userId), preview, creem: creemResult.payload };
+
+    await db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, updated_at = ? WHERE id = ?")
+      .bind(targetPlan, updated.creditsRemaining, now, account.userId)
+      .run();
+    await upsertSubscription(db, account.userId, targetPlan, "active", account.subscriptionId, account.customerId, now, preview.periodStart, preview.periodEnd);
+    await insertCreditLedger(db, account.userId, "subscription_upgrade_proration_credit", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Prorated credits for subscription upgrade", { ...preview, creem: creemResult.payload });
+    return { ok: true as const, duplicate: false, account: await readD1Account(db, account.userId), preview, creem: creemResult.payload };
+  }
+
+  const kv = await billingKv();
+  if (!kv) return { ok: false as const, code: "BILLING_STORE_UNAVAILABLE", message: "No D1 DB or BILLING_KV binding." };
+  await writeAccount(updated, kv);
+  if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
+  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_proration_credit", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, creem: creemResult.payload, at: now }));
+  return { ok: true as const, duplicate: false, account: updated, preview, creem: creemResult.payload };
+}
+
 export async function markRefundedAccount(input: RefundStateInput) {
   const db = await billingDb();
   if (db) return markRefundedAccountD1(db, input);
@@ -606,6 +688,63 @@ export async function markRefundedAccount(input: RefundStateInput) {
   await writeAccount(account, kv);
   await kv.put(ledgerKey(account.userId, `${input.eventId}_credit_revoke`), JSON.stringify({ type: "refund_paid_credit_revoke", eventId: input.eventId, eventType: input.eventType, userId: account.userId, preservedFreeCredits, balanceAfter: preservedFreeCredits, at: account.updatedAt }));
   return { ...result, account };
+}
+
+function isUpgradeableAccountPlan(plan: BillingAccount["plan"]): plan is BillingPlan {
+  return plan === "starter" || plan === "creator" || plan === "studio";
+}
+
+function isActiveSubscriptionStatus(status: BillingAccount["subscriptionStatus"]) {
+  return status === "active" || status === "trialing" || status === "past_due";
+}
+
+async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: BillingPlan): Promise<ProratedUpgradePreview> {
+  if (!isUpgradeableAccountPlan(account.plan)) throw new Error("Current plan is not upgradeable.");
+  const period = await readCurrentSubscriptionPeriod(account.userId, account.subscriptionId);
+  const now = Date.now();
+  const periodStart = period?.current_period_start ? Number(period.current_period_start) : undefined;
+  const periodEnd = period?.current_period_end ? Number(period.current_period_end) : undefined;
+  const fallbackEnd = now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
+  const effectiveStart = periodStart && periodStart < now ? periodStart : now - DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
+  const effectiveEnd = periodEnd && periodEnd > now ? periodEnd : fallbackEnd;
+  const fullPeriod = Math.max(1, effectiveEnd - effectiveStart);
+  const remainingMs = Math.max(0, effectiveEnd - now);
+  const remainingRatio = Math.max(0, Math.min(1, remainingMs / fullPeriod));
+  const currentCredits = CREEM_PLAN_CREDITS[account.plan];
+  const targetCredits = CREEM_PLAN_CREDITS[targetPlan];
+  const creditsDeltaMonthly = Math.max(0, targetCredits - currentCredits);
+  const priceDeltaCents = Math.max(0, CREEM_PLAN_PRICES_CENTS[targetPlan] - CREEM_PLAN_PRICES_CENTS[account.plan]);
+  const creditsToGrant = Math.max(0, Math.round(creditsDeltaMonthly * remainingRatio));
+  return {
+    currentPlan: account.plan,
+    targetPlan,
+    currentCredits,
+    targetCredits,
+    creditsDeltaMonthly,
+    creditsToGrant,
+    currentPriceCents: CREEM_PLAN_PRICES_CENTS[account.plan],
+    targetPriceCents: CREEM_PLAN_PRICES_CENTS[targetPlan],
+    priceDeltaCents,
+    estimatedProratedChargeCents: Math.max(0, Math.round(priceDeltaCents * remainingRatio)),
+    remainingRatio: Math.round(remainingRatio * 10000) / 10000,
+    remainingDays: Math.ceil(remainingMs / (24 * 60 * 60 * 1000)),
+    periodStart: periodStart || undefined,
+    periodEnd: periodEnd || undefined,
+    nextCreditsBalance: account.creditsRemaining + creditsToGrant,
+  };
+}
+
+async function readCurrentSubscriptionPeriod(userId: string, subscriptionId?: string) {
+  const db = await billingDb();
+  if (!db) return null;
+  const row = subscriptionId
+    ? await db.prepare("SELECT current_period_start, current_period_end FROM subscriptions WHERE user_id = ? AND (id = ? OR creem_subscription_id = ?) ORDER BY updated_at DESC LIMIT 1")
+      .bind(userId, subscriptionId, subscriptionId)
+      .first<{ current_period_start: number | null; current_period_end: number | null }>()
+    : await db.prepare("SELECT current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+      .bind(userId)
+      .first<{ current_period_start: number | null; current_period_end: number | null }>();
+  return row;
 }
 
 async function ensureD1BillingAccount(db: D1Database, user: AuthUser): Promise<BillingAccount> {
@@ -634,7 +773,7 @@ async function readD1Account(db: D1Database, userId?: string | null, email?: str
   if (userId) row = await db.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first<UserRow>();
   if (!row && email) row = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email.trim().toLowerCase()).first<UserRow>();
   if (!row) return null;
-  const sub = await db.prepare("SELECT id, creem_subscription_id, creem_customer_id, status FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+  const sub = await db.prepare("SELECT id, creem_subscription_id, creem_customer_id, plan, status, current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
     .bind(row.id)
     .first<SubscriptionRow>();
   const refund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
@@ -945,13 +1084,13 @@ async function upsertUserFromAccount(db: D1Database, account: BillingAccount) {
     .run();
 }
 
-async function upsertSubscription(db: D1Database, userId: string, plan: BillingPlan, status: BillingAccount["subscriptionStatus"], subscriptionId?: string | null, customerId?: string | null, now = Date.now()) {
+async function upsertSubscription(db: D1Database, userId: string, plan: BillingPlan, status: BillingAccount["subscriptionStatus"], subscriptionId?: string | null, customerId?: string | null, now = Date.now(), periodStart?: number | null, periodEnd?: number | null) {
   if (!subscriptionId && !customerId) return;
   const id = subscriptionId || `sub_${userId}_${customerId}`;
-  await db.prepare(`INSERT INTO subscriptions (id, user_id, creem_subscription_id, creem_customer_id, plan, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET creem_subscription_id = excluded.creem_subscription_id, creem_customer_id = excluded.creem_customer_id, plan = excluded.plan, status = excluded.status, updated_at = excluded.updated_at`)
-    .bind(id, userId, subscriptionId || null, customerId || null, plan, status, now, now)
+  await db.prepare(`INSERT INTO subscriptions (id, user_id, creem_subscription_id, creem_customer_id, plan, status, current_period_start, current_period_end, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET creem_subscription_id = excluded.creem_subscription_id, creem_customer_id = excluded.creem_customer_id, plan = excluded.plan, status = excluded.status, current_period_start = COALESCE(excluded.current_period_start, subscriptions.current_period_start), current_period_end = COALESCE(excluded.current_period_end, subscriptions.current_period_end), updated_at = excluded.updated_at`)
+    .bind(id, userId, subscriptionId || null, customerId || null, plan, status, periodStart || null, periodEnd || null, now, now)
     .run();
 }
 
