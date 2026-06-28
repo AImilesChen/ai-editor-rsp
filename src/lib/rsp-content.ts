@@ -71,10 +71,50 @@ export const promptCards = [
 ];
 
 export const pricingPlans = [
-  { name: "Free", price: "Free", cadence: "3 credits included", generations: "No payment required", cta: "Start free", featured: false },
-  { name: "Starter", price: "USD $7.99", cadence: "/mo", generations: "Occasional image generation", cta: "Choose Starter", featured: false },
-  { name: "Creator", price: "USD $14.99", cadence: "/mo", generations: "Best for weekly creators", cta: "Start with Creator", featured: true },
-  { name: "Studio", price: "USD $29.99", cadence: "/mo", generations: "Frequent creative testing", cta: "Choose Studio", featured: false },
+  {
+    name: "Free",
+    price: "Free",
+    cadence: "3 credits included",
+    quota: "3 credits total",
+    generations: "No payment required",
+    cta: "Start free",
+    featured: false,
+    badge: "Try first",
+    features: ["No card required", "Ready prompts included", "Basic image generation"],
+  },
+  {
+    name: "Starter",
+    price: "USD $7.99",
+    cadence: "/mo",
+    quota: "120 credits/month",
+    generations: "Occasional image generation",
+    cta: "Choose Starter",
+    featured: false,
+    badge: "Light use",
+    features: ["Portraits and product shots", "Use prompt library", "Secure hosted checkout"],
+  },
+  {
+    name: "Creator",
+    price: "USD $14.99",
+    cadence: "/mo",
+    quota: "300 credits/month",
+    generations: "Best for weekly creators",
+    cta: "Choose Creator",
+    featured: true,
+    badge: "Best value",
+    features: ["More prompt testing", "Text-to-image and edits", "Better room for variations"],
+  },
+  {
+    name: "Studio",
+    price: "USD $29.99",
+    cadence: "/mo",
+    quota: "700 credits/month",
+    generations: "Frequent creative testing",
+    cta: "Choose Studio",
+    featured: false,
+    badge: "High volume",
+    features: ["Larger creative batches", "Generation and editing", "Fastest queue"],
+  },
 ];
 
 export const integrationStates = [

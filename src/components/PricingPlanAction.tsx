@@ -53,7 +53,7 @@ function hasAnyRefundPending(data: AuthResponse | null) {
   return isPaidPlan(userPlan) && refundPendingStatuses.has(status);
 }
 
-export default function PricingPlanAction({ planName, cta, emphasis = "standard" }: { planName: string; cta: string; emphasis?: "free" | "standard" | "featured" }) {
+export default function PricingPlanAction({ planName, cta, emphasis = "standard", compact = false }: { planName: string; cta: string; emphasis?: "free" | "standard" | "featured"; compact?: boolean }) {
   const [auth, setAuth] = useState<AuthResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -110,7 +110,7 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
         <button type="button" disabled className="w-full cursor-default rounded-full border border-rsp-secondary bg-rsp-secondary/12 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-rsp-secondary">
           Current plan
         </button>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">You are already subscribed to {planName}. Manage or cancel it from Account → Billing.</p>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">{compact ? "Manage this plan from Account → Billing." : `You are already subscribed to ${planName}. Manage or cancel it from Account → Billing.`}</p>
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
         <Link href="/account/billing" className="w-full rounded-full border border-rsp-secondary bg-rsp-secondary/12 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-secondary">
           Refund pending
         </Link>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">Your {planName} credits are temporarily unavailable while refund confirmation is pending. Check Account → Billing for status.</p>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-secondary">{compact ? "Check refund status in Account → Billing." : `Your ${planName} credits are temporarily unavailable while refund confirmation is pending. Check Account → Billing for status.`}</p>
       </div>
     );
   }
@@ -130,7 +130,7 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
     return (
       <div className="mt-7">
         <Link href="/account/billing" className="rsp-button-primary w-full text-center">Refund pending</Link>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">A refund review is already in progress. Paid credits are temporarily unavailable, so new checkout is paused.</p>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "New checkout is paused during refund review." : "A refund review is already in progress. Paid credits are temporarily unavailable, so new checkout is paused."}</p>
       </div>
     );
   }
@@ -139,7 +139,7 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
     return (
       <div className="mt-7">
         <Link href="/account/billing" className="rsp-button-primary w-full text-center">Manage billing</Link>
-        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">You already have an active plan. Use Account → Billing before changing plans so you do not start a second subscription by mistake.</p>
+        <p className="mt-3 text-xs font-semibold leading-5 text-rsp-muted">{compact ? "Manage your current plan before switching." : "You already have an active plan. Use Account → Billing before changing plans so you do not start a second subscription by mistake."}</p>
       </div>
     );
   }

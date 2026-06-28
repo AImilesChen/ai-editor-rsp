@@ -60,7 +60,40 @@ export default function HomePage() {
           </div>
         </section>
         <section className="section-pad bg-rsp-surface">
-          <div className="mx-auto max-w-screen-2xl"><p className="eyebrow text-center">Pricing</p><h2 className="mt-3 text-center font-heading text-4xl font-normal tracking-[-0.03em]">Simple credits for AI image generation</h2><p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-6 text-rsp-muted">Start free with 3 credits after sign-in. Upgrade only when you need more image credits.</p><div className="mx-auto mt-6 max-w-4xl rounded-[24px] border border-rsp-secondary/25 bg-white/70 p-4 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Credit guide:</strong> 1 credit for portrait text-to-image, 2 credits for square/landscape text-to-image or portrait image edit, and 4 credits for square/landscape image edit.</div><div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{pricingPlans.map((plan) => <div key={plan.name} className={`glass-card p-6 ${plan.featured ? "border-rsp-secondary shadow-glow" : ""}`}><p className="mb-2 text-sm font-bold text-rsp-secondary">{plan.featured ? "Most Popular" : ""}</p><h3 className="font-heading text-2xl font-normal">{plan.name}</h3><HomePricingAmount price={plan.price} cadence={plan.cadence} /><p className="mt-4 text-rsp-muted">{plan.generations}</p><PricingPlanAction planName={plan.name} cta={plan.cta} /></div>)}</div></div>
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="eyebrow">Pricing</p>
+              <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text md:text-5xl">Simple credits for AI image generation</h2>
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-rsp-muted">Start free with 3 credits. Upgrade when you need more monthly image credits.</p>
+            </div>
+            <div className="mt-8 grid items-stretch gap-5 md:grid-cols-2 lg:grid-cols-4">
+              {pricingPlans.map((plan) => (
+                <article key={plan.name} className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm ${plan.featured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}>
+                  {plan.featured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">Most Popular</div>}
+                  <div className="flex min-h-[190px] flex-col">
+                    <p className={`mb-2 text-xs font-bold uppercase tracking-[0.14em] ${plan.featured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{plan.badge}</p>
+                    <h3 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h3>
+                    <HomePricingAmount price={plan.price} cadence={plan.cadence} />
+                    <p className="mt-3 rounded-full border border-rsp-secondary/20 bg-rsp-secondary/8 px-3 py-1.5 text-sm font-bold text-rsp-secondary">{plan.quota}</p>
+                    <p className="mt-3 text-sm leading-6 text-rsp-muted">{plan.generations}</p>
+                  </div>
+                  <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-rsp-muted">
+                    {plan.features.map((feature) => <li key={feature} className="flex gap-2"><span className="text-rsp-secondary">✓</span><span>{feature}</span></li>)}
+                  </ul>
+                  <div className="mt-auto">
+                    <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={plan.featured ? "featured" : plan.name === "Free" ? "free" : "standard"} compact />
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="mx-auto mt-7 flex max-w-5xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-[24px] border border-rsp-secondary/20 bg-white/60 px-5 py-3 text-xs leading-5 text-rsp-muted shadow-sm">
+              <span><strong className="text-rsp-text">Credit guide:</strong> 1 credit portrait text-to-image</span>
+              <span className="hidden text-rsp-secondary/45 md:inline">•</span>
+              <span>2 credits square/landscape text-to-image or portrait edit</span>
+              <span className="hidden text-rsp-secondary/45 md:inline">•</span>
+              <span>4+ credits larger edits and headshots</span>
+            </div>
+          </div>
         </section>
         <section className="section-pad bg-rsp-surface"><div className="mx-auto max-w-3xl"><p className="eyebrow text-center">FAQ</p>{faqItems.map((item) => <div key={item.q} className="mt-5 glass-card p-5"><h3 className="font-heading text-xl font-normal tracking-[-0.02em]">{item.q}</h3><p className="mt-2 text-rsp-muted">{item.a}</p></div>)}</div></section>
       </main>
