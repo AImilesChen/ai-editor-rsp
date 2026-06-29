@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GenerateConsole from "@/components/GenerateConsole";
+import ImageEditorExamples from "@/components/ImageEditorExamples";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -16,28 +17,32 @@ const editUseCases = [
     title: "Remove people from travel photos",
     description: "Clean background distractions while keeping the main subject, lighting, and scene natural.",
     prompt: "Remove the people in the background and keep the main subject unchanged.",
-    image: "/images/image-editor-cases/real-remove-people-before-after.webp",
+    beforeImage: "/images/image-editor-cases/remove-people-large-before.webp",
+    afterImage: "/images/image-editor-cases/remove-people-large-after.webp",
     alt: "Before and after AI photo edit showing background people removed while the main subject stays unchanged",
   },
   {
     title: "Remove unwanted objects",
     description: "Select a distracting object and reconstruct the surrounding texture, shadows, and perspective.",
     prompt: "Remove the selected object and fill the area naturally.",
-    image: "/images/image-editor-cases/real-remove-object-before-after.webp",
+    beforeImage: "/images/image-editor-cases/remove-object-large-before.webp",
+    afterImage: "/images/image-editor-cases/remove-object-large-after.webp",
     alt: "Before and after AI photo edit showing a distracting object removed from a product photo",
   },
   {
     title: "Clean product backgrounds",
     description: "Make product shots look simpler, cleaner, and more sales-ready without changing the product.",
     prompt: "Clean up the background and keep the product sharp and unchanged.",
-    image: "/images/image-editor-cases/real-clean-product-background-before-after.webp",
+    beforeImage: "/images/image-editor-cases/clean-product-background-large-before.webp",
+    afterImage: "/images/image-editor-cases/clean-product-background-large-after.webp",
     alt: "Before and after AI photo edit showing a cluttered product background cleaned into a studio background",
   },
   {
     title: "Remove text or marks",
     description: "Remove unwanted text, stains, or marks from images you own or have permission to edit.",
     prompt: "Remove the unwanted text or mark and reconstruct the background naturally.",
-    image: "/images/image-editor-cases/real-remove-text-marks-before-after.webp",
+    beforeImage: "/images/image-editor-cases/remove-text-marks-large-before.webp",
+    afterImage: "/images/image-editor-cases/remove-text-marks-large-after.webp",
     alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
   },
 ];
@@ -79,22 +84,7 @@ export default function ImageEditorPage() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {editUseCases.map((item) => (
-              <article key={item.title} className="flex h-full flex-col overflow-hidden rounded-[28px] border border-rsp-border bg-rsp-panel shadow-[0_16px_44px_rgba(58,41,30,0.08)]">
-                <div className="aspect-[3/2] overflow-hidden bg-rsp-surface">
-                  <img src={item.image} alt={item.alt} className="h-full w-full object-cover" />
-                </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <h3 className="font-heading text-2xl font-normal tracking-[-0.035em] text-rsp-text">{item.title}</h3>
-                  <p className="mt-2 flex-1 text-sm leading-6 text-rsp-muted">{item.description}</p>
-                  <p className="mt-4 rounded-2xl border border-rsp-border bg-white/55 px-4 py-3 text-xs leading-5 text-rsp-muted">
-                    <span className="font-bold text-rsp-text">Example instruction:</span> {item.prompt}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
+          <ImageEditorExamples examples={editUseCases} />
         </section>
       </main>
       <Footer />
