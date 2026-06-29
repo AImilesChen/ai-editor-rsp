@@ -56,10 +56,10 @@ export default function ImageEditorPage() {
           <div className="mx-auto mb-8 max-w-4xl text-center">
             <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-rsp-secondary">AI Photo Editor</p>
             <h1 className="mt-3 font-heading text-5xl font-normal leading-[0.95] tracking-[-0.055em] text-rsp-text md:text-7xl">
-              Remove unwanted people, objects, and distractions.
+              Remove people, objects, and text from photos.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-rsp-muted md:text-lg">
-              This editor is only for photo editing: upload an image, select the area to fix, describe the change, then download the cleaned result. For text-to-image generation, use the homepage.
+              Upload a photo, choose what to remove, preview the before/after, then download the cleaned result.
             </p>
           </div>
 

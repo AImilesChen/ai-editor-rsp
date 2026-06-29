@@ -7,10 +7,10 @@ import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pric
 
 const editTasks = [
   { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
-  { label: "Remove people", prompt: "Remove the unwanted people in the background. Keep the main subject, original camera angle, lighting, shadows, and scene structure natural. Fill the removed area cleanly so the edit is not noticeable." },
-  { label: "Remove object", prompt: "Remove the selected unwanted object from the photo. Preserve the surrounding background, lighting, shadows, texture, perspective, and all other parts of the image." },
-  { label: "Clean background", prompt: "Clean up distracting background elements and make the scene look natural, uncluttered, and polished. Preserve the main subject exactly." },
-  { label: "Remove text or marks", prompt: "Remove unwanted text, labels, stains, marks, or visual distractions from an image you own or have permission to edit. Reconstruct the background naturally and keep the rest unchanged." },
+  { label: "Remove people", prompt: "Remove unwanted people and keep the background natural." },
+  { label: "Remove objects", prompt: "Remove unwanted objects and fill the area naturally." },
+  { label: "Clean background clutter", prompt: "Clean up background distractions and keep the main subject unchanged." },
+  { label: "Remove text or marks", prompt: "Remove the unwanted text or mark and reconstruct the background naturally." },
   { label: "Remove background", prompt: "Remove the background from the uploaded image, keep the subject edges clean and natural, and place the subject on a transparent or soft neutral backdrop." },
   { label: "Change background", prompt: "Keep the subject unchanged and replace only the background with a cozy lofi night-study room, warm lamp light, rain on the window, and soft film grain." },
   { label: "Replace object", prompt: "Replace the selected object with a premium desk lamp, matching the original perspective, lighting, shadows, and realistic texture." },
@@ -37,8 +37,8 @@ type PromptModifierKind = "style" | "lighting" | "shot";
 const previewImages: Record<string, string> = {
   "Professional headshot": "/images/prompt-cases/examples/ai-headshot-linkedin-corporate-headshot.webp",
   "Remove people": "/images/generated/double-exposure-travel-rishikesh.webp",
-  "Remove object": "/images/generated/cinematic-movie-poster.webp",
-  "Clean background": "/images/generated/lofi-girl-vibes.webp",
+  "Remove objects": "/images/generated/cinematic-movie-poster.webp",
+  "Clean background clutter": "/images/generated/lofi-girl-vibes.webp",
   "Remove text or marks": "/images/generated/diwali-light-portrait.webp",
   "Remove background": "/images/generated/double-exposure-travel-rishikesh.webp",
   "Change background": "/images/generated/lofi-girl-vibes.webp",
@@ -50,6 +50,9 @@ const previewImages: Record<string, string> = {
   "Product shot": "/images/generated/diwali-light-portrait.webp",
   "Social avatar": "/images/generated/cinematic-movie-poster.webp",
 };
+
+const editorCleanupDemoBefore = "/images/image-editor-cases/tourist-people-removal-v2-before.webp";
+const editorCleanupDemoAfter = "/images/image-editor-cases/tourist-people-removal-v2-after.webp";
 
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";
@@ -219,14 +222,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [comparePosition, setComparePosition] = useState(50);
   const [isDraggingCompare, setIsDraggingCompare] = useState(false);
-  const [editScope, setEditScope] = useState<EditScope>(editorOnly ? "selected" : "whole");
+  const [editScope, setEditScope] = useState<EditScope>("whole");
   const [editRegion, setEditRegion] = useState<EditRegion | null>(null);
   const [regionStart, setRegionStart] = useState<{ x: number; y: number } | null>(null);
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
   const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
   const [expandedLookGroups, setExpandedLookGroups] = useState<Record<PromptModifierKind, boolean>>({ style: false, lighting: false, shot: false });
 
-  const editorOnlyTasks = editTasks.filter((item) => ["Remove people", "Remove object", "Clean background", "Remove text or marks", "Remove background", "Change background"].includes(item.label));
+  const editorOnlyTasks = editTasks.filter((item) => ["Remove people", "Remove objects", "Clean background clutter", "Remove text or marks"].includes(item.label));
   const activeTasks = mode === "edit" ? (editorOnly ? editorOnlyTasks : editTasks) : textTasks;
   const headshotPrompt = editTasks[0].prompt;
   const isHeadshotMode = mode === "edit" && task === "Professional headshot";
@@ -274,7 +277,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const advancedHeadshotRatios = visibleRatios.filter((item) => !["3:4", "1:1", "4:5"].includes(item.ratio));
   const displayedEditRatios = isHeadshotMode ? primaryHeadshotRatios : visibleRatios;
   const showHeadshotSteps = mode === "edit" && isHeadshotMode;
-  const showEditAreaControls = mode === "edit" && !isHeadshotMode && (uploadedImage || !isHero);
+  const showEditAreaControls = mode === "edit" && !isHeadshotMode && Boolean(uploadedImage);
 
   useEffect(() => {
     fetch("/api/session")
@@ -400,10 +403,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setUploadedName(file.name);
       if (mode === "edit") {
         setRatio(task === "Professional headshot" ? "3:4" : "auto");
-        setEditScope(task === "Professional headshot" ? "whole" : "selected");
+        setEditScope("whole");
       }
       setGeneratedImage(null);
-      setEditRegion(mode === "edit" && task !== "Professional headshot" ? { x: 24, y: 24, width: 38, height: 34 } : null);
+      setEditRegion(null);
       setError(null);
       setState("idle");
     } catch (err) {
@@ -586,8 +589,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-none" : "p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
-            <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>AI Image Editor</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : editorOnly ? "AI Photo Editor" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>{editorOnly ? "STEP 1 · UPLOAD" : "AI Image Editor"}</p>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : editorOnly ? "Start with your photo" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
@@ -636,8 +639,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
               <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
               <span className="min-w-0">
-                <span className={`${isHero ? "text-base" : "text-sm"} block font-semibold text-white`}>{uploadedName ? "Image uploaded" : "Upload image to start"}</span>
-                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Drag and drop an image here, or browse files. PNG, JPG, or WebP under 5 MB.")}</span>
+                <span className={`${isHero ? "text-base" : "text-base"} block font-semibold text-white`}>{uploadedName ? "Photo uploaded" : "Upload photo to edit"}</span>
+                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
               </span>
               {uploadedImage && <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
             </label>
@@ -645,7 +648,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </>
         )}
 
-        {mode === "edit" && (
+        {mode === "edit" && (!editorOnly || Boolean(uploadedImage)) && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-2.5`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-white/78">Image size</p>
@@ -697,7 +700,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Describe your image") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{editorOnly ? "Step 2 · Choose cleanup" : isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Describe your image") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
           {!hidePromptLibraryLink && !(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
         </div>
         <textarea
@@ -705,7 +708,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4`}
         />
         {isHeadshotMode && uploadedImage && (
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
@@ -781,14 +784,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               Current output: {currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits
             </p>
           )}
-          {authenticated ? (
+          {authenticated && editorOnly && needsUpload ? (
+            <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
+              Upload photo to start
+            </label>
+          ) : authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
                 {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
               </button>
-              <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
-                View generation history
-              </a>
+              {(uploadedImage || generatedImage) && (
+                <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
+                  View generation history
+                </a>
+              )}
             </>
           ) : (
             <a href={mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
@@ -816,7 +825,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       </aside>
 
       <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : "min-h-[520px] p-4 md:p-6"}`}>
-        <div className={`${isHero ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
+        <div className={`${isHero || editorOnly ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
         {!hidePreviewIntro && <div className={`${isHero ? "mb-3" : "mb-5"}`}>
@@ -831,8 +840,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : (
             <div className="mx-auto max-w-4xl text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
-              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{editorOnly ? "Fix photos with AI" : mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Upload a photo, remove unwanted people or objects, select the edit area, then preview and download the cleaned result." : mode === "edit" ? "Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
+              <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{editorOnly ? "See what gets removed" : mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Drag the divider to compare the original photo with the cleaned result." : mode === "edit" ? "Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
             </div>
           )}
 
@@ -927,17 +936,22 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                     if (event.key === "ArrowRight") setComparePosition((value) => Math.min(88, value + 4));
                   }}
                 >
-                  <img src={previewImage} alt="Before reference demo" className="absolute inset-0 h-full w-full object-cover opacity-80 brightness-90 saturate-90" draggable={false} />
+                  <img src={editorOnly ? editorCleanupDemoBefore : previewImage} alt={editorOnly ? "Before travel photo with background tourists" : "Before reference demo"} className="absolute inset-0 h-full w-full object-cover opacity-90 brightness-95 saturate-95" draggable={false} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/38 via-transparent to-black/20" />
                   <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}>
-                    <img src={previewImage} alt="After edited result demo" className="h-full w-full object-cover brightness-110 contrast-110 saturate-125" draggable={false} />
+                    <img src={editorOnly ? editorCleanupDemoAfter : previewImage} alt={editorOnly ? "After AI cleanup with tourists removed" : "After edited result demo"} className="h-full w-full object-cover brightness-110 contrast-110 saturate-115" draggable={false} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-transparent to-black/10" />
                   </div>
                   <span className="absolute left-5 top-5 rounded-full border border-white/14 bg-black/62 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-lg backdrop-blur-sm">Before · example</span>
                   <span className="absolute right-5 top-5 rounded-full border border-[#86EFAC]/35 bg-[#102014]/78 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#C8FADC] shadow-lg backdrop-blur-sm">After · AI edit</span>
-                  <div className="absolute bottom-5 left-5 max-w-[340px] text-left md:bottom-7 md:left-7">
-                    <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">Preview your edit before download</p>
-                    <p className="mt-3 max-w-[300px] text-sm leading-6 text-white/70">Upload your photo to see your own before/after comparison here.</p>
+                  <div className="absolute bottom-5 left-5 max-w-[380px] text-left md:bottom-7 md:left-7">
+                    <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">{editorOnly ? "Remove people, objects, or text" : "Preview your edit before download"}</p>
+                    <p className="mt-3 max-w-[330px] text-sm leading-6 text-white/72">{editorOnly ? "Upload your photo, choose what to remove, then compare the cleaned result before download." : "Upload your photo to see your own before/after comparison here."}</p>
+                    {editorOnly && (
+                      <label htmlFor="upload-image" className="mt-4 inline-flex cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-sm font-bold text-[#102014] shadow-[0_10px_30px_rgba(134,239,172,0.22)] transition hover:bg-[#A7F3D0]">
+                        Upload your photo
+                      </label>
+                    )}
                   </div>
                   <div className="pointer-events-none absolute inset-y-0 w-px bg-white/85 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
                   <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
@@ -958,7 +972,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
           </div>
         )}
-        {!generatedImage && (
+        {!generatedImage && (!editorOnly || Boolean(uploadedImage)) && (
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
