@@ -14,31 +14,31 @@ export const metadata: Metadata = {
 
 const editUseCases = [
   {
-    title: "Travel photo cleanup",
-    description: "Remove background tourists while keeping the main person and travel scene believable.",
-    beforeImage: "/images/image-editor-cases/premium-travel-cleanup-before.webp",
-    afterImage: "/images/image-editor-cases/premium-travel-cleanup-after.webp",
-    alt: "Before and after AI photo edit showing tourists removed from a travel portrait",
+    title: "Remove people from travel photos",
+    description: "Clear background people from open travel scenes while keeping the road, light, and perspective natural.",
+    beforeImage: "/images/image-editor-cases/remove-people-large-before.webp",
+    afterImage: "/images/image-editor-cases/remove-people-large-after.webp",
+    alt: "Before and after AI photo edit showing people removed from a travel road photo",
   },
   {
     title: "Object removal",
-    description: "Clean receipts, wrappers, keys, and other table clutter without restaging the photo.",
-    beforeImage: "/images/image-editor-cases/premium-cafe-cleanup-before.webp",
-    afterImage: "/images/image-editor-cases/premium-cafe-cleanup-after.webp",
+    description: "Remove distracting desk or table items while preserving hands, cups, shadows, and surface texture.",
+    beforeImage: "/images/image-editor-cases/remove-object-large-before.webp",
+    afterImage: "/images/image-editor-cases/remove-object-large-after.webp",
     alt: "Before and after AI photo edit showing unwanted objects removed from a cafe table photo",
   },
   {
     title: "Product background cleanup",
-    description: "Remove packaging clutter and keep the product ready for a listing or social post.",
-    beforeImage: "/images/image-editor-cases/premium-product-cleanup-before.webp",
-    afterImage: "/images/image-editor-cases/premium-product-cleanup-after.webp",
+    description: "Remove sale cards and visual clutter so the product stays sharp enough for listings and ads.",
+    beforeImage: "/images/image-editor-cases/clean-product-background-large-before.webp",
+    afterImage: "/images/image-editor-cases/clean-product-background-large-after.webp",
     alt: "Before and after AI photo edit showing product packaging clutter removed",
   },
   {
     title: "Text and mark removal",
-    description: "Erase sample marks, date stamps, or labels from images you own or can modify.",
-    beforeImage: "/images/image-editor-cases/premium-text-cleanup-before.webp",
-    afterImage: "/images/image-editor-cases/premium-text-cleanup-after.webp",
+    description: "Erase sample labels, date stamps, or marks from images you own without leaving blur patches.",
+    beforeImage: "/images/image-editor-cases/remove-text-marks-large-before.webp",
+    afterImage: "/images/image-editor-cases/remove-text-marks-large-after.webp",
     alt: "Before and after AI photo edit showing sample text removed from an image",
   },
 ];
@@ -55,7 +55,7 @@ export default function ImageEditorPage() {
               Clean up a photo without rebuilding it from scratch.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-rsp-muted md:text-lg">
-              Upload your image, choose the cleanup task, and generate a before/after result using a higher-quality image edit model.
+              Upload your image, choose the cleanup task, and generate a before/after result through a premium reference-preserving edit route.
             </p>
             <div className="mx-auto mt-6 grid max-w-3xl gap-3 text-left text-sm text-rsp-muted sm:grid-cols-3">
               {["1. Upload your photo", "2. Pick what to remove", "3. Preview and download"].map((step) => (
@@ -83,7 +83,7 @@ export default function ImageEditorPage() {
               <h2 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">Drag to compare before and after</h2>
             </div>
             <p className="max-w-lg text-sm leading-6 text-rsp-muted">
-              Four vertical, real-use examples: travel people removal, object cleanup, product background cleanup, and text/mark removal.
+              Four large before/after examples selected for clean reconstruction, sharp product edges, and no obvious blur-patch artifacts.
             </p>
           </div>
 
