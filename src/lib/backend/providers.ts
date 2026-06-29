@@ -1,5 +1,5 @@
 import { providerSafetyOptions, safePromptInstruction } from "@/lib/backend/safety";
-import { isPremiumCleanupStyle, normalizeGenerationRatio, ratioToImageSize } from "@/lib/generation-pricing";
+import { normalizeGenerationRatio, ratioToImageSize } from "@/lib/generation-pricing";
 
 const FAL_QUEUE_BASE = "https://queue.fal.run";
 
@@ -51,10 +51,6 @@ function falImageToImageModel() {
   return process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/flux/dev/image-to-image";
 }
 
-function falPremiumEditModel() {
-  return process.env.FAL_PREMIUM_IMAGE_EDIT_MODEL || process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/nano-banana-pro/edit";
-}
-
 function falHeadshotModel() {
   // GPT Image 2 on fal.ai is currently text-to-image only. For uploaded-photo
   // professional headshots we need an edit endpoint that accepts reference
@@ -81,7 +77,6 @@ function ratioToFalAspectRatio(ratio?: string) {
 
 function submitModel(input: GenerateRequest) {
   if (isHeadshotInput(input)) return falHeadshotModel();
-  if (input.imageDataUrl && isPremiumCleanupStyle(input.style)) return falPremiumEditModel();
   return input.imageDataUrl ? falImageToImageModel() : falModel();
 }
 
@@ -114,15 +109,6 @@ export function buildFalRequestBody(input: GenerateRequest) {
   const isHeadshotEdit = isHeadshotInput(input);
   const model = submitModel(input);
   const usesKontext = model.includes("kontext");
-  const isPremiumCleanupEdit = Boolean(input.imageDataUrl && isPremiumCleanupStyle(input.style));
-  const cleanupInstruction = isPremiumCleanupEdit
-    ? [
-        "The uploaded image is the source photo and must remain visually recognizable.",
-        "Perform a realistic cleanup edit, not a new image generation. Preserve the main subject, camera angle, lens perspective, body/face/product shape, lighting direction, colors, and scene geometry unless the user explicitly asks otherwise.",
-        "Remove only the unwanted people, objects, clutter, text, marks, or background distractions implied by the selected cleanup task and user prompt.",
-        "Reconstruct the removed area with natural background texture, matching shadows, depth of field, and perspective. Do not blur the area as a shortcut, do not add obvious artifacts, and do not change the main subject.",
-      ].join(" ")
-    : "";
   const referenceInstruction = input.imageDataUrl
     ? isHeadshotEdit
       ? [
@@ -132,7 +118,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
           "Transform presentation details into a realistic professional profile photo: clean blazer or requested professional outfit, no crossbody bag, no visible hands, no lower body, polished grooming, plain neutral grey studio background, no trees, no street, no outdoor park, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
           "Do not invent a new person, do not change ethnicity, do not change facial geometry, do not over-beautify into a different face, and do not keep hats/sunglasses/casual fashion when the user asks for professional attire.",
         ].join(" ")
-      : cleanupInstruction || "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
+      : "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
     : "Create a new image from the user-provided text prompt.";
   const regionInstruction = input.imageDataUrl && input.editRegion
     ? `The user selected a local redraw area on the uploaded image: left ${input.editRegion.x.toFixed(1)}%, top ${input.editRegion.y.toFixed(1)}%, width ${input.editRegion.width.toFixed(1)}%, height ${input.editRegion.height.toFixed(1)}%. Prioritize changes inside this selected rectangle and keep the unselected area as unchanged as possible.`
@@ -181,9 +167,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
       limit_generations: true,
       system_prompt: isHeadshotEdit
         ? "You are an expert professional headshot retoucher. Preserve the uploaded person's identity while replacing clothing, background, and framing for a realistic business portrait. Never preserve bags, full-body pose, hands, street scenery, trees, or outdoor background when a professional headshot is requested."
-        : isPremiumCleanupEdit
-          ? "You are an expert photo cleanup editor. Use the uploaded image as the exact source. Remove only the requested distractions, reconstruct background naturally, preserve the main subject and camera perspective, avoid blur patches, avoid changing identity, products, faces, clothing, or composition."
-          : "",
+        : "",
     };
   }
 

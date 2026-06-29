@@ -8,7 +8,7 @@ export type GenerationQuote = {
   sizeMultiplier: 1 | 2;
   mode: "text-to-image" | "image-to-image";
   creditsCharged: number;
-  costBasis: "$0.025/MP text-to-image; premium uploaded-photo edits use higher quality image-edit models and are quoted per edit complexity";
+  costBasis: "$0.025/MP text-to-image, $0.03/MP image-to-image; fal.ai rounds image output up to full megapixels";
 };
 
 const SUPPORTED_RATIOS: GenerationRatio[] = ["4:5", "5:4", "3:4", "4:3", "9:16", "16:9", "1:1"];
@@ -44,25 +44,7 @@ function generationSizeLabel(requestedRatio: string, imageSize: GenerationQuote[
 }
 
 export function isProfessionalHeadshotStyle(style?: string | null) {
-  return normalizedStyle(style) === "professional headshot";
-}
-
-function normalizedStyle(style?: string | null) {
-  return String(style || "").trim().toLowerCase();
-}
-
-export function isPremiumCleanupStyle(style?: string | null) {
-  return ["remove people", "remove objects", "clean background clutter", "remove text or marks"].includes(normalizedStyle(style));
-}
-
-function imageEditBaseCredits(style?: string | null) {
-  const styleKey = normalizedStyle(style);
-  if (styleKey === "professional headshot") return 6;
-  if (styleKey === "remove people") return 6;
-  if (styleKey === "remove objects") return 5;
-  if (styleKey === "clean background clutter") return 5;
-  if (styleKey === "remove text or marks") return 4;
-  return 3;
+  return String(style || "").trim().toLowerCase() === "professional headshot";
 }
 
 export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: string | null; style?: string | null }): GenerationQuote {
@@ -72,7 +54,7 @@ export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: s
   const imageSize = ratioToImageSize(ratio);
   const isSmallSize = imageSize === "portrait_4_3" || imageSize === "landscape_4_3";
   const sizeMultiplier: 1 | 2 = isSmallSize ? 1 : 2;
-  const baseCredits = mode === "image-to-image" ? imageEditBaseCredits(input.style) : 1;
+  const baseCredits = isProfessionalHeadshotStyle(input.style) && mode === "image-to-image" ? 4 : mode === "image-to-image" ? 2 : 1;
   return {
     ratio,
     requestedRatio,
@@ -81,7 +63,7 @@ export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: s
     sizeMultiplier,
     mode,
     creditsCharged: baseCredits * sizeMultiplier,
-    costBasis: "$0.025/MP text-to-image; premium uploaded-photo edits use higher quality image-edit models and are quoted per edit complexity",
+    costBasis: "$0.025/MP text-to-image, $0.03/MP image-to-image; fal.ai rounds image output up to full megapixels",
   };
 }
 

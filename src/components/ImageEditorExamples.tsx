@@ -18,8 +18,8 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
   const [position, setPosition] = useState(52);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[30px] border border-rsp-border bg-rsp-panel shadow-[0_22px_70px_rgba(58,41,30,0.12)]">
-      <div className="relative aspect-[25/17] overflow-hidden bg-rsp-surface">
+    <article className="flex h-full flex-col overflow-hidden rounded-[32px] border border-rsp-border bg-rsp-panel shadow-[0_22px_70px_rgba(58,41,30,0.12)]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-rsp-surface">
         <img src={item.beforeImage} alt={`${item.alt} before edit`} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${position}%)` }}>
           <img src={item.afterImage} alt={`${item.alt} after edit`} className="h-full w-full object-cover" />
@@ -55,7 +55,7 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5 md:p-6">
-        <h3 className="font-heading text-2xl font-normal tracking-[-0.04em] text-rsp-text md:text-[28px]">{item.title}</h3>
+        <h3 className="font-heading text-2xl font-normal tracking-[-0.04em] text-rsp-text md:text-[30px]">{item.title}</h3>
         <p className="mt-3 text-sm leading-6 text-rsp-muted md:text-base">{item.description}</p>
       </div>
     </article>
@@ -64,7 +64,7 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
 
 export default function ImageEditorExamples({ examples }: ImageEditorExamplesProps) {
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-2">
+    <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2">
       {examples.map((item) => (
         <BeforeAfterSlider key={item.title} item={item} />
       ))}
