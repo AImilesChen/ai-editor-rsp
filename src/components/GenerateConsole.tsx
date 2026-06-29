@@ -51,8 +51,8 @@ const previewImages: Record<string, string> = {
   "Social avatar": "/images/generated/cinematic-movie-poster.webp",
 };
 
-const editorCleanupDemoBefore = "/images/image-editor-cases/tourist-people-removal-v2-before.webp";
-const editorCleanupDemoAfter = "/images/image-editor-cases/tourist-people-removal-v2-after.webp";
+const editorCleanupDemoBefore = "/images/image-editor-cases/premium-remove-people-before.webp";
+const editorCleanupDemoAfter = "/images/image-editor-cases/premium-remove-people-after.webp";
 
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";

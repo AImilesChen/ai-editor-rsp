@@ -54,7 +54,7 @@ export function quoteGenerationCredits(input: { ratio?: string; imageDataUrl?: s
   const imageSize = ratioToImageSize(ratio);
   const isSmallSize = imageSize === "portrait_4_3" || imageSize === "landscape_4_3";
   const sizeMultiplier: 1 | 2 = isSmallSize ? 1 : 2;
-  const baseCredits = isProfessionalHeadshotStyle(input.style) && mode === "image-to-image" ? 4 : mode === "image-to-image" ? 2 : 1;
+  const baseCredits = isProfessionalHeadshotStyle(input.style) && mode === "image-to-image" ? 4 : mode === "image-to-image" ? 4 : 1;
   return {
     ratio,
     requestedRatio,

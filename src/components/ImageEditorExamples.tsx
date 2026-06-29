@@ -19,7 +19,7 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[32px] border border-rsp-border bg-rsp-panel shadow-[0_22px_70px_rgba(58,41,30,0.12)]">
-      <div className="relative aspect-[4/5] overflow-hidden bg-rsp-surface">
+      <div className="relative aspect-[120/82] overflow-hidden bg-rsp-surface">
         <img src={item.beforeImage} alt={`${item.alt} before edit`} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${position}%)` }}>
           <img src={item.afterImage} alt={`${item.alt} after edit`} className="h-full w-full object-cover" />
@@ -42,8 +42,8 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
         <input
           aria-label={`Drag to compare before and after: ${item.title}`}
           type="range"
-          min="8"
-          max="92"
+          min="12"
+          max="88"
           value={position}
           onChange={(event) => setPosition(Number(event.target.value))}
           className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
@@ -64,7 +64,7 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
 
 export default function ImageEditorExamples({ examples }: ImageEditorExamplesProps) {
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2">
+    <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-2">
       {examples.map((item) => (
         <BeforeAfterSlider key={item.title} item={item} />
       ))}

@@ -48,7 +48,9 @@ function falQueueRequestModel(model = falModel()) {
 }
 
 function falImageToImageModel() {
-  return process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/flux/dev/image-to-image";
+  // Image Editor is a paid cleanup workflow, so default uploads to a
+  // reference-preserving edit route instead of a generic image-to-image route.
+  return process.env.FAL_IMAGE_TO_IMAGE_MODEL || "fal-ai/nano-banana-pro/edit";
 }
 
 function falHeadshotModel() {
