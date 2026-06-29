@@ -5,7 +5,6 @@ import { useState } from "react";
 type CleanupExample = {
   title: string;
   description: string;
-  prompt: string;
   beforeImage: string;
   afterImage: string;
   alt: string;
@@ -50,18 +49,14 @@ function BeforeAfterSlider({ item }: { item: CleanupExample }) {
           className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
         />
 
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-2xl bg-rsp-text/75 px-4 py-3 text-xs font-semibold text-white backdrop-blur md:text-sm">
-          <span>Drag left or right to compare</span>
-          <span className="hidden text-white/75 sm:inline">Clearer cleanup preview</span>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-rsp-text/65 px-4 py-2 text-xs font-semibold text-white backdrop-blur md:text-sm">
+          Drag to compare
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-6 md:p-7">
+      <div className="flex flex-1 flex-col p-5 md:p-6">
         <h3 className="font-heading text-3xl font-normal tracking-[-0.04em] text-rsp-text md:text-[34px]">{item.title}</h3>
-        <p className="mt-3 flex-1 text-base leading-7 text-rsp-muted">{item.description}</p>
-        <p className="mt-5 rounded-2xl border border-rsp-border bg-white/60 px-4 py-3 text-sm leading-6 text-rsp-muted">
-          <span className="font-bold text-rsp-text">Example instruction:</span> {item.prompt}
-        </p>
+        <p className="mt-3 text-base leading-7 text-rsp-muted">{item.description}</p>
       </div>
     </article>
   );

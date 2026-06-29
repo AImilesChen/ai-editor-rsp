@@ -15,34 +15,34 @@ export const metadata: Metadata = {
 const editUseCases = [
   {
     title: "Remove people from travel photos",
-    description: "Clean background distractions while keeping the main subject, lighting, and scene natural.",
+    description: "Turn crowded travel shots into clean photos worth saving and sharing.",
     prompt: "Remove the people in the background and keep the main subject unchanged.",
-    beforeImage: "/images/image-editor-cases/remove-people-large-before.webp",
-    afterImage: "/images/image-editor-cases/remove-people-large-after.webp",
+    beforeImage: "/images/image-editor-cases/tourist-people-removal-v2-before.webp",
+    afterImage: "/images/image-editor-cases/tourist-people-removal-v2-after.webp",
     alt: "Before and after AI photo edit showing background people removed while the main subject stays unchanged",
   },
   {
     title: "Remove unwanted objects",
-    description: "Select a distracting object and reconstruct the surrounding texture, shadows, and perspective.",
+    description: "Clean up phones, receipts, cables, and table clutter in one pass.",
     prompt: "Remove the selected object and fill the area naturally.",
-    beforeImage: "/images/image-editor-cases/remove-object-large-before.webp",
-    afterImage: "/images/image-editor-cases/remove-object-large-after.webp",
+    beforeImage: "/images/image-editor-cases/object-removal-table-v2-before.webp",
+    afterImage: "/images/image-editor-cases/object-removal-table-v2-after.webp",
     alt: "Before and after AI photo edit showing a distracting object removed from a product photo",
   },
   {
     title: "Clean product backgrounds",
-    description: "Make product shots look simpler, cleaner, and more sales-ready without changing the product.",
+    description: "Remove sales clutter and keep the product sharp for cleaner listings.",
     prompt: "Clean up the background and keep the product sharp and unchanged.",
-    beforeImage: "/images/image-editor-cases/clean-product-background-large-before.webp",
-    afterImage: "/images/image-editor-cases/clean-product-background-large-after.webp",
+    beforeImage: "/images/image-editor-cases/product-background-cleanup-v2-before.webp",
+    afterImage: "/images/image-editor-cases/product-background-cleanup-v2-after.webp",
     alt: "Before and after AI photo edit showing a cluttered product background cleaned into a studio background",
   },
   {
     title: "Remove text or marks",
-    description: "Remove unwanted text, stains, or marks from images you own or have permission to edit.",
+    description: "Erase unwanted marks from images you own or have permission to edit.",
     prompt: "Remove the unwanted text or mark and reconstruct the background naturally.",
-    beforeImage: "/images/image-editor-cases/remove-text-marks-large-before.webp",
-    afterImage: "/images/image-editor-cases/remove-text-marks-large-after.webp",
+    beforeImage: "/images/image-editor-cases/text-marks-removal-v2-before.webp",
+    afterImage: "/images/image-editor-cases/text-marks-removal-v2-after.webp",
     alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
   },
 ];
@@ -79,8 +79,8 @@ export default function ImageEditorPage() {
               <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Common edits</p>
               <h2 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">Photo cleanup examples</h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-rsp-muted">
-              Choose a task in the editor above or write your own instruction. Only edit images you own or have permission to modify.
+            <p className="max-w-lg text-sm leading-6 text-rsp-muted">
+              Drag each image to see what gets removed. Only edit images you own or have permission to modify.
             </p>
           </div>
 
