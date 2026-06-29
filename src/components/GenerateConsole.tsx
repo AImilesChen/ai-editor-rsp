@@ -944,15 +944,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                   </div>
                   <span className="absolute left-5 top-5 rounded-full border border-white/14 bg-black/62 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-lg backdrop-blur-sm">Before · example</span>
                   <span className="absolute right-5 top-5 rounded-full border border-[#86EFAC]/35 bg-[#102014]/78 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#C8FADC] shadow-lg backdrop-blur-sm">After · AI edit</span>
-                  <div className="absolute bottom-5 left-5 max-w-[380px] text-left md:bottom-7 md:left-7">
-                    <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">{editorOnly ? "Remove people, objects, or text" : "Preview your edit before download"}</p>
-                    <p className="mt-3 max-w-[330px] text-sm leading-6 text-white/72">{editorOnly ? "Upload your photo, choose what to remove, then compare the cleaned result before download." : "Upload your photo to see your own before/after comparison here."}</p>
-                    {editorOnly && (
-                      <label htmlFor="upload-image" className="mt-4 inline-flex cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-sm font-bold text-[#102014] shadow-[0_10px_30px_rgba(134,239,172,0.22)] transition hover:bg-[#A7F3D0]">
-                        Upload your photo
-                      </label>
-                    )}
-                  </div>
+                  {!editorOnly && (
+                    <div className="absolute bottom-5 left-5 max-w-[380px] text-left md:bottom-7 md:left-7">
+                      <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">Preview your edit before download</p>
+                      <p className="mt-3 max-w-[330px] text-sm leading-6 text-white/72">Upload your photo to see your own before/after comparison here.</p>
+                    </div>
+                  )}
                   <div className="pointer-events-none absolute inset-y-0 w-px bg-white/85 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} />
                   <div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div>
                 </div>
