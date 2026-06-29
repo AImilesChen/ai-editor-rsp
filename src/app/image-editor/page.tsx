@@ -14,36 +14,32 @@ export const metadata: Metadata = {
 
 const editUseCases = [
   {
-    title: "Remove people from travel photos",
-    description: "Keep yourself in the shot. Remove tourists behind you and clean up the background.",
-    prompt: "Remove the people in the background and keep the main subject unchanged.",
-    beforeImage: "/images/image-editor-cases/vertical-travel-people-removal-before.webp",
-    afterImage: "/images/image-editor-cases/vertical-travel-people-removal-after.webp",
-    alt: "Before and after AI photo edit showing background people removed while the main subject stays unchanged",
+    title: "Travel photo cleanup",
+    description: "Remove background tourists while keeping the main person and travel scene believable.",
+    beforeImage: "/images/image-editor-cases/premium-travel-cleanup-before.webp",
+    afterImage: "/images/image-editor-cases/premium-travel-cleanup-after.webp",
+    alt: "Before and after AI photo edit showing tourists removed from a travel portrait",
   },
   {
-    title: "Remove unwanted objects",
-    description: "Remove receipts, wrappers, or small distractions from real table photos.",
-    prompt: "Remove the selected object and fill the area naturally.",
-    beforeImage: "/images/image-editor-cases/vertical-cafe-object-removal-before.webp",
-    afterImage: "/images/image-editor-cases/vertical-cafe-object-removal-after.webp",
-    alt: "Before and after AI photo edit showing a distracting object removed from a product photo",
+    title: "Object removal",
+    description: "Clean receipts, wrappers, keys, and other table clutter without restaging the photo.",
+    beforeImage: "/images/image-editor-cases/premium-cafe-cleanup-before.webp",
+    afterImage: "/images/image-editor-cases/premium-cafe-cleanup-after.webp",
+    alt: "Before and after AI photo edit showing unwanted objects removed from a cafe table photo",
   },
   {
-    title: "Clean product backgrounds",
-    description: "Remove sales clutter and keep the product sharp for cleaner listings.",
-    prompt: "Clean up the background and keep the product sharp and unchanged.",
-    beforeImage: "/images/image-editor-cases/vertical-product-background-cleanup-before.webp",
-    afterImage: "/images/image-editor-cases/vertical-product-background-cleanup-after.webp",
-    alt: "Before and after AI photo edit showing a cluttered product background cleaned into a studio background",
+    title: "Product background cleanup",
+    description: "Remove packaging clutter and keep the product ready for a listing or social post.",
+    beforeImage: "/images/image-editor-cases/premium-product-cleanup-before.webp",
+    afterImage: "/images/image-editor-cases/premium-product-cleanup-after.webp",
+    alt: "Before and after AI photo edit showing product packaging clutter removed",
   },
   {
-    title: "Remove text or marks",
-    description: "Erase sample text, date stamps, or visible marks from images you can edit.",
-    prompt: "Remove the unwanted text or mark and reconstruct the background naturally.",
-    beforeImage: "/images/image-editor-cases/vertical-text-marks-removal-before.webp",
-    afterImage: "/images/image-editor-cases/vertical-text-marks-removal-after.webp",
-    alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
+    title: "Text and mark removal",
+    description: "Erase sample marks, date stamps, or labels from images you own or can modify.",
+    beforeImage: "/images/image-editor-cases/premium-text-cleanup-before.webp",
+    afterImage: "/images/image-editor-cases/premium-text-cleanup-after.webp",
+    alt: "Before and after AI photo edit showing sample text removed from an image",
   },
 ];
 
@@ -53,14 +49,21 @@ export default function ImageEditorPage() {
       <Header />
       <main className="bg-rsp-bg pb-14 pt-28 md:pb-20 md:pt-32">
         <section className="rsp-container">
-          <div className="mx-auto mb-8 max-w-4xl text-center">
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-rsp-secondary">AI Photo Editor</p>
+          <div className="mx-auto mb-8 max-w-5xl text-center">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-rsp-secondary">Premium AI Photo Editor</p>
             <h1 className="mt-3 font-heading text-5xl font-normal leading-[0.95] tracking-[-0.055em] text-rsp-text md:text-7xl">
-              Remove people, objects, and text from photos.
+              Clean up a photo without rebuilding it from scratch.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-rsp-muted md:text-lg">
-              Upload a photo, choose what to remove, preview the before/after, then download the cleaned result.
+              Upload your image, choose the cleanup task, and generate a before/after result using a higher-quality image edit model.
             </p>
+            <div className="mx-auto mt-6 grid max-w-3xl gap-3 text-left text-sm text-rsp-muted sm:grid-cols-3">
+              {["1. Upload your photo", "2. Pick what to remove", "3. Preview and download"].map((step) => (
+                <div key={step} className="rounded-2xl border border-rsp-border bg-rsp-panel px-4 py-3 font-semibold text-rsp-text shadow-sm">
+                  {step}
+                </div>
+              ))}
+            </div>
           </div>
 
           <GenerateConsole
@@ -76,11 +79,11 @@ export default function ImageEditorPage() {
         <section className="rsp-container mt-14 md:mt-20">
           <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Common edits</p>
-              <h2 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">Photo cleanup examples</h2>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Real cleanup cases</p>
+              <h2 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">Drag to compare before and after</h2>
             </div>
             <p className="max-w-lg text-sm leading-6 text-rsp-muted">
-              Drag each image to see what gets removed. Only edit images you own or have permission to modify.
+              Four vertical, real-use examples: travel people removal, object cleanup, product background cleanup, and text/mark removal.
             </p>
           </div>
 

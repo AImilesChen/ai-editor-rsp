@@ -51,8 +51,8 @@ const previewImages: Record<string, string> = {
   "Social avatar": "/images/generated/cinematic-movie-poster.webp",
 };
 
-const editorCleanupDemoBefore = "/images/image-editor-cases/tourist-people-removal-v2-before.webp";
-const editorCleanupDemoAfter = "/images/image-editor-cases/tourist-people-removal-v2-after.webp";
+const editorCleanupDemoBefore = "/images/image-editor-cases/premium-travel-cleanup-before.webp";
+const editorCleanupDemoAfter = "/images/image-editor-cases/premium-travel-cleanup-after.webp";
 
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";
@@ -241,7 +241,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const promptPlaceholder = isHeadshotMode
     ? "Optional: add outfit, background, or lighting details. Leave blank to use the default professional headshot prompt."
     : mode === "edit"
-      ? "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
+      ? editorOnly ? "Optional: add detail, e.g. remove the two people behind me and keep the main subject unchanged." : "Example: remove the background, keep the product sharp, and add a soft beige studio backdrop."
       : "Describe the image you want to create, or start from a ready prompt below.";
   const userPrompt = prompt.trim();
   const headshotIdentityGuard = "Keep the exact same person from the uploaded photo. Preserve face identity, facial structure, age, skin tone, hairstyle, expression, and recognizable natural details. The submitted reference is pre-cropped toward the face and upper torso for headshot quality. Generate a tight shoulders-up professional headshot with the face large and centered; do not preserve full-body pose, outdoor background, crossbody bag, hands, or lower body.";
@@ -590,7 +590,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>{editorOnly ? "STEP 1 · UPLOAD" : "AI Image Editor"}</p>
-            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : editorOnly ? "Start with your photo" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
+            <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : editorOnly ? "Upload, choose cleanup, generate" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
           <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
             {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
@@ -618,7 +618,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {mode === "edit" && isHero && lockedMode === "edit" && !isHeadshotOnly && (
+        {mode === "edit" && isHero && lockedMode === "edit" && !isHeadshotOnly && !editorOnly && (
           <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.035] p-2.5">
             <p className={`${uploadedImage ? "sr-only" : "mb-2"} text-xs font-semibold uppercase tracking-[0.16em] text-white/70`}>Choose a simple mode</p>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -640,7 +640,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
               <span className="min-w-0">
                 <span className={`${isHero ? "text-base" : "text-base"} block font-semibold text-white`}>{uploadedName ? "Photo uploaded" : "Upload photo to edit"}</span>
-                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
+                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : editorOnly ? "PNG/JPG/WebP under 5 MB. We keep the source photo as the anchor." : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
               </span>
               {uploadedImage && <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
             </label>
@@ -778,6 +778,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
         </div>}
 
+        {editorOnly && !needsUpload && (
+          <div className="mt-3 rounded-2xl border border-[#D4A574]/20 bg-[#D4A574]/8 px-3 py-2 text-xs leading-5 text-[#F4DFC8]">
+            Premium cleanup quote: Remove people 6 credits · Remove objects 5 · Clean background 5 · Remove text/marks 4.
+          </div>
+        )}
+
         <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
           {isHeadshotMode && (
             <p className="rounded-2xl border border-[#86EFAC]/16 bg-[#102014]/35 px-3 py-2 text-center text-xs font-semibold text-[#C8FADC]">
@@ -791,7 +797,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `${editorOnly ? "Clean photo" : "Generate edit"} — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
               </button>
               {(uploadedImage || generatedImage) && (
                 <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
