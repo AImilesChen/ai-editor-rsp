@@ -36,10 +36,10 @@ type PromptModifierKind = "style" | "lighting" | "shot";
 
 const previewImages: Record<string, string> = {
   "Professional headshot": "/images/prompt-cases/examples/ai-headshot-linkedin-corporate-headshot.webp",
-  "Remove people": "/images/generated/double-exposure-travel-rishikesh.webp",
-  "Remove objects": "/images/generated/cinematic-movie-poster.webp",
-  "Clean background clutter": "/images/generated/lofi-girl-vibes.webp",
-  "Remove text or marks": "/images/generated/diwali-light-portrait.webp",
+  "Remove people": "/images/image-editor-cases/image2-travel-people-removal-before.webp",
+  "Remove objects": "/images/image-editor-cases/image2-object-removal-table-before.webp",
+  "Clean background clutter": "/images/image-editor-cases/image2-product-background-cleanup-before.webp",
+  "Remove text or marks": "/images/image-editor-cases/image2-text-marks-removal-before.webp",
   "Remove background": "/images/generated/double-exposure-travel-rishikesh.webp",
   "Change background": "/images/generated/lofi-girl-vibes.webp",
   "Replace object": "/images/generated/cinematic-movie-poster.webp",
@@ -51,8 +51,8 @@ const previewImages: Record<string, string> = {
   "Social avatar": "/images/generated/cinematic-movie-poster.webp",
 };
 
-const editorCleanupDemoBefore = "/images/image-editor-cases/tourist-people-removal-v2-before.webp";
-const editorCleanupDemoAfter = "/images/image-editor-cases/tourist-people-removal-v2-after.webp";
+const editorCleanupDemoBefore = "/images/image-editor-cases/image2-travel-people-removal-before.webp";
+const editorCleanupDemoAfter = "/images/image-editor-cases/image2-travel-people-removal-after.webp";
 
 type GenerateConsoleProps = {
   headingLevel?: "h1" | "h2";

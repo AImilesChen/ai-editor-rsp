@@ -16,29 +16,29 @@ const editUseCases = [
   {
     title: "Remove people from travel photos",
     description: "Remove background tourists while keeping the main person, pose, and travel scene believable.",
-    beforeImage: "/images/image-editor-cases/tourist-people-removal-v2-before.webp",
-    afterImage: "/images/image-editor-cases/tourist-people-removal-v2-after.webp",
+    beforeImage: "/images/image-editor-cases/image2-travel-people-removal-before.webp",
+    afterImage: "/images/image-editor-cases/image2-travel-people-removal-after.webp",
     alt: "Before and after AI photo edit showing background tourists removed while the main subject stays natural",
   },
   {
     title: "Remove unwanted objects",
     description: "Erase table clutter, phones, notes, or small distractions without changing the real scene.",
-    beforeImage: "/images/image-editor-cases/object-removal-table-v2-before.webp",
-    afterImage: "/images/image-editor-cases/object-removal-table-v2-after.webp",
+    beforeImage: "/images/image-editor-cases/image2-object-removal-table-before.webp",
+    afterImage: "/images/image-editor-cases/image2-object-removal-table-after.webp",
     alt: "Before and after AI photo edit showing unwanted objects removed from a cafe table",
   },
   {
     title: "Clean product backgrounds",
     description: "Remove promo tags and background clutter while keeping the product sharp for listings or ads.",
-    beforeImage: "/images/image-editor-cases/product-background-cleanup-v2-before.webp",
-    afterImage: "/images/image-editor-cases/product-background-cleanup-v2-after.webp",
+    beforeImage: "/images/image-editor-cases/image2-product-background-cleanup-before.webp",
+    afterImage: "/images/image-editor-cases/image2-product-background-cleanup-after.webp",
     alt: "Before and after AI photo edit showing product background distractions removed",
   },
   {
     title: "Remove text or marks",
     description: "Erase sample text, date stamps, or visible marks from images you own or can modify.",
-    beforeImage: "/images/image-editor-cases/text-marks-removal-v2-before.webp",
-    afterImage: "/images/image-editor-cases/text-marks-removal-v2-after.webp",
+    beforeImage: "/images/image-editor-cases/image2-text-marks-removal-before.webp",
+    afterImage: "/images/image-editor-cases/image2-text-marks-removal-after.webp",
     alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
   },
 ];
@@ -79,11 +79,11 @@ export default function ImageEditorPage() {
         <section className="rsp-container mt-14 md:mt-20">
           <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">QA-selected cleanup cases</p>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Approved cleanup examples</p>
               <h2 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">Drag to compare real before and after edits</h2>
             </div>
             <p className="max-w-lg text-sm leading-6 text-rsp-muted">
-              These examples were selected for clear removal, natural reconstruction, and unchanged subjects. Only edit images you own or have permission to modify.
+              These approved examples use the same clear before/after structure: visible distractions on the left, cleaned results on the right. Only edit images you own or have permission to modify.
             </p>
           </div>
 
