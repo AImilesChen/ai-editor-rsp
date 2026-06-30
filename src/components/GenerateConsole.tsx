@@ -77,6 +77,11 @@ type EditRegion = {
 
 type EditScope = "whole" | "selected";
 
+type BrushPoint = {
+  x: number;
+  y: number;
+};
+
 type FalResult = {
   ok?: boolean;
   data?: {
@@ -222,10 +227,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [comparePosition, setComparePosition] = useState(50);
   const [isDraggingCompare, setIsDraggingCompare] = useState(false);
-  const [editScope, setEditScope] = useState<EditScope>("whole");
+  const [editScope, setEditScope] = useState<EditScope>(defaultPreset === "headshot" ? "whole" : "selected");
   const [editRegion, setEditRegion] = useState<EditRegion | null>(null);
   const [regionStart, setRegionStart] = useState<{ x: number; y: number } | null>(null);
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
+  const [brushPoints, setBrushPoints] = useState<BrushPoint[]>([]);
   const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
   const [expandedLookGroups, setExpandedLookGroups] = useState<Record<PromptModifierKind, boolean>>({ style: false, lighting: false, shot: false });
 
@@ -307,6 +313,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         setRatio("3:4");
         setEditScope("whole");
         setEditRegion(null);
+        setBrushPoints([]);
         return;
       }
       setTask(matchedPrompt?.title || headshotTask.label);
@@ -350,6 +357,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setRatio("3:4");
       setEditScope("whole");
       setEditRegion(null);
+      setBrushPoints([]);
     }
   };
 
@@ -360,6 +368,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setRatio("3:4");
       setEditScope("whole");
       setEditRegion(null);
+      setBrushPoints([]);
       return;
     }
     setTask(null);
@@ -404,10 +413,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setUploadedName(file.name);
       if (mode === "edit") {
         setRatio(task === "Professional headshot" ? "3:4" : "auto");
-        setEditScope("whole");
+        setEditScope(task === "Professional headshot" ? "whole" : "selected");
       }
       setGeneratedImage(null);
       setEditRegion(null);
+      setBrushPoints([]);
       setError(null);
       setState("idle");
     } catch (err) {
@@ -502,6 +512,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     };
   };
 
+  const regionFromBrushPoints = (points: BrushPoint[]): EditRegion | null => {
+    if (points.length === 0) return null;
+    const xs = points.map((point) => point.x);
+    const ys = points.map((point) => point.y);
+    const padding = 4;
+    const minX = Math.max(0, Math.min(...xs) - padding);
+    const minY = Math.max(0, Math.min(...ys) - padding);
+    const maxX = Math.min(100, Math.max(...xs) + padding);
+    const maxY = Math.min(100, Math.max(...ys) + padding);
+    return {
+      x: minX,
+      y: minY,
+      width: Math.max(1, maxX - minX),
+      height: Math.max(1, maxY - minY),
+    };
+  };
+
   const beginRegionSelect = (event: PointerEvent<HTMLDivElement>) => {
     if (!uploadedImage || editScope !== "selected") return;
     event.preventDefault();
@@ -510,7 +537,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     const start = pointFromRegionEvent(event);
     setRegionStart(start);
     setIsSelectingRegion(true);
-    setEditRegion({ x: start.x, y: start.y, width: 1, height: 1 });
+    setBrushPoints([start]);
+    setEditRegion(regionFromBrushPoints([start]));
   };
 
   const updateRegionSelect = (event: PointerEvent<HTMLDivElement>) => {
@@ -518,11 +546,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     event.preventDefault();
     event.stopPropagation();
     const point = pointFromRegionEvent(event);
-    setEditRegion({
-      x: Math.min(regionStart.x, point.x),
-      y: Math.min(regionStart.y, point.y),
-      width: Math.max(1, Math.abs(point.x - regionStart.x)),
-      height: Math.max(1, Math.abs(point.y - regionStart.y)),
+    setBrushPoints((current) => {
+      const next = [...current, point].slice(-160);
+      setEditRegion(regionFromBrushPoints(next));
+      return next;
     });
   };
 
@@ -543,8 +570,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     readImageAspect(generatedImage).then(setUploadedAspect);
     setUploadedName("Generated result");
     setGeneratedImage(null);
-    setEditScope("whole");
+    setEditScope("selected");
     setEditRegion(null);
+    setBrushPoints([]);
     setRatio("auto");
     setState("idle");
     setError(null);
@@ -563,8 +591,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setUploadedName(null);
     setUploadedAspect(null);
     setGeneratedImage(null);
-    setEditScope("whole");
+    setEditScope("selected");
     setEditRegion(null);
+    setBrushPoints([]);
     if (mode === "edit") setState("idle");
   };
 
@@ -689,14 +718,22 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         {showEditAreaControls && (
           <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3 ${controlsLocked ? "opacity-55" : ""}`}>
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose edit area</p>
-              <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} disabled={controlsLocked} className="text-xs font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:hover:text-white/55">Clear selection</button>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Removal mode</p>
+              {editScope === "selected" && (editRegion || brushPoints.length > 0) && (
+                <button type="button" onClick={() => { setEditRegion(null); setBrushPoints([]); }} disabled={controlsLocked} className="text-xs font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:hover:text-white/55">Clear mask</button>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("whole"); setEditRegion(null); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
-              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); if (uploadedImage && !editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Select area to edit</button>
+              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); setEditRegion(null); setBrushPoints([]); }} className={`rounded-xl border px-3 py-2 text-left transition disabled:cursor-not-allowed ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>
+                <span className="block text-xs font-black">Brush area</span>
+                <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Paint what to remove</span>
+              </button>
+              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("whole"); setEditRegion(null); setBrushPoints([]); }} className={`rounded-xl border px-3 py-2 text-left transition disabled:cursor-not-allowed ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>
+                <span className="block text-xs font-black">Auto-detect</span>
+                <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Scan whole image</span>
+              </button>
             </div>
-            <p className="mt-2 text-xs leading-5 text-white/50">{uploadedImage ? "Draw directly on the large preview to mark the part you want to change." : "Upload an image first to choose an edit area."}</p>
+            <p className="mt-2 text-xs leading-5 text-white/50">{uploadedImage ? (editScope === "selected" ? "Brush over the person, object, text, or mark you want removed. Auto-detect is better for scattered clutter." : "AI scans the full photo and decides what to clean based on your prompt.") : "Upload an image first. Brush area will be the default for controlled object removal."}</p>
           </div>
         )}
 
@@ -856,7 +893,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div className="mx-auto max-w-4xl text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
               <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{editorOnly ? "See what gets removed" : mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Drag the divider to compare the original photo with the cleaned result." : mode === "edit" ? "Upload a photo, choose the whole image or a selected redraw area, describe the change, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Drag the divider to compare the original photo with the cleaned result." : mode === "edit" ? "Upload a photo, brush what to remove or let Auto-detect scan the image, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
             </div>
           )}
 
@@ -902,13 +939,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/6" />
                 {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">{isHeadshotMode ? "After · professional headshot" : "After · generated result"}</span><span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/62 px-4 py-1.5 text-xs font-bold text-white/85 shadow-lg backdrop-blur-sm">Drag to compare before / after</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
-                {!generatedImage && editScope === "selected" && editRegion && (
-                  <div className="pointer-events-none absolute rounded-lg border-2 border-[#86EFAC] bg-[#86EFAC]/10 shadow-[0_0_22px_rgba(134,239,172,0.32)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
+                {!generatedImage && editScope === "selected" && brushPoints.map((point, index) => (
+                  <span key={`${Math.round(point.x * 10)}-${Math.round(point.y * 10)}-${index}`} className="pointer-events-none absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#FF6B8A]/45 bg-[#FF4D6D]/32 shadow-[0_0_20px_rgba(255,77,109,0.24)]" style={{ left: `${point.x}%`, top: `${point.y}%` }} />
+                ))}
+                {!generatedImage && editScope === "selected" && editRegion && brushPoints.length > 0 && (
+                  <div className="pointer-events-none absolute rounded-[18px] border border-[#86EFAC]/75 bg-[#86EFAC]/6 shadow-[0_0_22px_rgba(134,239,172,0.24)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
                 )}
                 {!generatedImage && (
                   <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/78">
-                    <span className="rounded-full border border-white/12 bg-black/55 px-3 py-1.5 backdrop-blur-sm">{editScope === "selected" ? "Drag on this large preview to choose the edit area" : "Whole image will be edited"}</span>
-                    {editScope === "selected" && editRegion && <span className="rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-3 py-1.5 text-[#C8FADC] backdrop-blur-sm">Selected area</span>}
+                    <span className="rounded-full border border-white/12 bg-black/55 px-3 py-1.5 backdrop-blur-sm">{editScope === "selected" ? "Brush over the area to remove" : "Auto-detect will scan the whole image"}</span>
+                    {editScope === "selected" && brushPoints.length > 0 && <span className="rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-3 py-1.5 text-[#C8FADC] backdrop-blur-sm">Mask painted</span>}
                   </div>
                 )}
                 {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
