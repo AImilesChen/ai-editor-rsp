@@ -14,36 +14,48 @@ export const metadata: Metadata = {
 
 const editUseCases = [
   {
+    caseLabel: "Case 01 · Travel cleanup",
     title: "Remove people from travel photos",
-    description: "Remove background tourists while keeping the main person, pose, and travel scene believable.",
+    description: "A real travel-style scene with the main subject preserved and background tourists removed without turning the plaza into a fake studio backdrop.",
+    task: "Remove passersby",
+    result: "Subject and architecture stay natural",
     beforeImage: "/images/image-editor-cases/image2-travel-people-removal-before.webp",
     afterImage: "/images/image-editor-cases/image2-travel-people-removal-after.webp",
     alt: "Before and after AI photo edit showing background tourists removed while the main subject stays natural",
-    initialPosition: 34,
+    initialPosition: 42,
   },
   {
-    title: "Remove unwanted objects",
-    description: "Erase table clutter, phones, notes, or small distractions without changing the real scene.",
+    caseLabel: "Case 02 · Home clutter",
+    title: "Clean messy room clutter",
+    description: "The sofa, desk, window, table, and lighting remain consistent while papers, cups, cables, and visual noise are cleared from the room.",
+    task: "Remove clutter",
+    result: "Cleaner room, same layout",
     beforeImage: "/images/image-editor-cases/image2-object-removal-table-before.webp",
     afterImage: "/images/image-editor-cases/image2-object-removal-table-after.webp",
-    alt: "Before and after AI photo edit showing unwanted objects removed from a cafe table",
-    initialPosition: 36,
+    alt: "Before and after AI photo edit showing clutter removed from a living room and home office",
+    initialPosition: 48,
   },
   {
+    caseLabel: "Case 03 · Product photo",
     title: "Clean product backgrounds",
-    description: "Remove promo tags and background clutter while keeping the product sharp for listings or ads.",
+    description: "Product shape, label direction, and lighting stay stable while the surrounding background distractions are reduced for a cleaner listing image.",
+    task: "Clean product scene",
+    result: "Sharper product focus",
     beforeImage: "/images/image-editor-cases/image2-product-background-cleanup-before.webp",
     afterImage: "/images/image-editor-cases/image2-product-background-cleanup-after.webp",
     alt: "Before and after AI photo edit showing product background distractions removed",
-    initialPosition: 58,
+    initialPosition: 52,
   },
   {
-    title: "Remove text or marks",
-    description: "Erase sample text, date stamps, or visible marks from images you own or can modify.",
+    caseLabel: "Case 04 · Text marks",
+    title: "Remove text or watermarks",
+    description: "Visible text and red marks are removed from an owned image while the coffee cup, desk surface, and photo composition remain believable.",
+    task: "Erase text marks",
+    result: "Clean image surface",
     beforeImage: "/images/image-editor-cases/image2-text-marks-removal-before.webp",
     afterImage: "/images/image-editor-cases/image2-text-marks-removal-after.webp",
     alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
-    initialPosition: 34,
+    initialPosition: 40,
   },
 ];
 
@@ -81,14 +93,31 @@ export default function ImageEditorPage() {
         </section>
 
         <section className="rsp-container mt-14 md:mt-20">
-          <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Approved cleanup examples</p>
-              <h2 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">Drag to compare real before and after edits</h2>
+          <div className="mb-8 overflow-hidden rounded-[36px] border border-rsp-border bg-[#fff7ed] shadow-[0_24px_80px_rgba(88,60,38,0.10)]">
+            <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+              <div className="p-6 md:p-8 lg:p-10">
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Approved cleanup examples</p>
+                <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.045em] text-rsp-text md:text-5xl">
+                  Four real editing tasks, shown as draggable before / after pairs.
+                </h2>
+                <p className="mt-4 max-w-xl text-sm leading-6 text-rsp-muted md:text-base">
+                  Each case uses two independent 4:3 images with matched framing, so the slider proves the edit instead of hiding it in a collage. Only edit images you own or have permission to modify.
+                </p>
+              </div>
+              <div className="grid border-t border-rsp-border bg-white/55 p-4 text-sm font-semibold text-rsp-text sm:grid-cols-2 lg:border-l lg:border-t-0">
+                {[
+                  "People removed from travel photos",
+                  "Home clutter cleared naturally",
+                  "Product backgrounds cleaned",
+                  "Text and visible marks erased",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3 rounded-2xl border border-rsp-border bg-white/70 p-3">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-600 shadow-[0_0_0_5px_rgba(16,185,129,0.12)]" />
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="max-w-lg text-sm leading-6 text-rsp-muted">
-              These approved examples use the same clear before/after structure: visible distractions on the left, cleaned results on the right. Only edit images you own or have permission to modify.
-            </p>
           </div>
 
           <ImageEditorExamples examples={editUseCases} />
