@@ -92,31 +92,23 @@ export default function ImageEditorPage() {
           />
         </section>
 
-        <section className="rsp-container mt-14 md:mt-20">
-          <div className="mb-8 overflow-hidden rounded-[36px] border border-rsp-border bg-[#fff7ed] shadow-[0_24px_80px_rgba(88,60,38,0.10)]">
-            <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="p-6 md:p-8 lg:p-10">
-                <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Approved cleanup examples</p>
-                <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.045em] text-rsp-text md:text-5xl">
-                  Four real editing tasks, shown as draggable before / after pairs.
-                </h2>
-                <p className="mt-4 max-w-xl text-sm leading-6 text-rsp-muted md:text-base">
-                  Each case uses two independent 4:3 images with matched framing, so the slider proves the edit instead of hiding it in a collage. Only edit images you own or have permission to modify.
-                </p>
-              </div>
-              <div className="grid border-t border-rsp-border bg-white/55 p-4 text-sm font-semibold text-rsp-text sm:grid-cols-2 lg:border-l lg:border-t-0">
-                {[
-                  "People removed from travel photos",
-                  "Home clutter cleared naturally",
-                  "Product backgrounds cleaned",
-                  "Text and visible marks erased",
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-3 rounded-2xl border border-rsp-border bg-white/70 p-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-600 shadow-[0_0_0_5px_rgba(16,185,129,0.12)]" />
-                    {item}
-                  </div>
-                ))}
-              </div>
+        <section className="rsp-container mt-12 md:mt-16">
+          <div className="mx-auto mb-7 flex max-w-7xl flex-col gap-4 md:mb-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Approved cleanup examples</p>
+              <h2 className="mt-2 font-heading text-3xl font-normal tracking-[-0.045em] text-rsp-text md:text-5xl">
+                Real before / after cleanup results
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-rsp-muted md:text-base">
+                Drag each 4:3 pair to compare the original and cleaned image. The examples below focus on preserving the subject, framing, and natural lighting.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.12em] text-rsp-muted lg:max-w-md lg:justify-end">
+              {["People", "Home", "Product", "Text marks"].map((item) => (
+                <span key={item} className="rounded-full border border-rsp-border bg-white/70 px-3 py-2 shadow-sm">
+                  {item}
+                </span>
+              ))}
             </div>
           </div>
 
