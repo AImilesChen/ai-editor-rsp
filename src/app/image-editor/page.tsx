@@ -19,6 +19,7 @@ const editUseCases = [
     beforeImage: "/images/image-editor-cases/image2-travel-people-removal-before.webp",
     afterImage: "/images/image-editor-cases/image2-travel-people-removal-after.webp",
     alt: "Before and after AI photo edit showing background tourists removed while the main subject stays natural",
+    initialPosition: 34,
   },
   {
     title: "Remove unwanted objects",
@@ -26,6 +27,7 @@ const editUseCases = [
     beforeImage: "/images/image-editor-cases/image2-object-removal-table-before.webp",
     afterImage: "/images/image-editor-cases/image2-object-removal-table-after.webp",
     alt: "Before and after AI photo edit showing unwanted objects removed from a cafe table",
+    initialPosition: 36,
   },
   {
     title: "Clean product backgrounds",
@@ -33,6 +35,7 @@ const editUseCases = [
     beforeImage: "/images/image-editor-cases/image2-product-background-cleanup-before.webp",
     afterImage: "/images/image-editor-cases/image2-product-background-cleanup-after.webp",
     alt: "Before and after AI photo edit showing product background distractions removed",
+    initialPosition: 58,
   },
   {
     title: "Remove text or marks",
@@ -40,6 +43,7 @@ const editUseCases = [
     beforeImage: "/images/image-editor-cases/image2-text-marks-removal-before.webp",
     afterImage: "/images/image-editor-cases/image2-text-marks-removal-after.webp",
     alt: "Before and after AI photo edit showing unwanted text and marks removed from an owned image",
+    initialPosition: 34,
   },
 ];
 

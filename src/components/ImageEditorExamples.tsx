@@ -8,6 +8,7 @@ type CleanupExample = {
   beforeImage: string;
   afterImage: string;
   alt: string;
+  initialPosition?: number;
 };
 
 type ImageEditorExamplesProps = {
@@ -15,14 +16,14 @@ type ImageEditorExamplesProps = {
 };
 
 function BeforeAfterSlider({ item }: { item: CleanupExample }) {
-  const [position, setPosition] = useState(52);
+  const [position, setPosition] = useState(item.initialPosition ?? 50);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[34px] border border-rsp-border bg-rsp-panel shadow-[0_24px_80px_rgba(58,41,30,0.13)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_95px_rgba(58,41,30,0.18)]">
-      <div className="relative aspect-[120/82] overflow-hidden bg-rsp-surface">
-        <img src={item.beforeImage} alt={`${item.alt} before edit`} className="absolute inset-0 h-full w-full object-cover" />
+      <div className="relative aspect-[120/90] overflow-hidden bg-[#f3ebe1] md:aspect-[120/88]">
+        <img src={item.beforeImage} alt={`${item.alt} before edit`} className="absolute inset-0 h-full w-full object-contain" />
         <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${position}%)` }}>
-          <img src={item.afterImage} alt={`${item.alt} after edit`} className="h-full w-full object-cover" />
+          <img src={item.afterImage} alt={`${item.alt} after edit`} className="absolute inset-0 h-full w-full object-contain" />
         </div>
 
         <div className="absolute left-4 top-4 rounded-full bg-rsp-text/82 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white shadow-sm backdrop-blur">
