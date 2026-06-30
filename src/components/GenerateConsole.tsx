@@ -277,7 +277,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const advancedHeadshotRatios = visibleRatios.filter((item) => !["3:4", "1:1", "4:5"].includes(item.ratio));
   const displayedEditRatios = isHeadshotMode ? primaryHeadshotRatios : visibleRatios;
   const showHeadshotSteps = mode === "edit" && isHeadshotMode;
-  const showEditAreaControls = mode === "edit" && !isHeadshotMode && Boolean(uploadedImage);
+  const controlsLocked = editorOnly && mode === "edit" && !uploadedImage;
+  const showEditAreaControls = mode === "edit" && !isHeadshotMode && (Boolean(uploadedImage) || editorOnly);
 
   useEffect(() => {
     fetch("/api/session")
@@ -648,8 +649,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </>
         )}
 
-        {mode === "edit" && (!editorOnly || Boolean(uploadedImage)) && (
-          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-2.5`}>
+        {mode === "edit" && (
+          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-2.5 ${controlsLocked ? "opacity-55" : ""}`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-white/78">Image size</p>
               {isHeadshotMode && <span className="text-xs font-semibold text-white/48">{currentQuote.sizeLabel}</span>}
@@ -658,7 +659,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {displayedEditRatios.map((item) => {
                 const isRecommendedHeadshotRatio = isHeadshotMode && item.ratio === "3:4";
                 return (
-                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-2" : "py-2.5"} text-center transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/72 hover:border-white/25 hover:text-white"}`}>
+                  <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} disabled={controlsLocked} className={`rounded-xl border px-2 ${isHero ? "py-2" : "py-2.5"} text-center transition disabled:cursor-not-allowed ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-white/[0.04] text-white/72 hover:border-white/25 hover:text-white"}`}>
                     <span className="block text-base font-black leading-none tracking-[-0.01em]">{item.label}</span>
                     {isRecommendedHeadshotRatio && <span className="mt-0.5 block text-[9px] font-black uppercase tracking-[0.08em] opacity-75">Best</span>}
                   </button>
@@ -680,20 +681,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </div>
             )}
             {!isHeadshotMode && !isHero && (
-              <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel. Square and landscape sizes may use more credits.</p>
+              <p className="mt-2 text-xs leading-5 text-white/50">{controlsLocked ? "Upload a photo to unlock output size for your edit." : "Auto keeps the source feel. Square and landscape sizes may use more credits."}</p>
             )}
           </div>
         )}
 
         {showEditAreaControls && (
-          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3`}>
+          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3 ${controlsLocked ? "opacity-55" : ""}`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Choose edit area</p>
-              <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className="text-xs font-semibold text-white/55 hover:text-white">Clear selection</button>
+              <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} disabled={controlsLocked} className="text-xs font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:hover:text-white/55">Clear selection</button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => { setEditScope("whole"); setEditRegion(null); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
-              <button type="button" onClick={() => { setEditScope("selected"); if (uploadedImage && !editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Select area to edit</button>
+              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("whole"); setEditRegion(null); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed ${editScope === "whole" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Whole image</button>
+              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); if (uploadedImage && !editRegion) setEditRegion({ x: 24, y: 24, width: 38, height: 34 }); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>Select area to edit</button>
             </div>
             <p className="mt-2 text-xs leading-5 text-white/50">{uploadedImage ? "Draw directly on the large preview to mark the part you want to change." : "Upload an image first to choose an edit area."}</p>
           </div>
@@ -707,8 +708,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           id="prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
+          disabled={controlsLocked}
           placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
         />
         {isHeadshotMode && uploadedImage && (
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
@@ -717,9 +719,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={clearPromptChoices} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-white/[0.035] text-white/58 hover:border-white/25 hover:text-white"}`}>{!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "✓ Write my own" : "Write my own"}</button>
+          <button type="button" onClick={clearPromptChoices} disabled={controlsLocked} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition disabled:cursor-not-allowed disabled:opacity-55 ${!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-white/[0.035] text-white/58 hover:border-white/25 hover:text-white"}`}>{!task && !selectedStyle && !selectedLighting && !selectedShot && !ratio ? "✓ Write my own" : "Write my own"}</button>
           {visiblePromptTasks.map((item) => (
-            <button type="button" key={item.label} onClick={() => applyTask(item)} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-white/[0.035] text-white/58 hover:border-white/25 hover:text-white"}`}>{task === item.label ? `✓ ${item.label}` : item.label}</button>
+            <button type="button" key={item.label} onClick={() => applyTask(item)} disabled={controlsLocked} className={`rounded-full border ${isHero ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm"} font-semibold transition disabled:cursor-not-allowed disabled:opacity-55 ${task === item.label ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-white/[0.035] text-white/58 hover:border-white/25 hover:text-white"}`}>{task === item.label ? `✓ ${item.label}` : item.label}</button>
           ))}
         </div>}
 
@@ -828,6 +830,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         <div className={`${isHero || editorOnly ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
+        {editorOnly && mode === "edit" && (
+          <div className="mb-3 flex flex-col gap-2 rounded-[22px] border border-white/10 bg-white/[0.035] p-3 text-xs text-white/58 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-bold text-white/86">{generatedImage ? "Result ready" : uploadedImage ? "Photo uploaded" : "Upload-first workspace"}</p>
+              <p className="mt-0.5">{generatedImage ? "Preview, download, or continue editing this result." : uploadedImage ? "Choose the cleanup area, generate, then compare before and after." : "The full editor is visible now; controls unlock after you upload your photo."}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/44">
+              <span className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-2.5 py-1.5 text-[#C8FADC]">1 Upload</span>
+              <span className={`rounded-full border px-2.5 py-1.5 ${uploadedImage || generatedImage ? "border-[#86EFAC]/35 bg-[#86EFAC]/10 text-[#C8FADC]" : "border-white/10 bg-black/16"}`}>2 Configure</span>
+              <span className={`rounded-full border px-2.5 py-1.5 ${generatedImage ? "border-[#86EFAC]/35 bg-[#86EFAC]/10 text-[#C8FADC]" : "border-white/10 bg-black/16"}`}>3 Result</span>
+            </div>
+          </div>
+        )}
         {!hidePreviewIntro && <div className={`${isHero ? "mb-3" : "mb-5"}`}>
           {isHero ? (
             <div>
@@ -969,7 +984,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
           </div>
         )}
-        {!generatedImage && (!editorOnly || Boolean(uploadedImage)) && (
+        {!generatedImage && (!editorOnly || Boolean(uploadedImage) || controlsLocked) && (
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
