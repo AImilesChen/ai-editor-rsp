@@ -75,7 +75,7 @@ type EditRegion = {
   height: number;
 };
 
-type EditScope = "auto" | "selected";
+type EditScope = "selected";
 
 type BrushPoint = {
   x: number;
@@ -85,7 +85,7 @@ type BrushPoint = {
 type MaskStroke = {
   id: string;
   points: BrushPoint[];
-  source: "brush" | "auto";
+  source: "brush";
 };
 
 type FalResult = {
@@ -239,7 +239,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [isSelectingRegion, setIsSelectingRegion] = useState(false);
   const [maskStrokes, setMaskStrokes] = useState<MaskStroke[]>([]);
   const [currentStroke, setCurrentStroke] = useState<BrushPoint[]>([]);
-  const [isDetectingAreas, setIsDetectingAreas] = useState(false);
   const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
   const [expandedLookGroups, setExpandedLookGroups] = useState<Record<PromptModifierKind, boolean>>({ style: false, lighting: false, shot: false });
 
@@ -265,7 +264,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       : `${headshotIdentityGuard} ${headshotPrompt}`
     : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
-  const canGenerate = Boolean(authenticated) && !needsUpload && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
+  const requiresManualMask = mode === "edit" && !isHeadshotMode;
+  const canGenerate = Boolean(authenticated) && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
@@ -548,7 +548,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setEditRegion(null);
     setRegionStart(null);
     setIsSelectingRegion(false);
-    setIsDetectingAreas(false);
   };
 
   const undoLastMaskStroke = () => {
@@ -559,76 +558,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     });
   };
 
-  const pointsFromRegion = (region: EditRegion) => {
-    const centerX = region.x + region.width / 2;
-    const centerY = region.y + region.height / 2;
-    return [
-      { x: region.x, y: region.y },
-      { x: region.x + region.width, y: region.y },
-      { x: region.x, y: region.y + region.height },
-      { x: region.x + region.width, y: region.y + region.height },
-      { x: centerX, y: centerY },
-    ];
-  };
-
-  const suggestedAutoRegions = () => {
-    const label = (task || "").toLowerCase();
-    if (label.includes("people")) {
-      return [
-        { x: 6, y: 18, width: 16, height: 54 },
-        { x: 72, y: 20, width: 18, height: 50 },
-        { x: 42, y: 12, width: 13, height: 38 },
-      ];
-    }
-    if (label.includes("text") || label.includes("mark")) {
-      return [
-        { x: 12, y: 10, width: 32, height: 12 },
-        { x: 58, y: 62, width: 30, height: 14 },
-      ];
-    }
-    if (label.includes("background") || label.includes("clutter")) {
-      return [
-        { x: 5, y: 8, width: 24, height: 30 },
-        { x: 68, y: 12, width: 24, height: 34 },
-        { x: 8, y: 66, width: 28, height: 20 },
-      ];
-    }
-    return [
-      { x: 12, y: 18, width: 24, height: 44 },
-      { x: 62, y: 22, width: 24, height: 42 },
-    ];
-  };
-
-  const runAutoDetect = () => {
-    if (controlsLocked) return;
-    setEditScope("auto");
-    setIsDetectingAreas(true);
-    setCurrentStroke([]);
-    window.setTimeout(() => {
-      const strokes = suggestedAutoRegions().map((region, index) => ({
-        id: `auto-${Date.now()}-${index}`,
-        source: "auto" as const,
-        points: pointsFromRegion(region),
-      }));
-      setMaskStrokes(strokes);
-      syncEditRegion(strokes);
-      setIsDetectingAreas(false);
-    }, 360);
-  };
-
-  const removeMaskStroke = (id: string) => {
-    setMaskStrokes((current) => {
-      const next = current.filter((stroke) => stroke.id !== id);
-      syncEditRegion(next, currentStroke);
-      return next;
-    });
-  };
-
   const beginRegionSelect = (event: PointerEvent<HTMLDivElement>) => {
     if (!uploadedImage || generatedImage) return;
     event.preventDefault();
     event.stopPropagation();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Some automated/browser environments do not expose an active pointer capture.
+      // The brush still works because move/up events are handled on the same drawing surface.
+    }
     const start = pointFromRegionEvent(event);
     setRegionStart(start);
     setIsSelectingRegion(true);
@@ -716,7 +655,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   };
 
   const hasMaskSelection = maskStrokes.length > 0 || currentStroke.length > 0;
-  const autoMaskCount = maskStrokes.filter((stroke) => stroke.source === "auto").length;
   const brushStrokeCount = maskStrokes.filter((stroke) => stroke.source === "brush").length + (currentStroke.length > 0 ? 1 : 0);
 
   return (
@@ -831,28 +769,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); setCurrentStroke([]); }} className={`rounded-xl border px-3 py-2 text-left transition disabled:cursor-not-allowed ${editScope === "selected" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>
+            <div className="grid gap-2">
+              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); setCurrentStroke([]); }} className="rounded-xl border border-[#86EFAC] bg-[#86EFAC] px-3 py-2 text-left text-[#102014] transition disabled:cursor-not-allowed">
                 <span className="block text-xs font-black">Brush area</span>
-                <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Paint more areas</span>
-              </button>
-              <button type="button" disabled={controlsLocked} onClick={runAutoDetect} className={`rounded-xl border px-3 py-2 text-left transition disabled:cursor-not-allowed ${editScope === "auto" ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014]" : "border-white/10 bg-black/20 text-white/70 hover:border-white/25"}`}>
-                <span className="block text-xs font-black">Auto-detect</span>
-                <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Suggest areas first</span>
+                <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Paint what to remove</span>
               </button>
             </div>
             <p className="mt-2 text-xs leading-5 text-white/50">
               {uploadedImage
-                ? editScope === "auto"
-                  ? "Suggested areas are highlighted first. Click a highlighted block to remove it, or brush more areas before generating."
-                  : "Brush over any person, object, text, or mark. Each stroke is kept, so you can paint several separate areas before generating."
-                : "Upload an image first. Brush area will be the default for controlled object removal."}
+                ? hasMaskSelection
+                  ? "Mask ready — generate when the selected area looks right. Brush more, undo, or clear the mask before generating."
+                  : "Paint on the photo to mark what to clean. Brush over any person, object, text, or mark you want removed."
+                : "Upload an image first, then paint directly on the photo to mark what to clean."}
             </p>
             {hasMaskSelection && (
               <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/48">
-                {autoMaskCount > 0 && <span className="rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/9 px-2.5 py-1 text-[#C8FADC]">{autoMaskCount} suggested</span>}
+                <span className="rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/9 px-2.5 py-1 text-[#C8FADC]">Mask ready</span>
                 {brushStrokeCount > 0 && <span className="rounded-full border border-[#FF6B8A]/25 bg-[#FF4D6D]/10 px-2.5 py-1 text-[#FFD6DE]">{brushStrokeCount} brush stroke{brushStrokeCount > 1 ? "s" : ""}</span>}
-                {editRegion && <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Final area ready</span>}
               </div>
             )}
           </div>
@@ -951,7 +884,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
               </button>
               {(uploadedImage || generatedImage) && (
                 <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
@@ -1014,7 +947,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div className="mx-auto max-w-4xl text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#86EFAC]">AI Editor RSP</p>
               <h3 className="mt-2 font-heading text-4xl font-normal tracking-[-0.04em] text-[#86EFAC] md:text-5xl">{editorOnly ? "See what gets removed" : mode === "edit" ? "AI Image Editor" : "AI Image Generator"}</h3>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Drag the divider to compare the original photo with the cleaned result." : mode === "edit" ? "Upload a photo, brush what to remove or let Auto-detect scan the image, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
+              <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/68">{editorOnly ? "Drag the divider to compare the original photo with the cleaned result." : mode === "edit" ? "Upload a photo, paint what to clean, then preview and download the result." : "Start from a ready prompt, adjust the image details, then generate and download a polished AI image."}</p>
             </div>
           )}
 
@@ -1060,43 +993,21 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/6" />
                 {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">{isHeadshotMode ? "After · professional headshot" : "After · generated result"}</span><span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/62 px-4 py-1.5 text-xs font-bold text-white/85 shadow-lg backdrop-blur-sm">Drag to compare before / after</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
-                {!generatedImage && maskStrokes.map((stroke) => {
-                  const strokeRegion = regionFromBrushPoints(stroke.points);
-                  if (!strokeRegion) return null;
-                  if (stroke.source === "auto") {
-                    return (
-                      <button
-                        type="button"
-                        key={stroke.id}
-                        onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
-                        onClick={(event) => { event.preventDefault(); event.stopPropagation(); removeMaskStroke(stroke.id); }}
-                        className="absolute rounded-[16px] border border-[#86EFAC]/75 bg-[#86EFAC]/18 shadow-[0_0_24px_rgba(134,239,172,0.24)] transition hover:bg-[#86EFAC]/26"
-                        style={{ left: `${strokeRegion.x}%`, top: `${strokeRegion.y}%`, width: `${strokeRegion.width}%`, height: `${strokeRegion.height}%` }}
-                        aria-label="Remove this suggested cleanup area"
-                      >
-                        <span className="pointer-events-none absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-black/72 text-[10px] font-black text-white">×</span>
-                      </button>
-                    );
-                  }
-                  return stroke.points.map((point, index) => (
+                {!generatedImage && maskStrokes.map((stroke) => (
+                  stroke.points.map((point, index) => (
                     <span key={`${stroke.id}-${index}`} className="pointer-events-none absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#FF6B8A]/45 bg-[#FF4D6D]/32 shadow-[0_0_20px_rgba(255,77,109,0.24)]" style={{ left: `${point.x}%`, top: `${point.y}%` }} />
-                  ));
-                })}
+                  ))
+                ))}
                 {!generatedImage && currentStroke.map((point, index) => (
                   <span key={`active-${Math.round(point.x * 10)}-${Math.round(point.y * 10)}-${index}`} className="pointer-events-none absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#FF6B8A]/45 bg-[#FF4D6D]/32 shadow-[0_0_20px_rgba(255,77,109,0.24)]" style={{ left: `${point.x}%`, top: `${point.y}%` }} />
                 ))}
                 {!generatedImage && editRegion && hasMaskSelection && (
                   <div className="pointer-events-none absolute rounded-[18px] border border-[#86EFAC]/75 bg-[#86EFAC]/6 shadow-[0_0_22px_rgba(134,239,172,0.24)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
                 )}
-                {!generatedImage && isDetectingAreas && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="rounded-2xl border border-[#86EFAC]/25 bg-black/72 px-4 py-2 text-xs font-bold text-[#C8FADC] shadow-xl backdrop-blur-sm">Detecting suggested areas…</div>
-                  </div>
-                )}
                 {!generatedImage && (
                   <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/78">
-                    <span className="rounded-full border border-white/12 bg-black/55 px-3 py-1.5 backdrop-blur-sm">{editScope === "auto" ? "Review suggested areas, click to remove, or brush more" : "Brush over the area to remove"}</span>
-                    {hasMaskSelection && <span className="rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-3 py-1.5 text-[#C8FADC] backdrop-blur-sm">Final mask ready</span>}
+                    <span className="rounded-full border border-white/12 bg-black/55 px-3 py-1.5 backdrop-blur-sm">{hasMaskSelection ? "Brush more if needed" : "Paint on the photo to mark what to clean"}</span>
+                    {hasMaskSelection && <span className="rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-3 py-1.5 text-[#C8FADC] backdrop-blur-sm">Mask ready</span>}
                   </div>
                 )}
                 {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
