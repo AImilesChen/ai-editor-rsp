@@ -7,10 +7,10 @@ import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pric
 
 const editTasks = [
   { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
-  { label: "Remove people", prompt: "Remove unwanted people and keep the background natural." },
-  { label: "Remove objects", prompt: "Remove unwanted objects and fill the area naturally." },
-  { label: "Clean background clutter", prompt: "Clean up background distractions and keep the main subject unchanged." },
-  { label: "Remove text or marks", prompt: "Remove the unwanted text or mark and reconstruct the background naturally." },
+  { label: "Remove people", prompt: "Remove only the people inside the painted area. Keep every unpainted person, object, and background detail unchanged." },
+  { label: "Remove objects", prompt: "Remove only the unwanted object inside the painted area. Keep all unpainted objects, people, and background details unchanged." },
+  { label: "Clean background clutter", prompt: "Clean up only the clutter inside the painted area. Keep the main subject and all unpainted background details unchanged." },
+  { label: "Remove text or marks", prompt: "Remove only the text or mark inside the painted area and reconstruct that small area naturally. Keep everything outside the painted area unchanged." },
   { label: "Remove background", prompt: "Remove the background from the uploaded image, keep the subject edges clean and natural, and place the subject on a transparent or soft neutral backdrop." },
   { label: "Change background", prompt: "Keep the subject unchanged and replace only the background with a cozy lofi night-study room, warm lamp light, rain on the window, and soft film grain." },
   { label: "Replace object", prompt: "Replace the selected object with a premium desk lamp, matching the original perspective, lighting, shadows, and realistic texture." },

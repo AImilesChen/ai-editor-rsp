@@ -73,6 +73,19 @@ function isNanoBananaEditModel(model: string) {
   return model.includes("nano-banana") && model.endsWith("/edit");
 }
 
+function localEditBoundaryInstruction(input: GenerateRequest) {
+  if (!input.imageDataUrl || !input.editRegion) return "";
+  const region = input.editRegion;
+  return [
+    `The user painted a local cleanup mask on the uploaded image. The selected cleanup bounds are: left ${region.x.toFixed(1)}%, top ${region.y.toFixed(1)}%, width ${region.width.toFixed(1)}%, height ${region.height.toFixed(1)}%.`,
+    "Treat this painted area as the only editable area for removal or cleanup.",
+    "Remove or reconstruct content only inside the selected painted area.",
+    "Do not remove, erase, clone, move, blur, retouch, replace, or simplify any people, objects, text, architecture, background details, lighting, or shadows outside the selected area.",
+    "If the user prompt says remove people, objects, clutter, text, marks, or distractions, apply that instruction only to the painted area; keep every unpainted person and object unchanged.",
+    "The best result is a conservative local repair: natural fill inside the mask, with the rest of the photo visually identical to the upload.",
+  ].join(" ");
+}
+
 function ratioToFalAspectRatio(ratio?: string) {
   return ratio === "auto" ? "3:4" : normalizeGenerationRatio(ratio);
 }
@@ -122,9 +135,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
         ].join(" ")
       : "Use the uploaded image as the primary reference. Preserve the recognizable subject, pose/composition, major colors, and visual identity unless the user explicitly asks to change them. Apply the prompt as an edit or style transformation to that reference image; do not replace it with an unrelated scene."
     : "Create a new image from the user-provided text prompt.";
-  const regionInstruction = input.imageDataUrl && input.editRegion
-    ? `The user selected a local redraw area on the uploaded image: left ${input.editRegion.x.toFixed(1)}%, top ${input.editRegion.y.toFixed(1)}%, width ${input.editRegion.width.toFixed(1)}%, height ${input.editRegion.height.toFixed(1)}%. Prioritize changes inside this selected rectangle and keep the unselected area as unchanged as possible.`
-    : "";
+  const regionInstruction = localEditBoundaryInstruction(input);
   const enrichedPrompt = [
     referenceInstruction,
     regionInstruction,
