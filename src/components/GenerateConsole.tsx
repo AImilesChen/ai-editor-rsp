@@ -125,49 +125,74 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
-function readImageAspect(src: string) {
-  return new Promise<number>((resolve) => {
+function loadImageElement(src: string, timeoutMs = 12000) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
+    const timeout = window.setTimeout(() => {
+      image.onload = null;
+      image.onerror = null;
+      reject(new Error("Uploaded image took too long to open. Try a smaller JPG, PNG, or WebP file."));
+    }, timeoutMs);
     image.onload = () => {
-      const width = image.naturalWidth || 1;
-      const height = image.naturalHeight || 1;
-      resolve(width / height);
+      window.clearTimeout(timeout);
+      resolve(image);
     };
-    image.onerror = () => resolve(4 / 3);
+    image.onerror = () => {
+      window.clearTimeout(timeout);
+      reject(new Error("Could not open uploaded image. Please try a different PNG, JPG, or WebP file."));
+    };
     image.src = src;
   });
 }
 
-function createHeadshotReferenceCrop(src: string) {
-  return new Promise<string>((resolve) => {
-    const image = new Image();
-    image.onload = () => {
-      const sourceWidth = image.naturalWidth || 1;
-      const sourceHeight = image.naturalHeight || 1;
-      const targetAspect = 3 / 4;
-      const isPortraitOrSquare = sourceHeight >= sourceWidth * 0.95;
-      const cropHeight = isPortraitOrSquare ? Math.round(sourceHeight * 0.68) : Math.round(sourceHeight * 0.9);
-      const cropWidth = Math.min(sourceWidth, Math.round(cropHeight * targetAspect));
-      const cropX = Math.round((sourceWidth - cropWidth) / 2);
-      const cropY = isPortraitOrSquare ? 0 : Math.round(sourceHeight * 0.03);
-      const canvas = document.createElement("canvas");
-      canvas.width = 768;
-      canvas.height = 1024;
-      const context = canvas.getContext("2d");
-      if (!context) {
-        resolve(src);
-        return;
-      }
-      context.fillStyle = "#d8d8d8";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.imageSmoothingEnabled = true;
-      context.imageSmoothingQuality = "high";
-      context.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL("image/jpeg", 0.92));
-    };
-    image.onerror = () => resolve(src);
-    image.src = src;
+function prepareUploadedPhoto(src: string) {
+  return loadImageElement(src).then((image) => {
+    const sourceWidth = image.naturalWidth || image.width || 1;
+    const sourceHeight = image.naturalHeight || image.height || 1;
+    const aspect = sourceWidth / sourceHeight;
+    const maxSide = 1536;
+    const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+    if (scale >= 1 && src.length < 2_800_000) return { dataUrl: src, aspect };
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) return { dataUrl: src, aspect };
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return { dataUrl: canvas.toDataURL("image/jpeg", 0.9), aspect };
   });
+}
+
+async function createHeadshotReferenceCrop(src: string) {
+  try {
+    const image = await loadImageElement(src);
+    const sourceWidth = image.naturalWidth || 1;
+    const sourceHeight = image.naturalHeight || 1;
+    const targetAspect = 3 / 4;
+    const isPortraitOrSquare = sourceHeight >= sourceWidth * 0.95;
+    const cropHeight = isPortraitOrSquare ? Math.round(sourceHeight * 0.68) : Math.round(sourceHeight * 0.9);
+    const cropWidth = Math.min(sourceWidth, Math.round(cropHeight * targetAspect));
+    const cropX = Math.round((sourceWidth - cropWidth) / 2);
+    const cropY = isPortraitOrSquare ? 0 : Math.round(sourceHeight * 0.03);
+    const canvas = document.createElement("canvas");
+    canvas.width = 768;
+    canvas.height = 1024;
+    const context = canvas.getContext("2d");
+    if (!context) return src;
+    context.fillStyle = "#d8d8d8";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.92);
+  } catch {
+    return src;
+  }
 }
 
 
@@ -278,6 +303,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [headshotReferenceImage, setHeadshotReferenceImage] = useState<string | null>(null);
   const [uploadedName, setUploadedName] = useState<string | null>(null);
@@ -317,7 +343,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
   const requiresManualMask = mode === "edit" && !isHeadshotMode;
-  const canGenerate = Boolean(authenticated) && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
+  const canGenerate = Boolean(authenticated) && !isUploading && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
@@ -450,23 +476,22 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload a PNG, JPG, or WebP image.");
-      setState("failed");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Please upload an image under 5 MB.");
-      setState("failed");
-      return;
-    }
+    setIsUploading(true);
+    setError(null);
+    setState("idle");
     try {
+      if (!file.type.startsWith("image/") || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+        throw new Error("Please upload a PNG, JPG, or WebP image.");
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Please upload an image under 5 MB.");
+      }
       const dataUrl = await readFileAsDataUrl(file);
-      const aspect = await readImageAspect(dataUrl);
-      const croppedHeadshotReference = await createHeadshotReferenceCrop(dataUrl);
-      setUploadedImage(dataUrl);
+      const prepared = await prepareUploadedPhoto(dataUrl);
+      const croppedHeadshotReference = isHeadshotMode ? await createHeadshotReferenceCrop(prepared.dataUrl) : null;
+      setUploadedImage(prepared.dataUrl);
       setHeadshotReferenceImage(croppedHeadshotReference);
-      setUploadedAspect(aspect);
+      setUploadedAspect(prepared.aspect);
       setUploadedName(file.name);
       if (mode === "edit") {
         setRatio(task === "Professional headshot" ? "3:4" : "auto");
@@ -474,11 +499,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       }
       setGeneratedImage(null);
       clearMask();
-      setError(null);
       setState("idle");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not read uploaded image.");
       setState("failed");
+    } finally {
+      setIsUploading(false);
+      event.target.value = "";
     }
   };
 
@@ -668,7 +695,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setMode("edit");
     setUploadedImage(generatedImage);
     setHeadshotReferenceImage(null);
-    readImageAspect(generatedImage).then(setUploadedAspect);
+    prepareUploadedPhoto(generatedImage).then((prepared) => setUploadedAspect(prepared.aspect)).catch(() => setUploadedAspect(4 / 3));
     setUploadedName("Generated result");
     setGeneratedImage(null);
     setEditScope("selected");
@@ -771,12 +798,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
               <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
               <span className="min-w-0">
-                <span className={`${isHero ? "text-base" : "text-base"} block font-semibold text-white`}>{uploadedName ? "Photo uploaded" : "Upload photo to edit"}</span>
-                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
+                <span className={`${isHero ? "text-base" : "text-base"} block font-semibold text-white`}>{uploadedName ? "Photo uploaded" : isUploading ? "Preparing photo…" : "Upload photo to edit"}</span>
+                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{isUploading ? "Opening and optimizing your photo for the editor…" : uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
               </span>
               {uploadedImage && <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
             </label>
-            <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} className="sr-only" />
+            <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} disabled={isUploading} className="sr-only" />
           </>
         )}
 
@@ -937,9 +964,15 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             </p>
           )}
           {authenticated && editorOnly && needsUpload ? (
-            <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
-              Upload photo to start
-            </label>
+            isUploading ? (
+              <div className="rounded-full bg-[#86EFAC]/65 px-5 py-3 text-center text-base font-bold text-[#102014]">
+                Preparing photo…
+              </div>
+            ) : (
+              <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
+                Upload photo to start
+              </label>
+            )
           ) : authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
@@ -1076,6 +1109,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             </div>
           ) : (
             <div className={`relative ${isHero ? "min-h-[420px] md:min-h-[520px]" : "min-h-[320px]"} overflow-hidden rounded-[22px] border border-white/10 bg-[#DED4C7] shadow-[0_28px_90px_rgba(0,0,0,0.35)]`}>
+              {isUploading && <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm"><div className="max-w-sm rounded-2xl border border-[#86EFAC]/35 bg-[#102014]/85 p-4 text-center text-sm font-semibold text-[#C8FADC]">Preparing your photo… This should only take a few seconds.</div></div>}
+              {state === "failed" && error && <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/80 p-4 text-center text-sm font-semibold text-red-100">{error}</div></div>}
               {isHeadshotMode ? (
                 <div className="relative h-full min-h-[420px] overflow-hidden rounded-[22px] bg-[linear-gradient(112deg,#17110C_0%,#2A2118_24%,#D8CEC0_24%,#EEE6DA_100%)] md:min-h-[520px]">
                   <img src={previewImage} alt="Professional headshot example" className="absolute inset-y-0 right-0 h-full w-full object-contain object-right-bottom brightness-105 contrast-105 saturate-105 md:w-[78%]" draggable={false} />
