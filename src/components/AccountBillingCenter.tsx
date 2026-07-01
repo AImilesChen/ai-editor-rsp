@@ -399,8 +399,8 @@ export default function AccountBillingCenter() {
       </p>
 
       {refundDialogOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-rsp-text/45 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="refund-reason-title">
-          <div className="w-full max-w-xl border border-rsp-border bg-rsp-background p-6 shadow-2xl md:p-7">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="refund-reason-title">
+          <div className="w-full max-w-xl border border-rsp-border bg-white p-6 shadow-[0_28px_90px_rgba(15,23,42,0.45)] ring-1 ring-black/10 md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="eyebrow">Refund review</p>
