@@ -49,6 +49,14 @@ type UpgradePreview = {
 const completedRefundStatuses = new Set(["refunded"]);
 const pendingRefundStatuses = new Set(["refund_requested"]);
 const canceledStatuses = new Set(["canceled", "scheduled_cancel", "expired"]);
+const refundReasonOptions = [
+  { value: "unused", label: "I did not use the paid features as expected" },
+  { value: "result_quality", label: "The generated or edited results did not meet my needs" },
+  { value: "accidental_purchase", label: "I purchased the wrong plan or subscribed by mistake" },
+  { value: "billing_issue", label: "I noticed a billing or renewal issue" },
+  { value: "other", label: "Other reason" },
+];
+
 
 function refundLabel(status?: string) {
   if (completedRefundStatuses.has(status || "")) return "Refund completed";
@@ -126,6 +134,9 @@ export default function AccountBillingCenter() {
   const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [refundReasonChoice, setRefundReasonChoice] = useState(refundReasonOptions[0]?.value || "other");
+  const [refundReasonDetails, setRefundReasonDetails] = useState("");
 
   useEffect(() => {
     fetch(`/api/auth/me?t=${Date.now()}`, { cache: "no-store" })
@@ -176,14 +187,32 @@ export default function AccountBillingCenter() {
     setError(null);
   };
 
+  const selectedRefundReason = refundReasonOptions.find((option) => option.value === refundReasonChoice);
+  const refundReasonText = [selectedRefundReason?.label, refundReasonDetails.trim()].filter(Boolean).join(" — ").slice(0, 1000);
+  const refundReasonReady = refundReasonText.trim().length >= 3;
+
+  const openRefundReasonDialog = () => {
+    resetNotices();
+    setRefundDialogOpen(true);
+  };
+
+  const closeRefundReasonDialog = () => {
+    if (refundSubmitting) return;
+    setRefundDialogOpen(false);
+  };
+
   const submitRefundRequest = async () => {
+    if (!refundReasonReady) {
+      setError("Choose a refund reason or add a short note before submitting the review request.");
+      return;
+    }
     setRefundSubmitting(true);
     resetNotices();
     try {
       const response = await fetch("/api/billing/refund-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: "Customer clicked the account refund button." }),
+        body: JSON.stringify({ reason: refundReasonText }),
       });
       const data = await response.json().catch(() => null) as ActionResponse | null;
       if (!response.ok || !data?.ok) {
@@ -196,6 +225,7 @@ export default function AccountBillingCenter() {
           ? "Refund review saved and future renewals were canceled. We will update your account after the refund is confirmed."
           : "Refund review saved. We will update your account after the refund is confirmed.";
       setMessage(nextMessage);
+      setRefundDialogOpen(false);
       setUser((current) => current ? { ...current, subscriptionStatus: data.status || "refund_requested" } : current);
     } catch {
       setError("Refund could not be started. Please try again.");
@@ -297,7 +327,7 @@ export default function AccountBillingCenter() {
           <button type="button" disabled={cancelDisabled} onClick={cancelSubscription} className="border border-rsp-border bg-white/70 px-4 py-3 text-sm font-semibold text-rsp-text disabled:cursor-not-allowed disabled:opacity-55">
             {cancelSubmitting ? "Canceling…" : cancelLabel(user?.subscriptionStatus)}
           </button>
-          <button type="button" disabled={refundDisabled} onClick={submitRefundRequest} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-55">
+          <button type="button" disabled={refundDisabled} onClick={openRefundReasonDialog} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-55">
             {refundSubmitting ? "Starting refund…" : refundButtonLabel(user)}
           </button>
         </div>
@@ -367,6 +397,65 @@ export default function AccountBillingCenter() {
       <p className="mt-5 text-sm leading-6 text-rsp-muted">
         Support: <a className="text-rsp-secondary underline" href="mailto:support@aieditorrspediting.org">support@aieditorrspediting.org</a>. We respond to billing and refund requests within 3 business days. Credit card refunds generally appear in 5-10 business days after processing.
       </p>
+
+      {refundDialogOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-rsp-text/45 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="refund-reason-title">
+          <div className="w-full max-w-xl border border-rsp-border bg-rsp-background p-6 shadow-2xl md:p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="eyebrow">Refund review</p>
+                <h3 id="refund-reason-title" className="mt-3 font-heading text-2xl font-normal text-rsp-text">Tell us why you are requesting a refund</h3>
+              </div>
+              <button type="button" onClick={closeRefundReasonDialog} disabled={refundSubmitting} className="border border-rsp-border bg-white/70 px-3 py-2 text-sm font-semibold text-rsp-text disabled:cursor-not-allowed disabled:opacity-55" aria-label="Close refund reason dialog">
+                Close
+              </button>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-rsp-muted">
+              Choose the closest reason and add only billing-relevant details. Do not include passwords, card numbers, or other sensitive personal information. Your paid credits stay held during review until the refund is confirmed.
+            </p>
+
+            <div className="mt-5 space-y-3">
+              {refundReasonOptions.map((option) => (
+                <label key={option.value} className="flex cursor-pointer items-start gap-3 border border-rsp-border bg-white/70 p-3 text-sm font-semibold text-rsp-text">
+                  <input
+                    type="radio"
+                    name="refund-reason"
+                    value={option.value}
+                    checked={refundReasonChoice === option.value}
+                    onChange={() => setRefundReasonChoice(option.value)}
+                    className="mt-1"
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+
+            <label className="mt-5 block text-sm font-semibold text-rsp-text" htmlFor="refund-reason-details">
+              Optional note for support review
+            </label>
+            <textarea
+              id="refund-reason-details"
+              value={refundReasonDetails}
+              onChange={(event) => setRefundReasonDetails(event.target.value.slice(0, 1000))}
+              rows={4}
+              maxLength={1000}
+              placeholder="Example: I tested the editor once, but the result did not fit my project. Please avoid sensitive account or card details."
+              className="mt-2 w-full border border-rsp-border bg-white/85 p-3 text-sm leading-6 text-rsp-text outline-none focus:border-rsp-secondary"
+            />
+            <div className="mt-2 text-xs text-rsp-muted">{refundReasonText.length}/1000 characters saved for audit.</div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button type="button" onClick={closeRefundReasonDialog} disabled={refundSubmitting} className="border border-rsp-border bg-white/70 px-4 py-3 text-sm font-semibold text-rsp-text disabled:cursor-not-allowed disabled:opacity-55">
+                Keep subscription
+              </button>
+              <button type="button" onClick={submitRefundRequest} disabled={refundSubmitting || !refundReasonReady} className="rsp-button-primary disabled:cursor-not-allowed disabled:opacity-55">
+                {refundSubmitting ? "Submitting…" : "Submit refund review"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
