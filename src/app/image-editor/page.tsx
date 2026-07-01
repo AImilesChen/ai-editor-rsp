@@ -6,10 +6,26 @@ import ImageEditorExamples from "@/components/ImageEditorExamples";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "AI Photo Editor — Remove People, Objects, and Background Distractions | AI Editor RSP",
+  title: "AI Photo Editor to Remove People, Objects, Text Marks & Background Clutter",
   description:
-    "Upload a photo and use AI to remove unwanted people, objects, text marks, or messy backgrounds. Select an area, describe the edit, preview the result, and download.",
+    "Use AI Editor RSP as an AI photo editor and object remover for owned images. Brush what to remove, clean people, objects, text marks, or background clutter, then compare before and after.",
+  keywords: [
+    "AI photo editor",
+    "AI object remover",
+    "remove people from photos",
+    "clean up image",
+    "remove objects from photos",
+    "remove text from image",
+    "photo cleanup tool",
+  ],
   alternates: { canonical: `${SITE_URL}/image-editor` },
+  openGraph: {
+    title: "AI Photo Editor & Object Remover | AI Editor RSP",
+    description:
+      "Brush unwanted areas in your own photos and use AI to remove people, objects, text marks, and background distractions while preserving the rest of the image.",
+    url: `${SITE_URL}/image-editor`,
+    type: "website",
+  },
 };
 
 const editUseCases = [
@@ -48,7 +64,7 @@ const editUseCases = [
   },
   {
     caseLabel: "Case 04 · Text marks",
-    title: "Remove text or watermarks",
+    title: "Remove text or marks",
     description: "Visible text and red marks are removed from an owned image while the coffee cup, desk surface, and photo composition remain believable.",
     task: "Erase text marks",
     result: "Clean image surface",
@@ -59,10 +75,102 @@ const editUseCases = [
   },
 ];
 
+const cleanupWorkflows = [
+  {
+    title: "Remove people from photos",
+    body: "Clean background tourists, passersby, or accidental people from travel and lifestyle photos while keeping the main subject and setting recognizable.",
+  },
+  {
+    title: "Remove objects from photos",
+    body: "Brush over cups, cables, trash, signs, packaging, or other distracting items and let the editor rebuild the surrounding area.",
+  },
+  {
+    title: "Clean up product photos",
+    body: "Reduce background clutter around products for cleaner marketplace, portfolio, or social images without changing the product shape.",
+  },
+  {
+    title: "Remove text marks from owned images",
+    body: "Erase visible notes, labels, stickers, or markup from images you own or have permission to edit, then compare the result before downloading.",
+  },
+];
+
+const editorSteps = [
+  {
+    title: "Upload your image",
+    body: "Start with a JPG, PNG, or WebP photo. The workspace keeps the original visible so you can judge the edit against the source image.",
+  },
+  {
+    title: "Brush the area to remove",
+    body: "Paint only the unwanted person, object, text mark, or clutter. Unpainted areas are treated as content to preserve, not as extra edit targets.",
+  },
+  {
+    title: "Preview and compare",
+    body: "Use the before / after comparison to check whether the cleanup still looks natural before opening or downloading the result.",
+  },
+];
+
+const editorFaqs = [
+  {
+    question: "What can I remove with the AI photo editor?",
+    answer:
+      "AI Editor RSP is designed for common photo cleanup tasks such as removing people from photos, removing unwanted objects, cleaning up product backgrounds, and erasing text marks or markup from images you own or have permission to edit.",
+  },
+  {
+    question: "How do I control what the AI object remover changes?",
+    answer:
+      "Use Brush area and paint the unwanted item. The editor sends the original image plus a visible brush overlay so the cleanup prompt can focus on the marked area and preserve unpainted parts of the photo.",
+  },
+  {
+    question: "Will unpainted areas stay unchanged?",
+    answer:
+      "The workflow is built around preserving unpainted areas, and the prompt asks the model to keep the rest of the image stable. Very complex scenes can still vary, so always compare the before and after preview before using the result.",
+  },
+  {
+    question: "Can I remove text or marks from any image?",
+    answer:
+      "Only edit images you own or have permission to modify. Do not use the tool to remove rights notices, attribution, or protective marks from third-party images without authorization.",
+  },
+  {
+    question: "Is this the same as a full design editor?",
+    answer:
+      "No. This page is focused on photo cleanup: remove people, remove objects, clean backgrounds, and erase visible marks. It keeps the workflow simple so the main task is upload, brush, generate, compare, and download.",
+  },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: editorFaqs.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "AI Editor RSP AI Photo Editor",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Web",
+  url: `${SITE_URL}/image-editor`,
+  description:
+    "A browser-based AI photo editor for removing people, unwanted objects, text marks, and background clutter from owned images with a brush-based cleanup workflow.",
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "USD",
+    availability: "https://schema.org/OnlineOnly",
+  },
+};
+
 export default function ImageEditorPage() {
   return (
     <>
       <Header />
+      <script type="application/ld+json">{JSON.stringify([faqJsonLd, softwareJsonLd])}</script>
       <main className="bg-rsp-bg pb-14 pt-28 md:pb-20 md:pt-32">
         <section className="rsp-container">
           <div className="mx-auto mb-9 max-w-5xl text-center">
@@ -113,6 +221,72 @@ export default function ImageEditorPage() {
           </div>
 
           <ImageEditorExamples examples={editUseCases} />
+        </section>
+
+        <section className="rsp-container mt-12 md:mt-16">
+          <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div className="rounded-[2rem] border border-rsp-border bg-white/80 p-6 shadow-sm md:p-8">
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Photo cleanup workflows</p>
+              <h2 className="mt-3 font-heading text-3xl font-normal tracking-[-0.045em] text-rsp-text md:text-5xl">
+                One AI object remover for the cleanup tasks people search for.
+              </h2>
+              <p className="mt-4 text-sm leading-6 text-rsp-muted md:text-base">
+                Keep the tool simple: upload a photo, brush what should disappear, and compare the cleaned result. The page focuses on practical image cleanup instead of adding a full design suite around a single edit.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {cleanupWorkflows.map((item) => (
+                <article key={item.title} className="rounded-[1.5rem] border border-rsp-border bg-rsp-panel p-5 shadow-sm">
+                  <h3 className="font-heading text-2xl font-normal tracking-[-0.035em] text-rsp-text">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-rsp-muted">{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rsp-container mt-12 md:mt-16">
+          <div className="rounded-[2rem] border border-rsp-border bg-rsp-text p-6 text-white shadow-sm md:p-8">
+            <div className="grid gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+              <div>
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">How it works</p>
+                <h2 className="mt-3 font-heading text-3xl font-normal tracking-[-0.045em] md:text-5xl">
+                  Brush-based cleanup keeps the edit focused.
+                </h2>
+                <p className="mt-4 text-sm leading-6 text-white/70 md:text-base">
+                  Competitor pages often rely on one-click demos. For AI Editor RSP, the clearest user promise is control: the brush tells the editor what to remove, and the before / after slider makes the result easy to inspect.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {editorSteps.map((step, index) => (
+                  <article key={step.title} className="rounded-[1.35rem] border border-white/10 bg-white/10 p-5">
+                    <span className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-rsp-secondary">Step {index + 1}</span>
+                    <h3 className="mt-3 text-lg font-bold text-white">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-white/70">{step.body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rsp-container mt-12 md:mt-16">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">AI photo editor FAQ</p>
+            <h2 className="mt-3 font-heading text-3xl font-normal tracking-[-0.045em] text-rsp-text md:text-5xl">
+              Questions before you clean up an image
+            </h2>
+          </div>
+          <div className="mx-auto mt-7 grid max-w-4xl gap-3">
+            {editorFaqs.map((item) => (
+              <details key={item.question} className="group rounded-[1.4rem] border border-rsp-border bg-white/80 p-5 shadow-sm">
+                <summary className="cursor-pointer list-none text-left text-base font-bold text-rsp-text marker:hidden">
+                  {item.question}
+                </summary>
+                <p className="mt-3 text-sm leading-6 text-rsp-muted">{item.answer}</p>
+              </details>
+            ))}
+          </div>
         </section>
       </main>
       <Footer />
