@@ -52,7 +52,7 @@ export default function HomePage() {
             <div className="mx-auto mt-7 flex max-w-5xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-[24px] border border-rsp-secondary/20 bg-white/60 px-5 py-3 text-xs leading-5 text-rsp-muted shadow-sm">
               <span><strong className="text-rsp-text">Credit guide:</strong> 1 credit portrait text-to-image</span>
               <span className="hidden text-rsp-secondary/45 md:inline">•</span>
-              <span>2 credits square/landscape text-to-image or portrait edit</span>
+              <span>2 credits square/landscape text-to-image</span>
               <span className="hidden text-rsp-secondary/45 md:inline">•</span>
               <span>4+ credits larger edits and headshots</span>
             </div>
