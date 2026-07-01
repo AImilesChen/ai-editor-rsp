@@ -138,7 +138,8 @@ export async function POST(request: NextRequest) {
   const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
   if (user) await createGenerationJob({ jobId, user, prompt: generationPrompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
 
-  const result = await submitFalGeneration({ prompt: generationPrompt, style: body.style, ratio: quote.ratio, imageDataUrl: body.imageDataUrl, maskDataUrl: body.maskDataUrl, editRegion });
+  const providerRatio = body.ratio === "auto" ? "auto" : quote.ratio;
+  const result = await submitFalGeneration({ prompt: generationPrompt, style: body.style, ratio: providerRatio, imageDataUrl: body.imageDataUrl, maskDataUrl: body.maskDataUrl, editRegion });
   if (!result.ok) {
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });

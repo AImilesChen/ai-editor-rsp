@@ -191,13 +191,14 @@ function createBrushMaskDataUrl(src: string, strokes: MaskStroke[]) {
         resolve(null);
         return;
       }
-      context.fillStyle = "#000000";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.strokeStyle = "#ffffff";
-      context.fillStyle = "#ffffff";
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = "high";
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
       context.lineCap = "round";
       context.lineJoin = "round";
-      context.lineWidth = Math.max(18, Math.round(Math.min(canvas.width, canvas.height) * 0.045));
+      context.lineWidth = Math.max(28, Math.round(Math.min(canvas.width, canvas.height) * 0.07));
+      context.strokeStyle = "rgba(255, 0, 128, 0.88)";
+      context.fillStyle = "rgba(255, 0, 128, 0.88)";
       strokes.forEach((stroke) => {
         if (stroke.points.length === 0) return;
         const first = stroke.points[0];
@@ -213,7 +214,7 @@ function createBrushMaskDataUrl(src: string, strokes: MaskStroke[]) {
           context.fill();
         });
       });
-      resolve(canvas.toDataURL("image/png"));
+      resolve(canvas.toDataURL("image/jpeg", 0.92));
     };
     image.onerror = () => resolve(null);
     image.crossOrigin = "anonymous";
