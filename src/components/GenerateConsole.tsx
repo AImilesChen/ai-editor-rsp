@@ -343,7 +343,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     : prompt;
   const needsUpload = mode === "edit" && !uploadedImage;
   const requiresManualMask = mode === "edit" && !isHeadshotMode;
-  const canGenerate = Boolean(authenticated) && !isUploading && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && effectivePrompt.trim().length >= 20 && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
+  const minimumPromptLength = mode === "edit" && !isHeadshotMode ? 3 : 20;
+  const promptReady = effectivePrompt.trim().length >= minimumPromptLength;
+  const canGenerate = Boolean(authenticated) && !isUploading && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
@@ -976,7 +978,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : effectivePrompt.trim().length < 20 ? (mode === "edit" ? "Describe the edit" : "Write or choose a prompt") : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : !promptReady ? (mode === "edit" ? "Describe what to remove" : "Write or choose a prompt") : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
               </button>
               {(uploadedImage || generatedImage) && (
                 <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
@@ -1004,7 +1006,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 : isHeadshotMode
                   ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
                   : mode === "edit"
-                    ? `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
+                    ? !promptReady
+                      ? `Add at least ${minimumPromptLength} characters, for example: remove people.`
+                      : `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
                   : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`}
         </p>
       </aside>
