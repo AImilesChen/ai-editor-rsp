@@ -69,7 +69,9 @@ function PricingAmount({ price, cadence, compact = false }: { price: string; cad
 }
 
 export default function PricingPlanCards({ plans, variant = "pricing" }: { plans: PricingPlan[]; variant?: "pricing" | "home" }) {
+  const defaultSelectedPlan = plans.find((plan) => plan.featured)?.name || plans[0]?.name || "Creator";
   const [auth, setAuth] = useState<AuthResponse | null>(null);
+  const [selectedPlanName, setSelectedPlanName] = useState(defaultSelectedPlan);
 
   useEffect(() => {
     let canceled = false;
@@ -98,8 +100,17 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
   }, []);
 
   const activePaidPlan = useMemo(() => getActivePaidPlan(auth), [auth]);
-  const featuredPlan = plans.find((plan) => plan.featured)?.name;
   const compact = variant === "home";
+
+  useEffect(() => {
+    if (activePaidPlan) {
+      const currentPlan = plans.find((plan) => normalize(plan.name) === activePaidPlan)?.name;
+      if (currentPlan) setSelectedPlanName(currentPlan);
+    }
+  }, [activePaidPlan, plans]);
+
+  const selectedPlanSlug = normalize(selectedPlanName);
+  const canSelectPlans = !activePaidPlan;
 
   if (compact) {
     return (
@@ -107,11 +118,16 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
         {plans.map((plan) => {
           const planSlug = normalize(plan.name);
           const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
-          const isFeatured = Boolean(isCurrent || (!activePaidPlan && featuredPlan === plan.name));
+          const isSelected = Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
+          const isFeatured = isSelected;
           const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
           return (
-            <article key={plan.name} className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm ${isFeatured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}>
-              {isFeatured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">{isCurrent ? "Current plan" : "Most Popular"}</div>}
+            <article
+              key={plan.name}
+              onClick={canSelectPlans ? () => setSelectedPlanName(plan.name) : undefined}
+              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${canSelectPlans ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_20px_55px_rgba(138,78,24,0.12)]" : ""} ${isFeatured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
+            >
+              {isFeatured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">{isCurrent ? "Current plan" : "Selected plan"}</div>}
               <div className="flex min-h-[190px] flex-col">
                 <p className={`mb-2 text-xs font-bold uppercase tracking-[0.14em] ${isFeatured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{eyebrow}</p>
                 <h3 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h3>
@@ -123,7 +139,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
                 {plan.features.map((feature) => <li key={feature} className="flex gap-2"><span className="text-rsp-secondary">✓</span><span>{feature}</span></li>)}
               </ul>
               <div className="mt-auto">
-                <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : plan.name === "Free" ? "free" : "standard"} compact />
+                <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : plan.name === "Free" ? "free" : "standard"} compact isSelected={isSelected} selectionEnabled={canSelectPlans} onSelect={() => setSelectedPlanName(plan.name)} />
               </div>
             </article>
           );
@@ -137,13 +153,15 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
       {plans.map((plan) => {
         const planSlug = normalize(plan.name);
         const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
-        const isFeatured = Boolean(isCurrent || (!activePaidPlan && featuredPlan === plan.name));
+        const isSelected = Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
+        const isFeatured = isSelected;
         const isFree = plan.name === "Free";
         const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
         return (
           <article
             key={plan.name}
-            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur ${
+            onClick={canSelectPlans ? () => setSelectedPlanName(plan.name) : undefined}
+            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${canSelectPlans ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_22px_60px_rgba(138,78,24,0.12)]" : ""} ${
               isFeatured
                 ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
                 : "border-rsp-border"
@@ -151,10 +169,10 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
           >
             {isFeatured ? (
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_22px_rgba(184,107,32,0.26)]">
-                {isCurrent ? "Current plan" : "Most popular"}
+                {isCurrent ? "Current plan" : "Selected plan"}
               </div>
             ) : null}
-            <p className={`mb-3 text-sm font-bold ${isFeatured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{isFeatured && !isCurrent ? "Best value" : eyebrow}</p>
+            <p className={`mb-3 text-sm font-bold ${isFeatured ? "mt-2 text-rsp-primary" : "text-rsp-secondary"}`}>{eyebrow}</p>
             <h2 className="font-heading text-3xl font-normal text-rsp-text">{plan.name}</h2>
             <PricingAmount price={plan.price} cadence={plan.cadence} />
             <p className="mt-3 text-sm font-semibold text-rsp-secondary">{plan.quota}</p>
@@ -163,7 +181,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
             <ul className="mt-5 flex-1 space-y-2.5 text-sm leading-6 text-rsp-muted">
               {plan.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2"><span className="text-rsp-secondary">+</span><span>{f}</span></li>)}
             </ul>
-            <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : isFree ? "free" : "standard"} />
+            <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : isFree ? "free" : "standard"} isSelected={isSelected} selectionEnabled={canSelectPlans} onSelect={() => setSelectedPlanName(plan.name)} />
           </article>
         );
       })}

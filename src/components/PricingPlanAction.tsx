@@ -70,7 +70,7 @@ function hasAnyRefundPending(data: AuthResponse | null) {
   return isPaidPlan(userPlan) && refundPendingStatuses.has(status);
 }
 
-export default function PricingPlanAction({ planName, cta, emphasis = "standard", compact = false }: { planName: string; cta: string; emphasis?: "free" | "standard" | "featured"; compact?: boolean }) {
+export default function PricingPlanAction({ planName, cta, emphasis = "standard", compact = false, isSelected = true, onSelect, selectionEnabled = false }: { planName: string; cta: string; emphasis?: "free" | "standard" | "featured"; compact?: boolean; isSelected?: boolean; onSelect?: () => void; selectionEnabled?: boolean }) {
   const [auth, setAuth] = useState<AuthResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -206,6 +206,18 @@ export default function PricingPlanAction({ planName, cta, emphasis = "standard"
       : emphasis === "free"
         ? "mt-7 w-full rounded-full border border-rsp-primary/45 bg-white px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#fff3de]"
         : "mt-7 w-full rounded-full border border-rsp-primary/35 bg-[#fff7eb] px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:bg-[#f3e4cd]";
+
+  if (selectionEnabled && !isSelected && !hasPaidPlan && !hasRefundPending) {
+    return (
+      <button
+        type="button"
+        onClick={onSelect}
+        className="mt-7 w-full rounded-full border border-rsp-primary/35 bg-white px-6 py-3.5 text-center text-sm font-bold uppercase tracking-[0.14em] text-rsp-primary transition hover:-translate-y-0.5 hover:bg-[#fff3de]"
+      >
+        Select {planName}
+      </button>
+    );
+  }
 
   return <Link href={href} className={actionClass}>{label}</Link>;
 }
