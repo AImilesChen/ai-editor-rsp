@@ -170,6 +170,57 @@ function createHeadshotReferenceCrop(src: string) {
   });
 }
 
+
+function createBrushMaskDataUrl(src: string, strokes: MaskStroke[]) {
+  return new Promise<string | null>((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const sourceWidth = image.naturalWidth || image.width || 0;
+      const sourceHeight = image.naturalHeight || image.height || 0;
+      if (!sourceWidth || !sourceHeight || strokes.length === 0) {
+        resolve(null);
+        return;
+      }
+      const maxSide = 1536;
+      const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+      canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) {
+        resolve(null);
+        return;
+      }
+      context.fillStyle = "#000000";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.strokeStyle = "#ffffff";
+      context.fillStyle = "#ffffff";
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.lineWidth = Math.max(18, Math.round(Math.min(canvas.width, canvas.height) * 0.045));
+      strokes.forEach((stroke) => {
+        if (stroke.points.length === 0) return;
+        const first = stroke.points[0];
+        context.beginPath();
+        context.moveTo((first.x / 100) * canvas.width, (first.y / 100) * canvas.height);
+        stroke.points.slice(1).forEach((point) => {
+          context.lineTo((point.x / 100) * canvas.width, (point.y / 100) * canvas.height);
+        });
+        context.stroke();
+        stroke.points.forEach((point) => {
+          context.beginPath();
+          context.arc((point.x / 100) * canvas.width, (point.y / 100) * canvas.height, context.lineWidth / 2, 0, Math.PI * 2);
+          context.fill();
+        });
+      });
+      resolve(canvas.toDataURL("image/png"));
+    };
+    image.onerror = () => resolve(null);
+    image.crossOrigin = "anonymous";
+    image.src = src;
+  });
+}
+
 function composeTextPrompt(basePrompt: string, style?: string | null, lighting?: string | null, shot?: string | null) {
   const parts = [basePrompt.trim()];
   if (style) parts.push(`Style: ${style}.`);
@@ -472,6 +523,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setJobId(null);
     setGeneratedImage(null);
     try {
+      const maskDataUrl = mode === "edit" && !isHeadshotMode && imageForRequest && maskStrokes.length > 0
+        ? await createBrushMaskDataUrl(imageForRequest, maskStrokes)
+        : null;
+      if (mode === "edit" && !isHeadshotMode && !maskDataUrl) {
+        throw new Error("Paint the exact area you want to clean before generating.");
+      }
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -481,6 +538,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ratio,
           imageDataUrl: imageForRequest || undefined,
           editRegion: mode === "edit" && editRegion ? editRegion : undefined,
+          maskDataUrl: maskDataUrl || undefined,
         }),
       });
       const data = await response.json() as GenerateResponse;

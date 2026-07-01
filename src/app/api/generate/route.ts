@@ -12,6 +12,7 @@ type Body = {
   style?: string;
   ratio?: string;
   imageDataUrl?: string;
+  maskDataUrl?: string;
   editRegion?: {
     x?: number;
     y?: number;
@@ -59,8 +60,18 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
+  if (body.maskDataUrl && !isSupportedImageReference(body.maskDataUrl)) {
+    const response = NextResponse.json({ ok: false, error: "Mask image must be a PNG, JPG, WebP, or secure generated image URL.", code: "INVALID_MASK" }, { status: 400 });
+    await setSessionCookie(response, session);
+    return response;
+  }
   if (body.imageDataUrl && body.imageDataUrl.length > 7_000_000) {
     const response = NextResponse.json({ ok: false, error: "Uploaded image is too large. Use an image under 5 MB.", code: "IMAGE_TOO_LARGE" }, { status: 413 });
+    await setSessionCookie(response, session);
+    return response;
+  }
+  if (body.maskDataUrl && body.maskDataUrl.length > 3_000_000) {
+    const response = NextResponse.json({ ok: false, error: "Brush mask is too large. Please use a smaller image or repaint a smaller area.", code: "MASK_TOO_LARGE" }, { status: 413 });
     await setSessionCookie(response, session);
     return response;
   }
@@ -127,7 +138,7 @@ export async function POST(request: NextRequest) {
   const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
   if (user) await createGenerationJob({ jobId, user, prompt: generationPrompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
 
-  const result = await submitFalGeneration({ prompt: generationPrompt, style: body.style, ratio: quote.ratio, imageDataUrl: body.imageDataUrl, editRegion });
+  const result = await submitFalGeneration({ prompt: generationPrompt, style: body.style, ratio: quote.ratio, imageDataUrl: body.imageDataUrl, maskDataUrl: body.maskDataUrl, editRegion });
   if (!result.ok) {
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });

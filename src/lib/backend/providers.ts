@@ -8,6 +8,7 @@ export type GenerateRequest = {
   style?: string;
   ratio?: string;
   imageDataUrl?: string;
+  maskDataUrl?: string;
   editRegion?: {
     x: number;
     y: number;
@@ -77,9 +78,12 @@ function localEditBoundaryInstruction(input: GenerateRequest) {
   if (!input.imageDataUrl || !input.editRegion) return "";
   const region = input.editRegion;
   return [
-    `The user painted a local cleanup mask on the uploaded image. The selected cleanup bounds are: left ${region.x.toFixed(1)}%, top ${region.y.toFixed(1)}%, width ${region.width.toFixed(1)}%, height ${region.height.toFixed(1)}%.`,
-    "Treat this painted area as the only editable area for removal or cleanup.",
-    "Remove or reconstruct content only inside the selected painted area.",
+    input.maskDataUrl
+      ? "The request includes two uploaded images: image 1 is the original photo; image 2 is a black-and-white brush mask generated from the user's painted strokes. White pixels in image 2 are the only editable/masked pixels. Black pixels are protected and must remain unchanged."
+      : "The user painted a local cleanup mask on the uploaded image.",
+    `The selected cleanup bounds are: left ${region.x.toFixed(1)}%, top ${region.y.toFixed(1)}%, width ${region.width.toFixed(1)}%, height ${region.height.toFixed(1)}%. Use these bounds only as a coarse location hint; the pixel mask is the source of truth when provided.`,
+    "Treat the painted/masked area as the only editable area for removal or cleanup.",
+    "Remove or reconstruct content only inside the white painted mask pixels.",
     "Do not remove, erase, clone, move, blur, retouch, replace, or simplify any people, objects, text, architecture, background details, lighting, or shadows outside the selected area.",
     "If the user prompt says remove people, objects, clutter, text, marks, or distractions, apply that instruction only to the painted area; keep every unpainted person and object unchanged.",
     "The best result is a conservative local repair: natural fill inside the mask, with the rest of the photo visually identical to the upload.",
@@ -170,7 +174,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
   if (isNanoBananaEditModel(model)) {
     return {
       prompt: enrichedPrompt,
-      image_urls: [input.imageDataUrl],
+      image_urls: input.maskDataUrl ? [input.imageDataUrl, input.maskDataUrl] : [input.imageDataUrl],
       aspect_ratio: ratioToFalAspectRatio(input.ratio),
       num_images: 1,
       output_format: "jpeg",
