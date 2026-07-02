@@ -805,6 +805,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                   <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4A574]/40 bg-[#D4A574]/12 text-xl text-[#F4DFC8]">↑</span>
                   <span className="mt-3 block text-lg font-bold tracking-[-0.01em] text-white">{uploadedName ? "Photo uploaded" : isUploading ? "Preparing photo…" : "Upload your face photo"}</span>
                   <span className="mt-1 block max-w-[300px] text-sm leading-5 text-white/58">{isUploading ? "Opening and optimizing your photo for the editor…" : uploadedName || "Drag here or browse · PNG/JPG/WebP · 5 MB max"}</span>
+                  <span className="mt-2 rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#C8FADC]">Private upload</span>
                   <span className="mt-3 inline-flex rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-[#102014]">Browse photo</span>
                   <span className="mt-3 flex flex-wrap justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/46">
                     <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Front-facing</span>
@@ -914,22 +915,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
             Headshot preprocessing is on: we first crop toward the face and upper torso, then change outfit, background, and lighting around the same person.
           </p>
-        )}
-        {isHeadshotOnly && (
-          <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/70">Photo quality checklist</p>
-              <span className="rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-[10px] font-bold text-[#C8FADC]">Private upload</span>
-            </div>
-            <div className="grid gap-1.5 text-xs leading-5 text-white/62 sm:grid-cols-2 xl:grid-cols-1">
-              {["Clear front-facing face", "Good light, no sunglasses", "Shoulders visible if possible", "Simple background is fine"].map((tip) => (
-                <div key={tip} className="flex items-center gap-2 rounded-xl bg-black/14 px-3 py-2">
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#86EFAC]" />
-                  <span>{tip}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
