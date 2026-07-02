@@ -799,13 +799,30 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         {mode === "edit" && (
           <>
-            <label className={`${isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-2xl border border-dashed border-[#D4A574]/45 bg-[#2A2118] transition hover:border-[#D4A574]`} htmlFor="upload-image">
-              <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
-              <span className="min-w-0">
-                <span className={`${isHero ? "text-base" : "text-base"} block font-semibold text-white`}>{uploadedName ? "Photo uploaded" : isUploading ? "Preparing photo…" : "Upload photo to edit"}</span>
-                <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{isUploading ? "Opening and optimizing your photo for the editor…" : uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
-              </span>
-              {uploadedImage && <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
+            <label className={`${isHeadshotOnly ? "mb-4 block min-h-[176px] p-4" : isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-[24px] border border-dashed border-[#D4A574]/45 bg-[linear-gradient(180deg,#2A2118_0%,#211912_100%)] transition hover:border-[#D4A574]`} htmlFor="upload-image">
+              {isHeadshotOnly ? (
+                <span className="flex h-full min-h-[144px] flex-col items-center justify-center text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4A574]/40 bg-[#D4A574]/12 text-xl text-[#F4DFC8]">↑</span>
+                  <span className="mt-3 block text-lg font-bold tracking-[-0.01em] text-white">{uploadedName ? "Photo uploaded" : isUploading ? "Preparing photo…" : "Upload your face photo"}</span>
+                  <span className="mt-1 block max-w-[300px] text-sm leading-5 text-white/58">{isUploading ? "Opening and optimizing your photo for the editor…" : uploadedName || "Drag here or browse · PNG/JPG/WebP · 5 MB max"}</span>
+                  <span className="mt-3 inline-flex rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-[#102014]">Browse photo</span>
+                  <span className="mt-3 flex flex-wrap justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/46">
+                    <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Front-facing</span>
+                    <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Good lighting</span>
+                    <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">No sunglasses</span>
+                  </span>
+                  {uploadedImage && <span className="mt-3 flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
+                </span>
+              ) : (
+                <>
+                  <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
+                  <span className="min-w-0">
+                    <span className={`${isHero ? "text-base" : "text-base"} block font-semibold text-white`}>{uploadedName ? "Photo uploaded" : isUploading ? "Preparing photo…" : "Upload photo to edit"}</span>
+                    <span className={`${isHero ? "leading-5" : "leading-5"} mt-1 block text-sm text-white/58`}>{isUploading ? "Opening and optimizing your photo for the editor…" : uploadedName || (isHero ? "Drag or browse · PNG/JPG/WebP · 5 MB" : "Remove people, objects, text, or background distractions. PNG/JPG/WebP under 5 MB.")}</span>
+                  </span>
+                  {uploadedImage && <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
+                </>
+              )}
             </label>
             <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} disabled={isUploading} className="sr-only" />
           </>
@@ -891,12 +908,28 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           onChange={(event) => setPrompt(event.target.value)}
           disabled={controlsLocked}
           placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[112px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
         />
         {isHeadshotMode && uploadedImage && (
           <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
             Headshot preprocessing is on: we first crop toward the face and upper torso, then change outfit, background, and lighting around the same person.
           </p>
+        )}
+        {isHeadshotOnly && (
+          <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/70">Photo quality checklist</p>
+              <span className="rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-[10px] font-bold text-[#C8FADC]">Private upload</span>
+            </div>
+            <div className="grid gap-1.5 text-xs leading-5 text-white/62 sm:grid-cols-2 xl:grid-cols-1">
+              {["Clear front-facing face", "Good light, no sunglasses", "Shoulders visible if possible", "Simple background is fine"].map((tip) => (
+                <div key={tip} className="flex items-center gap-2 rounded-xl bg-black/14 px-3 py-2">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#86EFAC]" />
+                  <span>{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
