@@ -69,13 +69,13 @@ export default function CookieConsentBanner() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:right-5 sm:bottom-5 sm:left-auto sm:px-0" role="region" aria-label="Cookie consent">
-      <div className={`ml-auto rounded-[20px] border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_18px_54px_rgba(69,42,16,0.18)] backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-sm"}`}>
-        <div className="grid gap-2">
-          <div>
+    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:left-5 sm:right-auto sm:bottom-5 sm:px-0" role="region" aria-label="Cookie consent">
+      <div className={`rounded-[18px] border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_16px_44px_rgba(69,42,16,0.16)] backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-[min(760px,calc(100vw-24px))]"}`}>
+        <div className={`grid gap-2 ${isManaging ? "" : "sm:flex sm:items-center sm:gap-3"}`}>
+          <div className={isManaging ? "" : "min-w-0 sm:max-w-[430px]"}>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a36c2d]">Cookie preferences</p>
             <h2 className="sr-only">Optional cookies</h2>
-            <p className="mt-1 max-w-[34ch] text-xs leading-4 text-[#5f4d39]">
+            <p className="mt-1 text-xs leading-4 text-[#5f4d39]">
               Optional analytics load only after you agree.
             </p>
 
@@ -112,7 +112,7 @@ export default function CookieConsentBanner() {
             ) : null}
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className={`grid grid-cols-3 gap-1.5 ${isManaging ? "" : "sm:w-[282px] sm:flex-none"}`}>
             <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="rounded-full border border-[#d9bd91] bg-white px-2.5 py-2 text-xs font-semibold text-rsp-text transition hover:bg-[#fff3de]">
               Reject
             </button>
