@@ -121,6 +121,8 @@ function compactOverviewRows(rows: OverviewRow[], kind: "subscribers" | "refunds
     latest._recordCount = count;
     latest._totalRefundCents = totalRefundCents;
     latest._totalPaymentCents = totalPaymentCents;
+    latest._subscriptionCount = new Set(group.map((row) => String(row.creemSubscriptionId || row.subscriptionId || "")).filter(Boolean)).size || count;
+    latest._paymentCount = new Set(group.map((row) => String(row.paymentId || row.creemTransactionId || "")).filter(Boolean)).size || count;
     latest._plansSummary = uniquePlans.slice(0, 3).join(" / ");
     latest._statusesSummary = uniqueStatuses.slice(0, 3).join(" / ");
     return latest;
@@ -130,6 +132,37 @@ function compactOverviewRows(rows: OverviewRow[], kind: "subscribers" | "refunds
 function countLabel(row: OverviewRow, singular: string, plural: string) {
   const count = Number(row._recordCount || 1);
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function rowCountLabel(row: OverviewRow, key: "_subscriptionCount" | "_paymentCount", singular: string, plural: string) {
+  const count = Number(row[key] || 0) || Number(row._recordCount || 1);
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function subscriberGroups(rows: OverviewRow[]) {
+  const groups = new Map<string, { subscription: OverviewRow; payments: OverviewRow[] }>();
+
+  rows.forEach((record, index) => {
+    const key = String(record.creemSubscriptionId || record.subscriptionId || `subscription-${index}`);
+    const current = groups.get(key);
+    const paidAt = Number(record.paidAt || 0);
+    const currentPaidAt = Number(current?.subscription.paidAt || 0);
+
+    if (!current) {
+      groups.set(key, { subscription: record, payments: [record] });
+      return;
+    }
+
+    current.payments.push(record);
+    if (paidAt > currentPaidAt) current.subscription = record;
+  });
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      ...group,
+      payments: [...group.payments].sort((a, b) => Number(b.paidAt || 0) - Number(a.paidAt || 0)),
+    }))
+    .sort((a, b) => Number(b.subscription.paidAt || 0) - Number(a.subscription.paidAt || 0));
 }
 
 export default function AdminRefundReviewClient({ adminEmail }: { adminEmail?: string }) {
@@ -334,7 +367,7 @@ function OverviewList({ title, rows, empty, kind }: { title: string; rows: Overv
                         onClick={() => setExpandedKey(isExpanded ? null : rowKey)}
                         className="mt-2 inline-flex rounded-full border border-rsp-border bg-rsp-cream px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-rsp-muted transition hover:border-rsp-gold hover:text-rsp-text"
                       >
-                        {isExpanded ? "Hide" : "View"} {countLabel(row, "record", "records")}
+                        {isExpanded ? "Hide" : "View"} {kind === "subscribers" ? rowCountLabel(row, "_paymentCount", "payment", "payments") : countLabel(row, "record", "records")}
                       </button>
                     ) : null}
                   </div>
@@ -356,7 +389,7 @@ function OverviewList({ title, rows, empty, kind }: { title: string; rows: Overv
                     </>
                   ) : (
                     <>
-                      <Block label="Latest subscription" value={`${text(row.subscriptionPlan)} · ${text(row.subscriptionStatus)}`} sub={`${countLabel(row, "subscription", "subscriptions")} · Period end: ${formatDate(Number(row.periodEnd || 0))}`} />
+                      <Block label="Latest subscription" value={`${text(row.subscriptionPlan)} · ${text(row.subscriptionStatus)}`} sub={`${rowCountLabel(row, "_subscriptionCount", "subscription", "subscriptions")} · ${rowCountLabel(row, "_paymentCount", "payment", "payments")} · Period end: ${formatDate(Number(row.periodEnd || 0))}`} />
                       <Block label="Latest payment" value={`${text(row.paymentStatus)} · ${moneyCents(Number(row.amountCents || 0), String(row.currency || "USD"))}`} sub={formatDate(Number(row.paidAt || 0))} />
                       <Block label="Usage" value={`${text(row.paidCreditsGranted)} granted · ${text(row.generationCreditsUsed)} used`} sub={`${calcUsagePercent(row)} · ${text(row.generationJobs)} jobs`} />
                     </>
@@ -373,6 +406,39 @@ function OverviewList({ title, rows, empty, kind }: { title: string; rows: Overv
 }
 
 function RecordDetails({ kind, rows }: { kind: "subscribers" | "refunds" | "canceled"; rows: OverviewRow[] }) {
+  if (kind === "subscribers") {
+    const groups = subscriberGroups(rows);
+
+    return (
+      <div className="border-t border-rsp-border bg-rsp-cream/60 px-5 py-4">
+        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-rsp-muted">Subscriptions and payments for this user</p>
+        <div className="mt-3 space-y-3">
+          {groups.map(({ subscription, payments }, groupIndex) => (
+            <div key={`${text(subscription.creemSubscriptionId || subscription.subscriptionId)}-${groupIndex}`} className="rounded-2xl border border-rsp-border bg-white p-4 text-xs">
+              <div className="grid gap-3 md:grid-cols-3">
+                <Block label="Subscription" value={`${text(subscription.subscriptionPlan)} · ${text(subscription.subscriptionStatus)}`} sub={text(subscription.creemSubscriptionId)} />
+                <Block label="Period" value={`${formatDate(Number(subscription.periodStart || 0))}`} sub={`End: ${formatDate(Number(subscription.periodEnd || 0))}`} />
+                <Block label="Usage" value={`${text(subscription.paidCreditsGranted)} granted · ${text(subscription.generationCreditsUsed)} used`} sub={`${calcUsagePercent(subscription)} · ${text(subscription.generationJobs)} jobs`} />
+              </div>
+              <div className="mt-4 border-t border-rsp-border pt-3">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-rsp-muted">Payment records ({payments.length})</p>
+                <div className="mt-2 space-y-2">
+                  {payments.map((payment, paymentIndex) => (
+                    <div key={`${text(payment.paymentId || payment.transactionId || payment.creemTransactionId || "payment")}-${paymentIndex}`} className="grid gap-2 rounded-xl bg-rsp-cream px-3 py-3 md:grid-cols-[0.9fr_1.2fr_0.9fr]">
+                      <Block label="Payment" value={`${text(payment.paymentStatus)} · ${moneyCents(Number(payment.amountCents || 0), String(payment.currency || "USD"))}`} sub={formatDate(Number(payment.paidAt || 0))} />
+                      <Block label="Payment ID" value={text(payment.paymentId || payment.transactionId || payment.creemTransactionId || "payment record")} />
+                      <Block label="Usage snapshot" value={`${text(payment.paidCreditsGranted)} granted · ${text(payment.generationCreditsUsed)} used`} sub={`${calcUsagePercent(payment)} · ${text(payment.generationJobs)} jobs`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border-t border-rsp-border bg-rsp-cream/60 px-5 py-4">
       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-rsp-muted">Every record for this user</p>
