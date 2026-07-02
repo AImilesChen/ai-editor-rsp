@@ -7,7 +7,7 @@ import PricingPlanCards from "@/components/PricingPlanCards";
 import { faqItems, pricingPlans, promptCards, site } from "@/lib/rsp-content";
 
 export const metadata = {
-  title: "AI Image Generator, Photo Editor & Headshot Tool — AI Editor RSP",
+  title: "AI Image Generator, Editor & Headshots — AI Editor RSP",
   description: "Create AI images, clean up uploaded photos, generate professional headshots, and use ready-made AI image prompts with simple credit-based plans.",
   alternates: { canonical: site.url },
 };
