@@ -753,9 +753,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>{editorOnly ? "STEP 1 · UPLOAD" : "AI Image Editor"}</p>
             <HeadingTag className={`${isHero ? "text-2xl" : "text-3xl"} mt-1 font-heading font-normal tracking-[-0.03em] text-white`}>{isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Create a professional headshot" : "Upload and edit your photo") : "Choose or write a prompt") : editorOnly ? "Start with your photo" : mode === "edit" ? "Edit uploaded image" : "Create from prompt"}</HeadingTag>
           </div>
-          <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
-            {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
-          </div>
+          {!isHeadshotOnly && (
+            <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
+              {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
+            </div>
+          )}
         </div>
 
         {!lockedMode && <div className={`${isHero ? "mb-3" : "mb-4"}`}>
