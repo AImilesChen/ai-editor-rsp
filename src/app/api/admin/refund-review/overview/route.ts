@@ -148,6 +148,8 @@ export async function GET(request: NextRequest) {
       s.current_period_start periodStart,
       s.current_period_end periodEnd,
       s.updated_at updatedAt,
+      p.id paymentId,
+      p.creem_transaction_id creemTransactionId,
       p.status paymentStatus,
       p.amount_cents amountCents,
       p.currency,
@@ -162,12 +164,10 @@ export async function GET(request: NextRequest) {
       COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id AND created_at >= COALESCE(s.current_period_start, p.paid_at, s.created_at) AND created_at <= COALESCE(s.current_period_end, strftime('%s','now') * 1000)), 0) generationJobs
     FROM subscriptions s
     JOIN users u ON u.id = s.user_id
-    LEFT JOIN payments p ON p.id = (
-      SELECT id FROM payments WHERE user_id = u.id AND status NOT IN ('checkout_pending') ORDER BY COALESCE(paid_at, created_at) DESC, updated_at DESC LIMIT 1
-    )
+    LEFT JOIN payments p ON p.subscription_id = s.id AND p.status NOT IN ('checkout_pending')
     WHERE s.status IN ('active', 'trialing', 'past_due', 'scheduled_cancel', 'paused')
-    ORDER BY s.updated_at DESC, s.created_at DESC
-    LIMIT 50
+    ORDER BY s.updated_at DESC, COALESCE(p.paid_at, p.created_at, 0) DESC, s.created_at DESC
+    LIMIT 100
   `).all();
 
   const refunds = await db.prepare(`

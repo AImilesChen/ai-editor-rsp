@@ -397,7 +397,7 @@ function RecordDetails({ kind, rows }: { kind: "subscribers" | "refunds" | "canc
               <>
                 <Block label="Subscription" value={`${text(record.subscriptionPlan)} · ${text(record.subscriptionStatus)}`} sub={text(record.creemSubscriptionId)} />
                 <Block label="Period" value={`${formatDate(Number(record.periodStart || 0))}`} sub={`End: ${formatDate(Number(record.periodEnd || 0))}`} />
-                <Block label="Payment" value={`${text(record.paymentStatus)} · ${moneyCents(Number(record.amountCents || 0), String(record.currency || "USD"))}`} sub={formatDate(Number(record.paidAt || 0))} />
+                <Block label="Payment" value={`${text(record.paymentStatus)} · ${moneyCents(Number(record.amountCents || 0), String(record.currency || "USD"))}`} sub={`${text(record.paymentId || record.transactionId || record.creemTransactionId || "payment record")} · ${formatDate(Number(record.paidAt || 0))}`} />
                 <Block label="Usage" value={`${text(record.paidCreditsGranted)} granted · ${text(record.generationCreditsUsed)} used`} sub={`${calcUsagePercent(record)} · ${text(record.generationJobs)} jobs`} />
               </>
             )}
