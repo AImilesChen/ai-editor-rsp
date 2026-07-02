@@ -135,6 +135,11 @@ const editorFaqs = [
     answer:
       "No. This page is focused on photo cleanup: remove people, remove objects, clean backgrounds, and erase visible marks. It keeps the workflow simple so the main task is upload, brush, generate, compare, and download.",
   },
+  {
+    question: "Who is the AI image editor best for?",
+    answer:
+      "It is best for creators, marketers, e-commerce sellers, freelancers, and small teams that need fast photo cleanup for owned images instead of a full manual retouching workflow.",
+  },
 ];
 
 const faqJsonLd = {
@@ -241,6 +246,30 @@ export default function ImageEditorPage() {
                   <p className="mt-3 text-sm leading-6 text-rsp-muted">{item.body}</p>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rsp-container mt-12 md:mt-16">
+          <div className="rounded-[2rem] border border-rsp-border bg-[#FBF7F0] p-6 shadow-sm md:p-8">
+            <div className="grid gap-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+              <div>
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-rsp-secondary">Best fit</p>
+                <h2 className="mt-3 font-heading text-3xl font-normal tracking-[-0.045em] text-rsp-text md:text-5xl">
+                  Use the AI image editor when the original photo is almost right.
+                </h2>
+                <p className="mt-4 text-sm leading-6 text-rsp-muted md:text-base">
+                  The strongest use case is cleanup, not total replacement. If a travel photo has background people, a product image has table clutter, or a social post has a distracting mark, brush the problem area and keep the rest of the image familiar.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {["Travel and lifestyle cleanup", "Product and marketplace photos", "Creator images with small distractions"].map((item) => (
+                  <article key={item} className="rounded-[1.35rem] border border-rsp-border bg-white/80 p-5">
+                    <h3 className="text-base font-bold text-rsp-text">{item}</h3>
+                    <p className="mt-2 text-sm leading-6 text-rsp-muted">Remove people, objects, marks, or clutter while preserving the subject, framing, and natural lighting.</p>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>

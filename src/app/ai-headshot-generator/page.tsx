@@ -102,6 +102,10 @@ const faqs = [
     question: "Is my uploaded photo private?",
     answer: "Upload photos you own or have permission to edit. AI Editor RSP processes the image to generate the result and provides account history for signed-in users to access previous generations.",
   },
+  {
+    question: "Who should use an AI professional headshot generator?",
+    answer: "It is useful for job seekers, founders, consultants, sales teams, freelancers, and remote teams that need consistent business profile photos without booking a studio session.",
+  },
 ];
 
 const faqJsonLd = {
@@ -229,6 +233,28 @@ export default function ImageEditorPage() {
         </section>
 
         <section className="bg-[#FBF7F0] px-4 py-12 md:px-8 md:py-16">
+          <div className="mx-auto mb-10 max-w-screen-xl rounded-[32px] border border-rsp-border bg-white/78 p-6 shadow-sm md:p-8">
+            <div className="grid gap-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+              <div>
+                <p className="eyebrow text-[10px]">Business-ready portraits</p>
+                <h2 className="mt-3 font-heading text-3xl font-normal tracking-[-0.04em] text-rsp-text md:text-5xl">
+                  Make profile photos that match the place they will be used.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-rsp-muted">
+                  A LinkedIn headshot, resume photo, company bio portrait, and consultant profile do not need the same crop or background. Use clear instructions for outfit, background, lighting, and final use case so the generated headshot feels appropriate for the platform.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {["LinkedIn and job search", "Company team pages", "Founder and consultant bios"].map((item) => (
+                  <article key={item} className="rounded-[24px] border border-rsp-border bg-[#FBF7F0] p-5">
+                    <h3 className="text-base font-bold text-rsp-text">{item}</h3>
+                    <p className="mt-2 text-sm leading-6 text-rsp-muted">Generate a professional headshot with realistic lighting, clean framing, and business-focused styling.</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="mx-auto grid max-w-screen-xl gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
               <p className="eyebrow text-[10px]">How it works</p>

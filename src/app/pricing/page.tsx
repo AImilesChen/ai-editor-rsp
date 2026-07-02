@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Pricing — AI Editor RSP",
-  description: "Simple credit plans for AI image generation, uploaded-image editing, and ready-made prompt workflows.",
+  title: "AI Image Generator Pricing & Monthly Credits — AI Editor RSP",
+  description: "Compare AI image generator pricing for monthly credits, uploaded-image edits, AI headshots, prompt workflows, secure checkout, cancellation, and refund rules.",
   alternates: { canonical: `${SITE_URL}/pricing` },
 };
 
@@ -47,10 +47,39 @@ const resultExamples = [
 
 const trustItems = ["No card required for free credits", "Secure hosted checkout", "Cancel anytime", "7-day refund if mostly unused"];
 
+const pricingIntentCards = [
+  {
+    title: "Starter for light AI image generation",
+    body: "Choose Starter when you need occasional prompt tests, profile images, or a few small creative tasks each month without buying a high-volume plan.",
+  },
+  {
+    title: "Creator for weekly image editing",
+    body: "Creator gives more room for uploaded-image edits, prompt variations, social visuals, and AI headshot tests when you create assets every week.",
+  },
+  {
+    title: "Studio for repeated creative batches",
+    body: "Studio is for frequent image generation and editing sessions where you want more monthly credits for larger batches, tests, and client-ready variations.",
+  },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: pricingFaq.map(([q, a]) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: a,
+    },
+  })),
+};
+
 export default function PricingPage() {
   return (
     <>
       <Header />
+      <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
       <main className="pt-20">
         <section className="bg-[radial-gradient(circle_at_18%_12%,rgba(184,115,51,0.14),transparent_28%),linear-gradient(135deg,#F7F2EA_0%,#EFE7DC_100%)] px-4 pb-12 pt-8 md:px-8 md:pb-16 md:pt-10">
           <div className="mx-auto max-w-screen-2xl">
@@ -98,6 +127,26 @@ export default function PricingPage() {
                   </article>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-pad bg-[#FBF7F0]">
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="max-w-3xl">
+              <p className="eyebrow">Choosing a plan</p>
+              <h2 className="mt-3 font-heading text-4xl font-normal tracking-[-0.03em] text-rsp-text">AI image generator pricing by real workload</h2>
+              <p className="mt-4 text-sm leading-7 text-rsp-muted md:text-base">
+                The best plan depends on how often you generate images, edit uploaded photos, and test variations. Start with free credits, then match the monthly credit amount to the way you actually create images.
+              </p>
+            </div>
+            <div className="mt-7 grid gap-4 md:grid-cols-3">
+              {pricingIntentCards.map((item) => (
+                <article key={item.title} className="rounded-[26px] border border-rsp-border bg-white/82 p-5 shadow-sm">
+                  <h3 className="font-heading text-2xl font-normal tracking-[-0.035em] text-rsp-text">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-rsp-muted">{item.body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
