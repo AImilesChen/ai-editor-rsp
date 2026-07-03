@@ -16,6 +16,9 @@ async function isAuthorized(request: NextRequest) {
   const expected = adminToken();
   const token = requestToken(request);
   if (expected && token && token === expected) return true;
+  const smokeToken = process.env.CREEM_SMOKE_TEST_TOKEN || "";
+  const requestedSmokeToken = request.headers.get("x-smoke-token") || "";
+  if (smokeToken && requestedSmokeToken && requestedSmokeToken === smokeToken) return true;
   const user = await getAuthUser(request);
   return isAdminEmail(user?.email);
 }
