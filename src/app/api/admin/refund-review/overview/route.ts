@@ -155,9 +155,9 @@ export async function GET(request: NextRequest) {
       p.currency,
       p.paid_at paidAt,
       CASE LOWER(s.plan)
-        WHEN 'starter' THEN 120
-        WHEN 'creator' THEN 300
-        WHEN 'studio' THEN 700
+        WHEN 'starter' THEN 100
+        WHEN 'creator' THEN 240
+        WHEN 'studio' THEN 500
         ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0), 0)
       END paidCreditsGranted,
       COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at >= COALESCE(s.current_period_start, p.paid_at, s.created_at) AND created_at <= COALESCE(s.current_period_end, strftime('%s','now') * 1000)), 0) generationCreditsUsed,
@@ -192,9 +192,9 @@ export async function GET(request: NextRequest) {
       s.creem_subscription_id creemSubscriptionId,
       s.status subscriptionStatus,
       CASE LOWER(p.plan)
-        WHEN 'starter' THEN 120
-        WHEN 'creator' THEN 300
-        WHEN 'studio' THEN 700
+        WHEN 'starter' THEN 100
+        WHEN 'creator' THEN 240
+        WHEN 'studio' THEN 500
         ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0 AND created_at >= COALESCE(p.paid_at, p.created_at) AND created_at <= rr.requested_at), 0)
       END paidCreditsGranted,
       COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type IN ('signup_grant', 'kv_backfill') AND delta > 0), 0) lifetimeFreeCreditsGranted,

@@ -371,7 +371,7 @@ export default function AccountBillingCenter() {
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article className="border border-rsp-border bg-rsp-surface p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Prorated upgrade</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and Creem charges the saved payment method for the prorated price difference. Credits add only the difference between plans for this billing period: Creator 300 → Studio 700 adds 400 credits to your current balance.</p>
+          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and Creem charges the saved payment method for the prorated price difference. Credits add only the difference between plans for this billing period: Creator 240 → Studio 500 adds 260 credits to your current balance.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>

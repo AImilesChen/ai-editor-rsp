@@ -4,9 +4,9 @@ import { SITE_URL } from "@/lib/site";
 export type BillingPlan = "starter" | "creator" | "studio";
 
 export const CREEM_PLAN_CREDITS: Record<BillingPlan, number> = {
-  starter: 120,
-  creator: 300,
-  studio: 700,
+  starter: 100,
+  creator: 240,
+  studio: 500,
 };
 
 const encoder = new TextEncoder();

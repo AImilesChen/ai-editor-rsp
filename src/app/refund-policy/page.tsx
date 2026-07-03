@@ -40,7 +40,7 @@ export default function RefundPolicyPage() {
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>Self-service refund requests are eligible within 7 days of purchase.</li>
               <li>Self-service refunds are available only if no more than 20% of the paid credits granted by that purchase or billing period have been used.</li>
-              <li>For example, a 300-credit plan remains eligible only while 60 or fewer paid credits from that billing period have been used.</li>
+              <li>For example, a 240-credit plan remains eligible only while 48 or fewer paid credits from that billing period have been used.</li>
               <li>Accounts that have used more than 20% of paid credits, show heavy generation activity, or are outside the self-service window are not eligible for an automatic full refund through the product.</li>
               <li>Refunds may be denied for abuse, fraud, policy violations, chargeback abuse, or attempts to bypass technical or safety limits.</li>
               <li>Applicable consumer protection law may provide additional rights in some regions.</li>
