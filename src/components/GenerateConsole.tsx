@@ -299,7 +299,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [selectedShot, setSelectedShot] = useState<string | null>(null);
   const [ratio, setRatio] = useState(initialMode === "text" ? "" : defaultPreset === "headshot" ? "3:4" : "auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
-  const [creditsRemaining, setCreditsRemaining] = useState(0);
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -345,7 +345,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const requiresManualMask = mode === "edit" && !isHeadshotMode;
   const minimumPromptLength = mode === "edit" && !isHeadshotMode ? 3 : 20;
   const promptReady = effectivePrompt.trim().length >= minimumPromptLength;
-  const canGenerate = Boolean(authenticated) && !isUploading && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing" && creditsRemaining >= currentQuote.creditsCharged;
+  const effectiveCreditsRemaining = creditsRemaining ?? 0;
+  const creditsLoaded = typeof creditsRemaining === "number";
+  const canGenerate = Boolean(authenticated) && creditsLoaded && !isUploading && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing" && effectiveCreditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
@@ -375,13 +377,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const showEditAreaControls = mode === "edit" && !isHeadshotMode && (Boolean(uploadedImage) || editorOnly);
 
   useEffect(() => {
-    fetch("/api/session")
+    fetch(`/api/session?t=${Date.now()}`, { cache: "no-store", credentials: "same-origin" })
       .then((response) => response.json() as Promise<SessionResponse>)
       .then((data) => {
         setAuthenticated(Boolean(data.authenticated));
         if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
+        else setCreditsRemaining(0);
       })
-      .catch(() => setAuthenticated(false));
+      .catch(() => {
+        setAuthenticated(false);
+        setCreditsRemaining(0);
+      });
   }, []);
 
   useEffect(() => {
@@ -755,7 +761,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
           {!isHeadshotOnly && (
             <div className="border border-[#D4A574]/35 bg-[#D4A574]/10 px-3 py-2 text-right font-mono text-[11px] leading-4 text-[#F4DFC8]">
-              {authenticated ? `${creditsRemaining} credits` : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
+              {authenticated ? (creditsLoaded ? `${effectiveCreditsRemaining} credits` : "Syncing credits…") : isHero ? <><span className="block">3 free credits</span><span className="block text-[9px] text-[#F4DFC8]/70">after login</span></> : "Log in for 3 credits"}
             </div>
           )}
         </div>
@@ -1021,8 +1027,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 : lockedMode === "edit"
                   ? "Upload a photo first. This page is for editing uploaded images, not text-to-image generation."
                   : "Upload a reference image first, or switch to Create from Text."
-              : creditsRemaining < currentQuote.creditsCharged
-                ? `This request needs ${currentQuote.creditsCharged} credits. You have ${creditsRemaining} credits.`
+              : !creditsLoaded
+                ? "Syncing your latest credit balance…"
+                : effectiveCreditsRemaining < currentQuote.creditsCharged
+                ? `This request needs ${currentQuote.creditsCharged} credits. You have ${effectiveCreditsRemaining} credits.`
                 : isHeadshotMode
                   ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
                   : mode === "edit"

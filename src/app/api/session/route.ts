@@ -3,6 +3,14 @@ import { getSession, setSessionCookie } from "@/lib/backend/session";
 import { getAuthUser } from "@/lib/backend/auth";
 import { accountForPublicUser } from "@/lib/backend/billing-store";
 
+export const dynamic = "force-dynamic";
+
+const noStoreHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
+
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request);
   if (!user) {
@@ -13,7 +21,7 @@ export async function GET(request: NextRequest) {
       creditsRemaining: 0,
       creditLabel: "Log in to claim 3 one-time free credits",
       loginRequired: true,
-    });
+    }, { headers: noStoreHeaders });
   }
 
   const account = await accountForPublicUser(user);
@@ -25,7 +33,7 @@ export async function GET(request: NextRequest) {
     creditsRemaining: account.creditsRemaining,
     creditLabel: `${account.creditsRemaining} generation credit${account.creditsRemaining === 1 ? "" : "s"}`,
     loginRequired: false,
-  });
-  await setSessionCookie(response, session);
+  }, { headers: noStoreHeaders });
+  await setSessionCookie(response, { ...session, creditsRemaining: account.creditsRemaining });
   return response;
 }
