@@ -6,6 +6,7 @@ import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } fro
 import { checkPromptSafety, logSafetyEvent, promptHash, rewritePromptForSoftSafety } from "@/lib/backend/safety";
 import { moderatePromptWithCreem } from "@/lib/backend/creem";
 import { createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
+import { recordModerationEvent, updateModerationEventOutcome } from "@/lib/backend/moderation-store";
 import { quoteGenerationCredits } from "@/lib/generation-pricing";
 
 type Body = {
@@ -83,13 +84,23 @@ export async function POST(request: NextRequest) {
     return response;
   }
 
+  const promptDigest = await promptHash(prompt);
   const moderationExternalId = `user_${user.id}:gen_${crypto.randomUUID()}`;
   const creemModeration = await moderatePromptWithCreem({ prompt, externalId: moderationExternalId });
+  await recordModerationEvent({
+    externalId: moderationExternalId,
+    userId: user.id,
+    endpoint: "/api/generate",
+    promptHash: promptDigest,
+    moderation: creemModeration,
+    creditDecision: "not_charged",
+    modelCalled: false,
+  });
   if (creemModeration.decision === "deny" || creemModeration.decision === "flag") {
     const nextSession = recordSafetyStrike(session, creemModeration.decision === "deny" ? "high" : "medium");
     logSafetyEvent({
       sid: session.sid,
-      promptHash: await promptHash(prompt),
+      promptHash: promptDigest,
       category: ["creem_moderation"],
       severity: creemModeration.decision === "deny" ? "high" : "medium",
       decision: "block",
@@ -108,7 +119,7 @@ export async function POST(request: NextRequest) {
   if (!creemModeration.ok) {
     logSafetyEvent({
       sid: session.sid,
-      promptHash: await promptHash(prompt),
+      promptHash: promptDigest,
       category: ["creem_moderation"],
       severity: "high",
       decision: "block",
@@ -151,10 +162,11 @@ export async function POST(request: NextRequest) {
   }
   const safety = checkPromptSafety(prompt);
   if (safety.decision === "block") {
+    await updateModerationEventOutcome({ externalId: moderationExternalId, creditDecision: "not_charged", modelCalled: false, errorMessage: `local_safety_${safety.reason}` });
     const nextSession = recordSafetyStrike(session, safety.severity);
     logSafetyEvent({
       sid: session.sid,
-      promptHash: await promptHash(prompt),
+      promptHash: promptDigest,
       category: safety.categories,
       severity: safety.severity,
       decision: safety.decision,
@@ -173,7 +185,7 @@ export async function POST(request: NextRequest) {
   if (safety.decision === "review") {
     logSafetyEvent({
       sid: session.sid,
-      promptHash: await promptHash(prompt),
+      promptHash: promptDigest,
       category: safety.categories,
       severity: safety.severity,
       decision: safety.decision,
@@ -185,9 +197,11 @@ export async function POST(request: NextRequest) {
 
   const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
   if (user) await createGenerationJob({ jobId, user, prompt: generationPrompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
+  await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, creditDecision: "not_charged", modelCalled: false });
 
   const providerRatio = body.ratio === "auto" ? "auto" : quote.ratio;
   const result = await submitFalGeneration({ prompt: generationPrompt, style: body.style, ratio: providerRatio, imageDataUrl: body.imageDataUrl, maskDataUrl: body.maskDataUrl, editRegion });
+  await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, providerRequestId: result.ok ? result.requestId : null, modelCalled: true, creditDecision: "not_charged", errorMessage: result.ok ? null : result.error });
   if (!result.ok) {
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });
@@ -197,6 +211,7 @@ export async function POST(request: NextRequest) {
 
   const debit = user ? await debitCreditForUser(user, quote.creditsCharged, jobId) : { creditsRemaining: Math.max(0, session.creditsRemaining - quote.creditsCharged), insufficient: false };
   if (debit.insufficient) {
+    await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, providerRequestId: result.requestId, creditDecision: "not_charged", modelCalled: true, errorMessage: "credits_exhausted_after_provider_submission" });
     if (user) await markGenerationFailed({ jobId, userId: user.id, code: "CREDITS_EXHAUSTED", message: "No credits remaining after provider submission." });
     const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
     await setSessionCookie(response, session);
@@ -215,6 +230,7 @@ export async function POST(request: NextRequest) {
       raw: result.raw,
     });
   }
+  await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, providerRequestId: result.requestId, creditDecision: "charged", modelCalled: true });
 
   const nextCreditsRemaining = debit.creditsRemaining;
   const nextSession = { ...session, creditsRemaining: Math.max(0, nextCreditsRemaining) };

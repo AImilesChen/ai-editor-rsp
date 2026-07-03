@@ -19,8 +19,21 @@ export function creemApiBase() {
   return (process.env.CREEM_API_BASE || "https://api.creem.io/v1").replace(/\/+$/, "");
 }
 
+export function creemApiRoot() {
+  return creemApiBase().replace(/\/v1$/i, "");
+}
+
+export function creemV1Url(path: string) {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${creemApiRoot()}/v1${normalizedPath}`;
+}
+
+export function creemModerationUrl() {
+  return creemV1Url("/moderation/prompt");
+}
+
 export function creemMode() {
-  return creemApiBase().includes("test-api") ? "test" : "live";
+  return creemApiRoot().includes("test-api") ? "test" : "live";
 }
 
 export type CreemModerationDecision = "allow" | "flag" | "deny";
@@ -33,6 +46,8 @@ export type CreemPromptModerationResult = {
   status?: number;
   message?: string;
   payload?: unknown;
+  requestUrl?: string;
+  mode?: "test" | "live";
 };
 
 function moderationDecision(payload: unknown): CreemModerationDecision | null {
@@ -48,17 +63,19 @@ function moderationId(payload: unknown) {
 }
 
 export async function moderatePromptWithCreem(input: { prompt: string; externalId?: string | null; timeoutMs?: number }): Promise<CreemPromptModerationResult> {
+  const requestUrl = creemModerationUrl();
+  const mode = creemMode();
   if (!process.env.CREEM_API_KEY) {
-    return { ok: false, decision: "unavailable", status: 503, message: "CREEM_API_KEY is not configured." };
+    return { ok: false, decision: "unavailable", status: 503, message: "CREEM_API_KEY is not configured.", requestUrl, mode };
   }
   const prompt = input.prompt.trim();
   if (!prompt) {
-    return { ok: false, decision: "deny", status: 400, message: "Prompt is required." };
+    return { ok: false, decision: "deny", status: 400, message: "Prompt is required.", requestUrl, mode };
   }
 
   let response: Response;
   try {
-    response = await fetch(`${creemApiBase()}/moderation/prompt`, {
+    response = await fetch(requestUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,17 +89,17 @@ export async function moderatePromptWithCreem(input: { prompt: string; externalI
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Creem moderation request failed.";
-    return { ok: false, decision: "unavailable", status: 503, message };
+    return { ok: false, decision: "unavailable", status: 503, message, requestUrl, mode };
   }
 
   const parsed = await parseCreemResponse(response);
   if (!parsed.ok) {
-    return { ok: false, decision: "unavailable", status: parsed.status, message: parsed.message, payload: parsed.payload };
+    return { ok: false, decision: "unavailable", status: parsed.status, message: parsed.message, payload: parsed.payload, requestUrl, mode };
   }
 
   const decision = moderationDecision(parsed.payload);
   if (!decision) {
-    return { ok: false, decision: "unavailable", status: parsed.status, message: "Creem moderation returned an unknown decision.", payload: parsed.payload };
+    return { ok: false, decision: "unavailable", status: parsed.status, message: "Creem moderation returned an unknown decision.", payload: parsed.payload, requestUrl, mode };
   }
 
   return {
@@ -92,6 +109,8 @@ export async function moderatePromptWithCreem(input: { prompt: string; externalI
     externalId: input.externalId || null,
     status: parsed.status,
     payload: parsed.payload,
+    requestUrl,
+    mode,
   };
 }
 
@@ -210,7 +229,7 @@ export async function lookupCreemRefundStatus(input: { paymentId?: string | null
 
 async function creemJsonRequest(path: string, body: Record<string, unknown>) {
   if (!process.env.CREEM_API_KEY) return { ok: false as const, status: 503, message: "CREEM_API_KEY is not configured." };
-  const response = await fetch(`${creemApiBase()}${path}`, {
+  const response = await fetch(creemV1Url(path), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -223,7 +242,7 @@ async function creemJsonRequest(path: string, body: Record<string, unknown>) {
 
 async function creemGetRequest(path: string) {
   if (!process.env.CREEM_API_KEY) return { ok: false as const, status: 503, message: "CREEM_API_KEY is not configured." };
-  const response = await fetch(`${creemApiBase()}${path}`, {
+  const response = await fetch(creemV1Url(path), {
     method: "GET",
     headers: {
       "x-api-key": process.env.CREEM_API_KEY,
