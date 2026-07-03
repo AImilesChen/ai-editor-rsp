@@ -23,6 +23,78 @@ export function creemMode() {
   return creemApiBase().includes("test-api") ? "test" : "live";
 }
 
+export type CreemModerationDecision = "allow" | "flag" | "deny";
+
+export type CreemPromptModerationResult = {
+  ok: boolean;
+  decision: CreemModerationDecision | "unavailable";
+  moderationId?: string | null;
+  externalId?: string | null;
+  status?: number;
+  message?: string;
+  payload?: unknown;
+};
+
+function moderationDecision(payload: unknown): CreemModerationDecision | null {
+  if (!payload || typeof payload !== "object") return null;
+  const decision = (payload as Record<string, unknown>).decision;
+  return decision === "allow" || decision === "flag" || decision === "deny" ? decision : null;
+}
+
+function moderationId(payload: unknown) {
+  if (!payload || typeof payload !== "object") return null;
+  const id = (payload as Record<string, unknown>).id;
+  return typeof id === "string" ? id : null;
+}
+
+export async function moderatePromptWithCreem(input: { prompt: string; externalId?: string | null; timeoutMs?: number }): Promise<CreemPromptModerationResult> {
+  if (!process.env.CREEM_API_KEY) {
+    return { ok: false, decision: "unavailable", status: 503, message: "CREEM_API_KEY is not configured." };
+  }
+  const prompt = input.prompt.trim();
+  if (!prompt) {
+    return { ok: false, decision: "deny", status: 400, message: "Prompt is required." };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${creemApiBase()}/moderation/prompt`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.CREEM_API_KEY,
+      },
+      body: JSON.stringify({
+        prompt,
+        external_id: input.externalId || undefined,
+      }),
+      signal: AbortSignal.timeout(input.timeoutMs ?? 5000),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Creem moderation request failed.";
+    return { ok: false, decision: "unavailable", status: 503, message };
+  }
+
+  const parsed = await parseCreemResponse(response);
+  if (!parsed.ok) {
+    return { ok: false, decision: "unavailable", status: parsed.status, message: parsed.message, payload: parsed.payload };
+  }
+
+  const decision = moderationDecision(parsed.payload);
+  if (!decision) {
+    return { ok: false, decision: "unavailable", status: parsed.status, message: "Creem moderation returned an unknown decision.", payload: parsed.payload };
+  }
+
+  return {
+    ok: decision === "allow",
+    decision,
+    moderationId: moderationId(parsed.payload),
+    externalId: input.externalId || null,
+    status: parsed.status,
+    payload: parsed.payload,
+  };
+}
+
 export function creemProductId(plan: BillingPlan) {
   switch (plan) {
     case "starter":

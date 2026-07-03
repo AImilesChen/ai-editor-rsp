@@ -30,6 +30,7 @@ export default function Footer() {
           <Link className="footer-link" href="/cookie-policy">Cookie Policy</Link>
           <Link className="footer-link" href="/content-policy">Content Policy</Link>
           <Link className="footer-link" href="/ai-policy">AI Policy</Link>
+          <Link className="footer-link" href="/ai-models">AI Models Used</Link>
         </div>
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Contact</h4>

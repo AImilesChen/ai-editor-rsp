@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 export default function ContentPolicyPage() {
   const prohibited = [
     "Illegal activity, fraud, abuse, evasion, real-world harm, or instructions that enable wrongdoing.",
-    "Child sexual content, sexualized minors, sexual abuse material, explicit deepfakes, or non-consensual intimate imagery.",
+    "NSFW, sexually explicit, pornographic, erotic, adult sexual, fetish, nudity, sexual acts, or sexualized body-part content in prompts, uploads, generated images, or editing requests.",
+    "Child sexual content, sexualized minors, sexual abuse material, sexual exploitation, explicit deepfakes, non-consensual intimate imagery, or attempts to bypass safety moderation.",
     "Hate, harassment, threats, humiliation, or abusive targeting of protected groups, private people, or vulnerable individuals.",
     "Deceptive impersonation, fake official documents, misleading media, scams, or images meant to misrepresent real people, events, or brands.",
     "Rights-infringing content, including prompts that misuse protected characters, logos, private likenesses, copyrighted material, or confidential information.",
@@ -27,7 +28,7 @@ export default function ContentPolicyPage() {
           <p className="rsp-chip mb-4 border-rsp-secondary/35 bg-white/70 text-rsp-secondary">Content Policy</p>
           <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Content safety rules.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">
-            Do not submit prompts intended to create illegal, abusive, deceptive, sexually exploitative, or rights-infringing content. These rules are aligned with common AI safety standards while remaining AI Editor RSP&apos;s own site policy.
+            Do not submit prompts intended to create illegal, abusive, deceptive, NSFW, sexually explicit, pornographic, sexually exploitative, or rights-infringing content. These rules are aligned with common AI safety standards while remaining AI Editor RSP&apos;s own site policy.
           </p>
         </div>
 
@@ -39,7 +40,7 @@ export default function ContentPolicyPage() {
         </section>
 
         <div className="mt-8 border border-rsp-secondary/25 bg-[#FFF7EA] p-5 text-sm font-medium leading-6 text-[#7A3F12] shadow-[0_18px_40px_rgba(184,115,51,0.10)]">
-          We may refuse generation, remove content, suspend access, or request additional review when prompts or outputs create safety, legal, or rights risk. Report issues to {SUPPORT_EMAIL}.
+          We screen prompt-based image generation and editing requests before generation, may refuse generation, remove content, suspend access, or request additional review when prompts or outputs create safety, legal, or rights risk. Report issues to {SUPPORT_EMAIL}.
         </div>
       </main>
       <Footer />

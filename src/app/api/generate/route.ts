@@ -4,6 +4,7 @@ import { getAuthUser } from "@/lib/backend/auth";
 import { accountForPublicUser, debitCreditForUser } from "@/lib/backend/billing-store";
 import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
 import { checkPromptSafety, logSafetyEvent, promptHash, rewritePromptForSoftSafety } from "@/lib/backend/safety";
+import { moderatePromptWithCreem } from "@/lib/backend/creem";
 import { createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
 import { quoteGenerationCredits } from "@/lib/generation-pricing";
 
@@ -75,6 +76,54 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
+  const prompt = body.prompt || "";
+  if (prompt.trim().length < 20) {
+    const response = NextResponse.json({ ok: false, error: "Prompt must be at least 20 characters.", code: "PROMPT_TOO_SHORT" }, { status: 400 });
+    await setSessionCookie(response, session);
+    return response;
+  }
+
+  const moderationExternalId = `user_${user.id}:gen_${crypto.randomUUID()}`;
+  const creemModeration = await moderatePromptWithCreem({ prompt, externalId: moderationExternalId });
+  if (creemModeration.decision === "deny" || creemModeration.decision === "flag") {
+    const nextSession = recordSafetyStrike(session, creemModeration.decision === "deny" ? "high" : "medium");
+    logSafetyEvent({
+      sid: session.sid,
+      promptHash: await promptHash(prompt),
+      category: ["creem_moderation"],
+      severity: creemModeration.decision === "deny" ? "high" : "medium",
+      decision: "block",
+      reason: `creem_moderation_${creemModeration.decision}`,
+      creditDecision: "not_charged",
+    });
+    const response = NextResponse.json({
+      ok: false,
+      error: "This prompt cannot be processed because it appears to request NSFW, sexually explicit, or otherwise disallowed content. Please revise your prompt and try again.",
+      code: "CREEM_MODERATION_BLOCKED",
+      safety: { decision: "block", categories: ["creem_moderation"], severity: creemModeration.decision === "deny" ? "high" : "medium" },
+    }, { status: 451 });
+    await setSessionCookie(response, nextSession);
+    return response;
+  }
+  if (!creemModeration.ok) {
+    logSafetyEvent({
+      sid: session.sid,
+      promptHash: await promptHash(prompt),
+      category: ["creem_moderation"],
+      severity: "high",
+      decision: "block",
+      reason: `creem_moderation_unavailable:${creemModeration.status || "error"}`,
+      creditDecision: "not_charged",
+    });
+    const response = NextResponse.json({
+      ok: false,
+      error: "Content moderation is temporarily unavailable. Please try again in a moment.",
+      code: "CREEM_MODERATION_UNAVAILABLE",
+    }, { status: 503 });
+    await setSessionCookie(response, session);
+    return response;
+  }
+
   const quote = quoteGenerationCredits({ ratio: body.ratio, imageDataUrl: body.imageDataUrl, style: body.style });
   if (["refund_requested", "refunded", "disputed"].includes(billingAccount.subscriptionStatus)) {
     const response = NextResponse.json({
@@ -100,7 +149,6 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
-  const prompt = body.prompt || "";
   const safety = checkPromptSafety(prompt);
   if (safety.decision === "block") {
     const nextSession = recordSafetyStrike(session, safety.severity);

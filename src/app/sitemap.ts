@@ -26,6 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/faq`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/ai-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.55 },
     { url: `${BASE_URL}/content-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.55 },
+    { url: `${BASE_URL}/ai-models`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.55 },
     { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${BASE_URL}/cookie-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },

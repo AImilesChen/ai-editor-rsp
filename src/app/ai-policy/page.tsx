@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { aiModelDisclosureText } from "@/lib/ai-models";
 import { legalDisclaimer, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -10,14 +11,19 @@ export const metadata: Metadata = {
 };
 
 export default function AiPolicyPage() {
+  const modelDisclosure = aiModelDisclosureText();
   const rules = [
     {
       title: "No illegal or harmful activity",
       body: "Do not use AI Editor RSP to create content that facilitates illegal activity, abuse, fraud, threats, evasion, or real-world harm.",
     },
     {
+      title: "No NSFW, sexually explicit, or pornographic generation",
+      body: "We do not allow users to generate, upload, request, or distribute NSFW, sexually explicit, pornographic, erotic, adult sexual, fetish, nudity, sexual acts, or sexualized body-part content through our AI image generation or editing tools.",
+    },
+    {
       title: "No sexual exploitation or non-consensual imagery",
-      body: "We prohibit child sexual content, sexualized minors, non-consensual intimate imagery, explicit deepfakes, and sexual abuse material.",
+      body: "We also prohibit sexualized minors, child sexual content, non-consensual intimate imagery, sexual exploitation, sexual abuse material, explicit deepfakes, and attempts to evade moderation controls.",
     },
     {
       title: "No hate, harassment, or abusive targeting",
@@ -63,8 +69,9 @@ export default function AiPolicyPage() {
           <h2 className="font-heading text-2xl font-bold text-rsp-text">Enforcement and review</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-7 text-rsp-muted">
             <li>We may block prompts, refuse generation, remove outputs, suspend access, or request additional review when content creates safety, legal, or rights risk.</li>
+            <li>Every prompt-based image generation or editing request is screened through Creem Moderation API before generation. Requests with flag or deny decisions are blocked before model invocation and are not charged credits.</li>
             <li>Prompt and output moderation may run before and after generation. Payment, abuse, and policy reviews may also use third-party safety and fraud-prevention tools.</li>
-            <li>Provider terms still apply. Generation uses third-party AI model providers for image generation and editing requests.</li>
+            <li>Current generation model disclosure: {modelDisclosure}. See <a className="text-brand-500 underline" href="/ai-models">AI Models Used</a> for details and updates.</li>
             <li>Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.</li>
           </ul>
         </section>

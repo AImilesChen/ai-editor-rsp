@@ -64,7 +64,7 @@ export default function TermsPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Acceptable Use</h2>
             <p className="mb-4">
-              You must follow our <a className="text-brand-500 underline" href="/content-policy">Content Policy</a> and <a className="text-brand-500 underline" href="/ai-policy">AI Policy</a>. Do not use the service to create illegal, abusive, deceptive, sexually exploitative, non-consensual, hateful, violent, extremist, or rights-infringing content. Do not submit prompts or uploads that violate copyright, trademark, publicity, privacy, or third-party platform rules.
+              You must follow our <a className="text-brand-500 underline" href="/content-policy">Content Policy</a> and <a className="text-brand-500 underline" href="/ai-policy">AI Policy</a>. Do not use the service to create illegal, abusive, deceptive, NSFW, sexually explicit, pornographic, sexually exploitative, non-consensual, hateful, violent, extremist, or rights-infringing content. Do not submit prompts or uploads that violate copyright, trademark, publicity, privacy, or third-party platform rules.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Third-Party Tools and Rights</h2>

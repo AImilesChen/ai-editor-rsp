@@ -7,7 +7,8 @@ export type SafetyCategory =
   | "extremism"
   | "deception_fraud"
   | "impersonation_deepfake"
-  | "rights_infringement";
+  | "rights_infringement"
+  | "creem_moderation";
 
 export type SafetyDecision = "allow" | "review" | "block";
 export type SafetySeverity = "low" | "medium" | "high" | "critical";
