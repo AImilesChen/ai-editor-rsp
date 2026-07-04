@@ -3,8 +3,9 @@ import { prompts } from "@/lib/data/prompts";
 import { templates } from "@/lib/data/templates";
 import { effects } from "@/lib/data/effects";
 import { promptPages } from "@/lib/data/prompt-pages";
+import { SITE_URL } from "@/lib/site";
 
-const BASE_URL = "https://aieditorrspediting.org";
+const BASE_URL = SITE_URL;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
@@ -31,7 +32,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${BASE_URL}/cookie-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
     { url: `${BASE_URL}/refund-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
-    { url: `${BASE_URL}/disclaimer`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
   ];
 
   const promptRoutes = prompts.map((p) => ({
