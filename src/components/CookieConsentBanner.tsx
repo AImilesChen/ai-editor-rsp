@@ -70,7 +70,7 @@ export default function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:bottom-5 sm:px-5" role="region" aria-label="Cookie consent">
-      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb]/98 p-4 shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989]/70 backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-[min(920px,calc(100vw-24px))]"}`}>
+      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb] p-4 shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989] ${isManaging ? "max-w-4xl" : "max-w-[min(920px,calc(100vw-24px))]"}`}>
         <div className={`grid gap-3 ${isManaging ? "" : "sm:flex sm:items-center sm:justify-between sm:gap-4"}`}>
           <div className={isManaging ? "" : "min-w-0 sm:max-w-[390px]"}>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a45f17]">Cookie choices</p>
