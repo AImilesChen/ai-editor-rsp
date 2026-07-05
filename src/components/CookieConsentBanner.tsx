@@ -69,14 +69,14 @@ export default function CookieConsentBanner() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:inset-x-auto sm:left-5 sm:right-auto sm:bottom-5 sm:px-0" role="region" aria-label="Cookie consent">
-      <div className={`rounded-[18px] border border-[#ead8bb] bg-[#fffaf1]/95 p-3 shadow-[0_16px_44px_rgba(69,42,16,0.16)] backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-[min(760px,calc(100vw-24px))]"}`}>
-        <div className={`grid gap-2 ${isManaging ? "" : "sm:flex sm:items-center sm:gap-3"}`}>
-          <div className={isManaging ? "" : "min-w-0 sm:max-w-[430px]"}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a36c2d]">Cookie preferences</p>
-            <h2 className="sr-only">Optional cookies</h2>
-            <p className="mt-1 text-xs leading-4 text-[#5f4d39]">
-              Optional analytics load only after you agree.
+    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:bottom-5 sm:px-5" role="region" aria-label="Cookie consent">
+      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb]/98 p-4 shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989]/70 backdrop-blur ${isManaging ? "max-w-4xl" : "max-w-[min(920px,calc(100vw-24px))]"}`}>
+        <div className={`grid gap-3 ${isManaging ? "" : "sm:flex sm:items-center sm:justify-between sm:gap-4"}`}>
+          <div className={isManaging ? "" : "min-w-0 sm:max-w-[390px]"}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a45f17]">Cookie choices</p>
+            <h2 className="mt-1 text-base font-bold leading-5 text-rsp-text">Choose your cookie settings</h2>
+            <p className="mt-1 text-sm leading-5 text-[#5f4d39]">
+              We only load optional analytics or marketing cookies after you choose.
             </p>
 
             {isManaging ? (
@@ -112,20 +112,20 @@ export default function CookieConsentBanner() {
             ) : null}
           </div>
 
-          <div className={`grid grid-cols-3 gap-1.5 ${isManaging ? "" : "sm:w-[282px] sm:flex-none"}`}>
-            <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="rounded-full border border-[#d9bd91] bg-white px-2.5 py-2 text-xs font-semibold text-rsp-text transition hover:bg-[#fff3de]">
-              Reject
+          <div className={`grid gap-2 ${isManaging ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:w-[480px] sm:flex-none sm:grid-cols-3"}`}>
+            <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="min-h-11 rounded-full border border-[#d0a16a] bg-white px-3 py-2.5 text-sm font-bold text-rsp-text shadow-sm transition hover:bg-[#fff3de] focus:outline-none focus:ring-2 focus:ring-[#b86b20]">
+              Reject non-essential
             </button>
-            <button type="button" onClick={() => setIsManaging((value) => !value)} className="rounded-full border border-transparent bg-[#f3e4cd] px-2.5 py-2 text-xs font-semibold text-[#7a4819] transition hover:bg-[#ead4b2]">
-              {isManaging ? "Hide" : "Manage"}
+            <button type="button" onClick={() => setIsManaging((value) => !value)} className="min-h-11 rounded-full border border-[#d8b47d] bg-[#f4dfbc] px-3 py-2.5 text-sm font-bold text-[#6f3e12] shadow-sm transition hover:bg-[#ebc88f] focus:outline-none focus:ring-2 focus:ring-[#b86b20]">
+              {isManaging ? "Hide details" : "Manage preferences"}
             </button>
             {isManaging ? (
-              <button type="button" onClick={() => closeWith({ analytics, marketing })} className="rounded-full bg-rsp-text px-2.5 py-2 text-xs font-semibold text-white transition hover:bg-[#2c241b]">
-                Save
+              <button type="button" onClick={() => closeWith({ analytics, marketing })} className="min-h-11 rounded-full bg-rsp-text px-3 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(46,34,20,0.22)] transition hover:bg-[#2c241b] focus:outline-none focus:ring-2 focus:ring-[#b86b20]">
+                Save choices
               </button>
             ) : (
-              <button type="button" onClick={() => closeWith({ analytics: true, marketing: true })} className="rounded-full bg-rsp-text px-2.5 py-2 text-xs font-semibold text-white transition hover:bg-[#2c241b]">
-                Accept
+              <button type="button" onClick={() => closeWith({ analytics: true, marketing: true })} className="min-h-11 rounded-full bg-rsp-text px-3 py-2.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(46,34,20,0.22)] transition hover:bg-[#2c241b] focus:outline-none focus:ring-2 focus:ring-[#b86b20]">
+                Accept all
               </button>
             )}
           </div>
