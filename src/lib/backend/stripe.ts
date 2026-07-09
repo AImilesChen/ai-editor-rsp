@@ -200,8 +200,30 @@ export async function upgradeStripeSubscription(subscriptionId: string, priceId:
   { ok: true; status: number; payload: unknown }
   | { ok: false; status: number; message: string; payload?: unknown }
 > {
-  // Stripe upgrades require subscription item IDs. Keep this fail-closed and use the customer portal until item-level upgrade is implemented.
-  return { ok: false, status: 409, message: `Plan changes are handled in Stripe Customer Portal for subscription ${subscriptionId} and price ${priceId}.`, payload: null };
+  if (!subscriptionId.trim()) return { ok: false, status: 400, message: "Stripe subscription ID is required.", payload: null };
+  if (!priceId.trim()) return { ok: false, status: 503, message: "Target Stripe price is not configured.", payload: null };
+
+  const encodedSubscriptionId = encodeURIComponent(subscriptionId);
+  const subscription = await stripeGetRequest(`/subscriptions/${encodedSubscriptionId}?expand[]=items.data.price`);
+  if (!subscription.ok) {
+    return { ok: false, status: subscription.status, message: subscription.message || "Stripe subscription lookup failed.", payload: "payload" in subscription ? subscription.payload : null };
+  }
+
+  const itemId = extractSubscriptionItemId(subscription.payload);
+  if (!itemId) {
+    return { ok: false, status: 409, message: "Stripe subscription item ID is not available for this account yet.", payload: subscription.payload };
+  }
+
+  const form = new URLSearchParams();
+  form.set("items[0][id]", itemId);
+  form.set("items[0][price]", priceId);
+  form.set("proration_behavior", "always_invoice");
+  form.set("payment_behavior", "error_if_incomplete");
+  form.set("metadata[plan]", planFromPriceId(priceId) || "studio");
+  form.set("expand[0]", "latest_invoice.payment_intent");
+  form.set("expand[1]", "items.data.price");
+
+  return stripeFormRequest(`/subscriptions/${encodedSubscriptionId}`, form);
 }
 
 export type StripeRefundLookupResult = {
@@ -331,6 +353,25 @@ export function extractCheckoutUrl(payload: unknown): string | null {
   const record = payload as Record<string, unknown>;
   const url = record.url;
   return typeof url === "string" && url.startsWith("https://") ? url : null;
+}
+
+function extractSubscriptionItemId(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const subscription = payload as Record<string, unknown>;
+  const items = subscription.items && typeof subscription.items === "object" ? subscription.items as Record<string, unknown> : null;
+  const data = Array.isArray(items?.data) ? items.data : [];
+  const knownPriceIds = new Set((["starter", "creator", "studio"] as const).map((plan) => stripePriceId(plan)).filter((value): value is string => Boolean(value)));
+  const candidates = data
+    .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
+    .map((item) => {
+      const price = item.price && typeof item.price === "object" ? item.price as Record<string, unknown> : null;
+      const priceId = stringValue(item.price || item.price_id || item.priceId || price?.id);
+      return { itemId: stringValue(item.id), priceId };
+    })
+    .filter((item) => Boolean(item.itemId));
+
+  const matching = candidates.find((item) => item.priceId && knownPriceIds.has(item.priceId));
+  return matching?.itemId || candidates[0]?.itemId || null;
 }
 
 export function planFromStripePayload(payload: unknown): BillingPlan | null {
