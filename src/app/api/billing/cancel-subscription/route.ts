@@ -16,6 +16,6 @@ export async function POST(request: NextRequest) {
     ok: true,
     duplicate: result.duplicate,
     status: result.account?.subscriptionStatus,
-    message: result.duplicate ? "Subscription is already canceled." : "Subscription canceled successfully.",
+    message: result.duplicate ? "Future renewal is already canceled." : "Future renewal canceled successfully.",
   });
 }

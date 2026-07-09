@@ -56,7 +56,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Cancellations</h2>
             <p className="mb-4">
-              You can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel subscription</a> or from the billing portal opened by the Manage billing button. Cancellation stops future recurring billing. Remaining credits and access follow the active plan and safety rules.
+              You can cancel directly from <a className="text-brand-500 underline" href="/account/billing">Account → Billing → Cancel future renewal</a> or from the billing portal opened by the Manage billing button. Cancellation means the next automatic renewal stops; it is not a refund request, and current-period access/credits follow the active plan rules.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">How Refunds Are Processed</h2>
@@ -66,7 +66,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Request a Refund</h2>
             <p className="mb-4">
-              The primary refund path is inside your account: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund review</a>. We check the 7-day refund window and the 20% paid-credit usage limit, then cancel future renewals when possible. Your account shows the refund as under review while confirmation is pending and completed after the refund is confirmed.
+              The primary refund path is inside your account: <a className="text-brand-500 underline" href="/account/billing#refund">Account → Billing → Request refund review</a>. Use this when you want a recent payment reviewed for refund eligibility. We check the 7-day refund window and the 20% paid-credit usage limit, then hold paid credits and cancel future renewal when possible while the review is pending. Your account shows the refund as under review until the refund is confirmed, then completed after confirmation.
             </p>
             <p className="mb-4">
               If the account button is unavailable, contact <a className="text-brand-500 underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> from the email associated with your account. Do not send card numbers, passwords, API keys, or sensitive identity documents by email.

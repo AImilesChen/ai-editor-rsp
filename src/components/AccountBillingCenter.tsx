@@ -80,16 +80,16 @@ function refundUnavailableMessage(user: User | null) {
   if (["NO_PAID_PLAN", "ALREADY_REFUNDED", "REFUND_ALREADY_PENDING"].includes(refundStatus.code)) return null;
   if (refundStatus.code === "REFUND_WINDOW_EXPIRED") {
     const days = refundStatus.daysSinceLatestPayment;
-    return `Self-service refund is no longer available${typeof days === "number" ? ` because this payment is ${days} days old` : ""}. Refund requests are available within ${refundStatus.refundWindowDays} days of payment. You can still cancel future renewals.`;
+    return `Self-service refund is no longer available${typeof days === "number" ? ` because this payment is ${days} days old` : ""}. Refund requests are available within ${refundStatus.refundWindowDays} days of payment. You can still cancel the future renewal.`;
   }
-  return `${refundStatus.message} You can still cancel future renewals or contact support if there is a billing issue.`;
+  return `${refundStatus.message} You can still cancel the future renewal or contact support if there is a billing issue.`;
 }
 
 function cancelLabel(status?: string) {
-  if (status === "refund_requested") return "Subscription canceled";
-  if (status === "scheduled_cancel") return "Cancellation scheduled";
-  if (status === "canceled" || status === "expired") return "Subscription canceled";
-  return "Cancel subscription";
+  if (status === "refund_requested") return "Renewal canceled";
+  if (status === "scheduled_cancel") return "Renewal cancellation scheduled";
+  if (status === "canceled" || status === "expired") return "Renewal canceled";
+  return "Cancel future renewal";
 }
 
 function planLabel(user: User | null, loading: boolean) {
@@ -103,8 +103,8 @@ function statusLabel(status?: string) {
   if (!status) return "none";
   if (status === "refund_requested") return "Refund pending";
   if (status === "refunded") return "Refund completed";
-  if (status === "canceled") return "Subscription canceled";
-  if (status === "scheduled_cancel") return "Cancellation scheduled";
+  if (status === "canceled") return "Renewal canceled";
+  if (status === "scheduled_cancel") return "Renewal cancellation scheduled";
   return status;
 }
 
@@ -178,7 +178,7 @@ export default function AccountBillingCenter() {
   );
   const refundNotice = refundUnavailableMessage(user);
   const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted || refundPending || refundSelfServiceUnavailable;
-  const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted;
+  const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted || refundPending;
   const portalDisabled = loading || busy || !hasPaidPlan;
   const upgradeDisabled = loading || busy || !hasPaidPlan || !upgradeTargetPlan || subscriptionCanceled || refundCompleted || refundPending || !upgradePreview;
 
@@ -288,7 +288,7 @@ export default function AccountBillingCenter() {
   };
 
   const cancelSubscription = async () => {
-    if (!confirm("Cancel this subscription now? Future recurring billing will stop.")) return;
+    if (!confirm("Cancel the future renewal now? This stops the next automatic charge but does not start a refund review.")) return;
     setCancelSubmitting(true);
     resetNotices();
     try {
@@ -298,7 +298,7 @@ export default function AccountBillingCenter() {
         setError(data?.message || "Subscription could not be canceled. Use Manage billing or contact support.");
         return;
       }
-      setMessage(data.duplicate ? "Subscription was already canceled." : "Subscription canceled. Future recurring billing will stop for this account.");
+      setMessage(data.duplicate ? "Future renewal was already canceled." : "Future renewal canceled. Your current paid access remains available until the subscription period ends; no refund review was started.");
       setUser((current) => current ? { ...current, subscriptionStatus: data.status || "canceled" } : current);
     } catch {
       setError("Subscription could not be canceled. Please try again.");
@@ -314,7 +314,7 @@ export default function AccountBillingCenter() {
           <p className="eyebrow">Billing status</p>
           <h2 className="mt-3 font-heading text-3xl font-normal text-rsp-text">Plan, credits, and subscription actions</h2>
           <p className="mt-3 max-w-2xl leading-7 text-rsp-muted">
-            Manage billing from your account. You can view payment details, cancel future renewals, or request a refund review. Self-service refund review is limited to 7 days after payment and 20% or less paid-credit usage. We update your account after the refund is confirmed.
+            Manage billing from your account. Use <strong className="font-semibold text-rsp-text">Cancel future renewal</strong> when you only want to stop the next automatic charge. Use <strong className="font-semibold text-rsp-text">Request refund review</strong> when you want us to review a refund for a recent payment; eligible refund requests also stop future renewal while the review is pending.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-3">
@@ -336,10 +336,20 @@ export default function AccountBillingCenter() {
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
       {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: Stripe charges the saved payment method immediately, with no separate checkout page. Estimated prorated charge: about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days. We add only the plan credit difference: {upgradePreview.creditsToGrant} credits, so your balance becomes {upgradePreview.nextCreditsBalance} credits.</div> : null}
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        <div className="border border-rsp-border bg-white/70 p-4 text-sm leading-6 text-rsp-muted">
+          <strong className="block text-rsp-text">Cancel future renewal = stop auto-renew only</strong>
+          Your current paid period stays active. This does not start a refund review or remove paid credits by itself.
+        </div>
+        <div className="border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+          <strong className="block text-amber-950">Request refund review = money-back review</strong>
+          Available only within 7 days and when paid-credit usage is 20% or less. Paid credits are held during review, and future renewal is canceled when possible.
+        </div>
+      </div>
       {refundNotice ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">{refundNotice}</div> : null}
       {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are temporarily unavailable while we confirm the refund status. We will update your account once the review is complete.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: paid-plan credits are no longer available.</div> : null}
-      {subscriptionCanceled ? <div className="mt-5 border border-rsp-border bg-white/70 p-4 text-sm font-semibold text-rsp-text">Subscription status: recurring billing is no longer active for this account.</div> : null}
+      {subscriptionCanceled ? <div className="mt-5 border border-rsp-border bg-white/70 p-4 text-sm font-semibold text-rsp-text">Renewal status: the next automatic charge is no longer active for this account.</div> : null}
 
       <div className="mt-8 grid gap-3 md:grid-cols-4">
         <div className="border border-rsp-border bg-white/55 p-4">
@@ -374,15 +384,15 @@ export default function AccountBillingCenter() {
           <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and Stripe charges the saved payment method for the prorated price difference. Credits add only the difference between plans for this billing period: Creator 240 → Studio 500 adds 260 credits to your current balance.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
-          <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Open the secure billing portal to view invoices, update payment details, and manage your subscription.</p>
+          <h3 className="font-heading text-2xl font-normal text-rsp-text">Cancel future renewal</h3>
+          <p className="mt-4 leading-7 text-rsp-muted">Use this if you only want to stop the next automatic charge. It is not a refund request: your current paid period and remaining available credits continue under the plan rules until the period ends.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Refund review</h3>
           <ol className="mt-4 list-decimal space-y-2 pl-5 leading-7 text-rsp-muted">
-            <li>Click <strong className="text-rsp-text">Request refund review</strong> from the paid account.</li>
+            <li>Click <strong className="text-rsp-text">Request refund review</strong> only when you want a recent payment reviewed for refund eligibility.</li>
             <li>We check the 7-day refund window and the 20% paid-credit usage limit.</li>
-            <li>Future renewals are canceled when possible.</li>
+            <li>Paid credits are held during review, and future renewal is canceled when possible.</li>
             <li>Once the refund is confirmed, paid-plan credits are removed from the account.</li>
           </ol>
         </article>
