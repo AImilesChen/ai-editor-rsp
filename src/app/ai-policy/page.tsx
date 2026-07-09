@@ -69,7 +69,7 @@ export default function AiPolicyPage() {
           <h2 className="font-heading text-2xl font-bold text-rsp-text">Enforcement and review</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-7 text-rsp-muted">
             <li>We may block prompts, refuse generation, remove outputs, suspend access, or request additional review when content creates safety, legal, or rights risk.</li>
-            <li>Every prompt-based image generation or editing request is screened through Stripe Moderation API before generation. Requests with flag or deny decisions are blocked before model invocation and are not charged credits.</li>
+            <li>Every prompt-based image generation or editing request is screened by automated safety checks and abuse-prevention rules before generation. Requests that are denied or flagged for safety review are blocked before model invocation and are not charged credits.</li>
             <li>Prompt and output moderation may run before and after generation. Payment, abuse, and policy reviews may also use third-party safety and fraud-prevention tools.</li>
             <li>Current generation model disclosure: {modelDisclosure}. See <a className="text-brand-500 underline" href="/ai-models">AI Models Used</a> for details and updates.</li>
             <li>Users remain responsible for prompt inputs, generated outputs, and downstream usage decisions.</li>

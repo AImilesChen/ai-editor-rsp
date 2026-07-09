@@ -23,7 +23,7 @@ export default function AiModelsPage() {
           <p className="rsp-chip mb-4 border-rsp-secondary/35 bg-white/70 text-rsp-secondary">AI Models Used</p>
           <h1 className="font-heading text-4xl font-bold leading-tight text-rsp-text md:text-6xl">Generation model disclosure.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-rsp-muted">
-            AI Editor RSP publicly lists the third-party AI image model routes currently used for generation and editing. Prompt-based generation requests are screened by Stripe Moderation API before any model call.
+            AI Editor RSP publicly lists the third-party AI image model routes currently used for generation and editing. Prompt-based generation requests are screened by automated safety checks and abuse-prevention rules before any model call.
           </p>
         </div>
 

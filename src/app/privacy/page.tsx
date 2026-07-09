@@ -55,7 +55,7 @@ export default function PrivacyPage() {
               <li><strong>Analytics providers:</strong> Google Analytics, Microsoft Clarity, Plausible, or similar tools may process optional analytics data only after analytics consent and only when configured.</li>
               <li><strong>Google OAuth:</strong> sign-in with your Google account when you choose Google login.</li>
               <li><strong>Resend:</strong> email magic links and transactional email delivery.</li>
-              <li><strong>AI model and safety providers:</strong> fal.ai processes prompts, uploaded input images, and generation requests for the model routes disclosed on our <a className="text-brand-500 underline" href="/ai-models">AI Models Used</a> page. Stripe Moderation API screens prompt-based image generation requests before generation for policy compliance and abuse prevention.</li>
+              <li><strong>AI model and safety providers:</strong> fal.ai processes prompts, uploaded input images, and generation requests for the model routes disclosed on our <a className="text-brand-500 underline" href="/ai-models">AI Models Used</a> page. We run automated safety checks and abuse-prevention rules before generation to block prohibited, unsafe, unauthorized, impersonation, document-fraud, adult, or minors-related requests.</li>
               <li><strong>Payment providers:</strong> payment, tax, invoice, subscription, refund, chargeback, and account review processing when billing is used.</li>
               <li><strong>External creator tools:</strong> links to platforms such as CapCut, ChatGPT, Gemini, Bing Image Creator, or similar services are governed by those services&apos; own policies.</li>
             </ul>
