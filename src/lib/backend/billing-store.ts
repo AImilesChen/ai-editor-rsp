@@ -775,7 +775,17 @@ async function readD1Account(db: D1Database, userId?: string | null, email?: str
   if (userId) row = await db.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first<UserRow>();
   if (!row && email) row = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email.trim().toLowerCase()).first<UserRow>();
   if (!row) return null;
-  const sub = await db.prepare("SELECT id, stripe_subscription_id, stripe_customer_id, plan, status, current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+  const sub = await db.prepare(`SELECT id, stripe_subscription_id, stripe_customer_id, plan, status, current_period_start, current_period_end
+    FROM subscriptions
+    WHERE user_id = ?
+    ORDER BY
+      CASE
+        WHEN stripe_subscription_id IS NOT NULL AND status IN ('active', 'trialing', 'past_due', 'scheduled_cancel') THEN 0
+        WHEN stripe_subscription_id IS NOT NULL THEN 1
+        ELSE 2
+      END,
+      updated_at DESC
+    LIMIT 1`)
     .bind(row.id)
     .first<SubscriptionRow>();
   const refund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
