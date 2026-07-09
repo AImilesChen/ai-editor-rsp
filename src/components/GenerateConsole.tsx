@@ -930,18 +930,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Paint what to remove</span>
               </button>
             </div>
-            <p className="mt-2 text-xs leading-5 text-white/50">
-              {uploadedImage
-                ? hasMaskSelection
-                  ? "Mask ready — generate when the selected area looks right. Brush more, undo, or clear the mask before generating."
-                  : "Paint on the photo to mark what to clean. Brush over any person, object, text, or mark you want removed."
-                : "Upload an image first, then paint directly on the photo to mark what to clean."}
-            </p>
-            {hasMaskSelection && (
+            {hasMaskSelection ? (
               <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/48">
                 <span className="rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/9 px-2.5 py-1 text-[#C8FADC]">Mask ready</span>
                 {brushStrokeCount > 0 && <span className="rounded-full border border-[#FF6B8A]/25 bg-[#FF4D6D]/10 px-2.5 py-1 text-[#FFD6DE]">{brushStrokeCount} brush stroke{brushStrokeCount > 1 ? "s" : ""}</span>}
               </div>
+            ) : (
+              <p className="mt-2 text-xs leading-5 text-white/45">
+                {uploadedImage
+                  ? "Paint what to remove on the photo."
+                  : "Upload an image first, then brush the area to clean."}
+              </p>
             )}
           </div>
         )}
