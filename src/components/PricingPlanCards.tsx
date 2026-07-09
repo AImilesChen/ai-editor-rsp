@@ -133,7 +133,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
           const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
           const isFeatured = isSelected;
           const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
-          const cardAction = canSelectPlans || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
+          const cardAction = canSelectPlans || isCurrent || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
           return (
             <article
               key={plan.name}
@@ -180,7 +180,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
         const isFeatured = isSelected;
         const isFree = plan.name === "Free";
         const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
-        const cardAction = canSelectPlans || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
+        const cardAction = canSelectPlans || isCurrent || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
         return (
           <article
             key={plan.name}
