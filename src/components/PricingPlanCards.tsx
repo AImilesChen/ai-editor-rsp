@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import PricingPlanAction from "@/components/PricingPlanAction";
 
 type PricingPlan = {
@@ -28,6 +29,12 @@ type AuthResponse = {
 
 const endedPlanStatuses = new Set(["canceled", "expired", "refunded", "disputed"]);
 const refundPendingStatuses = new Set(["refund_requested"]);
+const planRanks: Record<string, number> = {
+  free: 0,
+  starter: 1,
+  creator: 2,
+  studio: 3,
+};
 
 function normalize(value?: string | null) {
   return (value || "").trim().toLowerCase();
@@ -36,6 +43,10 @@ function normalize(value?: string | null) {
 function isPaidPlan(plan?: string | null) {
   const value = normalize(plan);
   return Boolean(value && value !== "free");
+}
+
+function getPlanRank(plan?: string | null) {
+  return planRanks[normalize(plan)] ?? -1;
 }
 
 function getActivePaidPlan(data: AuthResponse | null) {
@@ -69,6 +80,7 @@ function PricingAmount({ price, cadence, compact = false }: { price: string; cad
 }
 
 export default function PricingPlanCards({ plans, variant = "pricing" }: { plans: PricingPlan[]; variant?: "pricing" | "home" }) {
+  const router = useRouter();
   const defaultSelectedPlan = plans.find((plan) => plan.featured)?.name || plans[0]?.name || "Creator";
   const [auth, setAuth] = useState<AuthResponse | null>(null);
   const [selectedPlanName, setSelectedPlanName] = useState(defaultSelectedPlan);
@@ -121,11 +133,21 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
           const isSelected = Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
           const isFeatured = isSelected;
           const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
+          const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
+          const cardAction = canSelectPlans ? () => setSelectedPlanName(plan.name) : upgradesCurrentPlan ? () => router.push("/account/billing") : undefined;
           return (
             <article
               key={plan.name}
-              onClick={canSelectPlans ? () => setSelectedPlanName(plan.name) : undefined}
-              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${canSelectPlans ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_20px_55px_rgba(138,78,24,0.12)]" : ""} ${isFeatured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
+              onClick={cardAction}
+              onKeyDown={cardAction ? (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  cardAction();
+                }
+              } : undefined}
+              role={cardAction ? "button" : undefined}
+              tabIndex={cardAction ? 0 : undefined}
+              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_20px_55px_rgba(138,78,24,0.12)]" : ""} ${isFeatured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
             >
               {isFeatured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">{isCurrent ? "Current plan" : "Selected plan"}</div>}
               <div className="flex min-h-[190px] flex-col">
@@ -157,11 +179,21 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
         const isFeatured = isSelected;
         const isFree = plan.name === "Free";
         const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
+        const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
+        const cardAction = canSelectPlans ? () => setSelectedPlanName(plan.name) : upgradesCurrentPlan ? () => router.push("/account/billing") : undefined;
         return (
           <article
             key={plan.name}
-            onClick={canSelectPlans ? () => setSelectedPlanName(plan.name) : undefined}
-            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${canSelectPlans ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_22px_60px_rgba(138,78,24,0.12)]" : ""} ${
+            onClick={cardAction}
+            onKeyDown={cardAction ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                cardAction();
+              }
+            } : undefined}
+            role={cardAction ? "button" : undefined}
+            tabIndex={cardAction ? 0 : undefined}
+            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_22px_60px_rgba(138,78,24,0.12)]" : ""} ${
               isFeatured
                 ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
                 : "border-rsp-border"

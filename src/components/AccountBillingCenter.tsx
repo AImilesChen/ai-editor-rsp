@@ -132,6 +132,7 @@ export default function AccountBillingCenter() {
   const [portalSubmitting, setPortalSubmitting] = useState(false);
   const [upgradeSubmitting, setUpgradeSubmitting] = useState(false);
   const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
+  const [upgradePreviewMessage, setUpgradePreviewMessage] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
@@ -155,12 +156,24 @@ export default function AccountBillingCenter() {
     const targetPlan = nextUpgradePlan(previewUserPlan);
     if (!previewUserPlan || !targetPlan || canceledStatuses.has(previewUserStatus || "") || pendingRefundStatuses.has(previewUserStatus || "") || completedRefundStatuses.has(previewUserStatus || "")) {
       setUpgradePreview(null);
+      setUpgradePreviewMessage(null);
       return;
     }
     fetch(`/api/billing/upgrade-subscription?plan=${targetPlan}&t=${Date.now()}`, { cache: "no-store" })
-      .then((response) => response.json() as Promise<ActionResponse>)
-      .then((data) => setUpgradePreview(data.ok && data.preview ? data.preview : null))
-      .catch(() => setUpgradePreview(null));
+      .then(async (response) => {
+        const data = await response.json().catch(() => null) as ActionResponse | null;
+        if (response.ok && data?.ok && data.preview) {
+          setUpgradePreview(data.preview);
+          setUpgradePreviewMessage(null);
+          return;
+        }
+        setUpgradePreview(null);
+        setUpgradePreviewMessage(data?.message || "Upgrade is available, but the estimate is not ready yet. You can still try the upgrade and we will show the exact result.");
+      })
+      .catch(() => {
+        setUpgradePreview(null);
+        setUpgradePreviewMessage("Upgrade estimate could not load. You can still try the upgrade and we will show the exact result.");
+      });
   }, [previewUserPlan, previewUserStatus, previewUserCredits]);
 
   const hasPaidPlan = Boolean(user && user.plan !== "free");
@@ -180,7 +193,7 @@ export default function AccountBillingCenter() {
   const refundDisabled = loading || busy || !hasPaidPlan || refundCompleted || refundPending || refundSelfServiceUnavailable;
   const cancelDisabled = loading || busy || !hasPaidPlan || subscriptionCanceled || refundCompleted || refundPending;
   const portalDisabled = loading || busy || !hasPaidPlan;
-  const upgradeDisabled = loading || busy || !hasPaidPlan || !upgradeTargetPlan || subscriptionCanceled || refundCompleted || refundPending || !upgradePreview;
+  const upgradeDisabled = loading || busy || !hasPaidPlan || !upgradeTargetPlan || subscriptionCanceled || refundCompleted || refundPending;
 
   const resetNotices = () => {
     setMessage(null);
@@ -253,8 +266,11 @@ export default function AccountBillingCenter() {
   };
 
   const upgradeSubscription = async () => {
-    if (!upgradeTargetPlan || !upgradePreview) return;
-    if (!confirm(`Upgrade to ${planTitle(upgradeTargetPlan)} now? Stripe will charge the saved payment method immediately for the prorated price difference. No separate checkout page will open. We will add ${upgradePreview.creditsToGrant} credits to your current balance, bringing it to ${upgradePreview.nextCreditsBalance} credits.`)) return;
+    if (!upgradeTargetPlan) return;
+    const confirmation = upgradePreview
+      ? `Upgrade to ${planTitle(upgradeTargetPlan)} now? Stripe will charge the saved payment method immediately for the prorated price difference. No separate checkout page will open. We will add ${upgradePreview.creditsToGrant} credits to your current balance, bringing it to ${upgradePreview.nextCreditsBalance} credits.`
+      : `Upgrade to ${planTitle(upgradeTargetPlan)} now? Stripe will attempt to charge the saved payment method immediately for the prorated price difference. If this account is missing an active Stripe subscription or payment method, we will show the reason instead of changing your plan.`;
+    if (!confirm(confirmation)) return;
     setUpgradeSubmitting(true);
     resetNotices();
     try {
@@ -278,8 +294,14 @@ export default function AccountBillingCenter() {
           subscriptionStatus: updatedAccount.subscriptionStatus || current.subscriptionStatus,
         } : current);
       }
-      if (data.preview) setUpgradePreview(data.preview);
-      setMessage(`Plan upgraded to ${planTitle(upgradeTargetPlan)}. Added ${data.preview?.creditsToGrant ?? upgradePreview.creditsToGrant} upgrade credits. New balance: ${data.preview?.nextCreditsBalance ?? data.account?.creditsRemaining ?? "updated"}.`);
+      if (data.preview) {
+        setUpgradePreview(data.preview);
+        setUpgradePreviewMessage(null);
+      }
+      const fallbackPreview = upgradePreview;
+      const grantedCredits = data.preview?.creditsToGrant ?? (fallbackPreview ? fallbackPreview.creditsToGrant : undefined);
+      const nextBalance = data.preview?.nextCreditsBalance ?? data.account?.creditsRemaining ?? "updated";
+      setMessage(`Plan upgraded to ${planTitle(upgradeTargetPlan)}.${typeof grantedCredits === "number" ? ` Added ${grantedCredits} upgrade credits.` : ""} New balance: ${nextBalance}.`);
     } catch {
       setError("Upgrade could not be completed. Please try again.");
     } finally {
@@ -336,6 +358,7 @@ export default function AccountBillingCenter() {
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
       {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: Stripe charges the saved payment method immediately, with no separate checkout page. Estimated prorated charge: about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days. We add only the plan credit difference: {upgradePreview.creditsToGrant} credits, so your balance becomes {upgradePreview.nextCreditsBalance} credits.</div> : null}
+      {!upgradePreview && upgradeTargetPlan && upgradePreviewMessage ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Upgrade note: {upgradePreviewMessage}</div> : null}
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         <div className="border border-rsp-border bg-white/70 p-4 text-sm leading-6 text-rsp-muted">
           <strong className="block text-rsp-text">Cancel future renewal = stop auto-renew only</strong>
