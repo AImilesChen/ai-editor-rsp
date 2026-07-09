@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import PricingPlanAction from "@/components/PricingPlanAction";
 
 type PricingPlan = {
@@ -80,7 +79,6 @@ function PricingAmount({ price, cadence, compact = false }: { price: string; cad
 }
 
 export default function PricingPlanCards({ plans, variant = "pricing" }: { plans: PricingPlan[]; variant?: "pricing" | "home" }) {
-  const router = useRouter();
   const defaultSelectedPlan = plans.find((plan) => plan.featured)?.name || plans[0]?.name || "Creator";
   const [auth, setAuth] = useState<AuthResponse | null>(null);
   const [selectedPlanName, setSelectedPlanName] = useState(defaultSelectedPlan);
@@ -130,11 +128,12 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
         {plans.map((plan) => {
           const planSlug = normalize(plan.name);
           const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
-          const isSelected = Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
+          const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
+          const selectedUpgradePlan = activePaidPlan && selectedPlanSlug !== activePaidPlan ? selectedPlanSlug : null;
+          const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
           const isFeatured = isSelected;
           const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
-          const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
-          const cardAction = canSelectPlans ? () => setSelectedPlanName(plan.name) : upgradesCurrentPlan ? () => router.push("/account/billing") : undefined;
+          const cardAction = canSelectPlans || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
           return (
             <article
               key={plan.name}
@@ -147,7 +146,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
               } : undefined}
               role={cardAction ? "button" : undefined}
               tabIndex={cardAction ? 0 : undefined}
-              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_20px_55px_rgba(138,78,24,0.12)]" : ""} ${isFeatured ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
+              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.01] hover:border-rsp-primary/45 hover:shadow-[0_20px_55px_rgba(138,78,24,0.12)] active:scale-[0.995]" : ""} ${isFeatured ? "scale-[1.015] border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
             >
               {isFeatured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">{isCurrent ? "Current plan" : "Selected plan"}</div>}
               <div className="flex min-h-[190px] flex-col">
@@ -175,12 +174,13 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
       {plans.map((plan) => {
         const planSlug = normalize(plan.name);
         const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
-        const isSelected = Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
+        const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
+        const selectedUpgradePlan = activePaidPlan && selectedPlanSlug !== activePaidPlan ? selectedPlanSlug : null;
+        const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
         const isFeatured = isSelected;
         const isFree = plan.name === "Free";
         const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
-        const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
-        const cardAction = canSelectPlans ? () => setSelectedPlanName(plan.name) : upgradesCurrentPlan ? () => router.push("/account/billing") : undefined;
+        const cardAction = canSelectPlans || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
         return (
           <article
             key={plan.name}
@@ -193,9 +193,9 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
             } : undefined}
             role={cardAction ? "button" : undefined}
             tabIndex={cardAction ? 0 : undefined}
-            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:border-rsp-primary/45 hover:shadow-[0_22px_60px_rgba(138,78,24,0.12)]" : ""} ${
+            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.01] hover:border-rsp-primary/45 hover:shadow-[0_22px_60px_rgba(138,78,24,0.12)] active:scale-[0.995]" : ""} ${
               isFeatured
-                ? "border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
+                ? "scale-[1.015] border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
                 : "border-rsp-border"
             }`}
           >
