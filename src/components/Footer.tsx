@@ -36,7 +36,7 @@ export default function Footer() {
           <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-rsp-text">Contact</h4>
           <a className="footer-link" href={`mailto:${site.support}`}>{site.support}</a>
           <p className="mt-3 text-sm">Operator: AI Editor RSP. Mailing address available upon lawful request.</p>
-          <p className="mt-3 text-xs leading-5">Use Account → Billing to manage billing, cancel subscriptions, or start eligible refund requests. We respond within 3 business days.</p>
+          <p className="mt-3 text-xs leading-5">Use Account → Billing to manage payment methods, cancel future renewals, or start eligible refund reviews. We respond within 3 business days.</p>
         </div>
       </div>
       <div className="mx-auto mt-10 max-w-screen-2xl border-t border-rsp-border pt-6 text-xs text-rsp-muted">© 2026 AI Editor RSP. Payments use secure hosted checkout. AI-generated images require user review.</div>
