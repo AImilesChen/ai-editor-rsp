@@ -914,33 +914,30 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         {showEditAreaControls && (
-          <div className={`${isHero ? "mb-3" : "mb-4"} rounded-2xl border border-white/10 bg-white/[0.035] p-3 ${controlsLocked ? "opacity-55" : ""}`}>
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Removal mode</p>
+          <div className={`${isHero ? "mb-2" : "mb-3"} rounded-2xl border border-white/10 bg-white/[0.03] p-2.5 ${controlsLocked ? "opacity-55" : ""}`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/54">Removal mode</p>
+                {!uploadedImage && !hasMaskSelection && <p className="mt-1 text-[11px] leading-4 text-white/38">Upload first, then brush the area to clean.</p>}
+              </div>
               {hasMaskSelection && (
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={undoLastMaskStroke} disabled={controlsLocked || maskStrokes.length === 0} className="text-xs font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:text-white/55">Undo</button>
-                  <button type="button" onClick={clearMask} disabled={controlsLocked} className="text-xs font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:hover:text-white/55">Clear mask</button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button type="button" onClick={undoLastMaskStroke} disabled={controlsLocked || maskStrokes.length === 0} className="text-[11px] font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:text-white/55">Undo</button>
+                  <button type="button" onClick={clearMask} disabled={controlsLocked} className="text-[11px] font-semibold text-white/55 hover:text-white disabled:cursor-not-allowed disabled:hover:text-white/55">Clear</button>
                 </div>
               )}
             </div>
-            <div className="grid gap-2">
-              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); setCurrentStroke([]); }} className="rounded-xl border border-[#86EFAC] bg-[#86EFAC] px-3 py-2 text-left text-[#102014] transition disabled:cursor-not-allowed">
-                <span className="block text-xs font-black">Brush area</span>
-                <span className="mt-0.5 block text-[10px] font-semibold opacity-70">Paint what to remove</span>
+            <div className="mt-1.5 flex items-center gap-2">
+              <button type="button" disabled={controlsLocked} onClick={() => { setEditScope("selected"); setCurrentStroke([]); }} className="inline-flex min-h-9 flex-1 items-center justify-between gap-2 rounded-xl border border-[#86EFAC] bg-[#86EFAC] px-3 py-1.5 text-left text-[#102014] transition disabled:cursor-not-allowed">
+                <span className="text-xs font-black">Brush area</span>
+                <span className="text-[10px] font-semibold opacity-70">Paint to remove</span>
               </button>
             </div>
-            {hasMaskSelection ? (
-              <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/48">
-                <span className="rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/9 px-2.5 py-1 text-[#C8FADC]">Mask ready</span>
-                {brushStrokeCount > 0 && <span className="rounded-full border border-[#FF6B8A]/25 bg-[#FF4D6D]/10 px-2.5 py-1 text-[#FFD6DE]">{brushStrokeCount} brush stroke{brushStrokeCount > 1 ? "s" : ""}</span>}
+            {hasMaskSelection && (
+              <div className="mt-1.5 flex flex-wrap gap-1.5 text-[9px] font-bold uppercase tracking-[0.08em] text-white/48">
+                <span className="rounded-full border border-[#86EFAC]/24 bg-[#86EFAC]/9 px-2 py-0.5 text-[#C8FADC]">Mask ready</span>
+                {brushStrokeCount > 0 && <span className="rounded-full border border-[#FF6B8A]/25 bg-[#FF4D6D]/10 px-2 py-0.5 text-[#FFD6DE]">{brushStrokeCount} stroke{brushStrokeCount > 1 ? "s" : ""}</span>}
               </div>
-            ) : (
-              <p className="mt-2 text-xs leading-5 text-white/45">
-                {uploadedImage
-                  ? "Paint what to remove on the photo."
-                  : "Upload an image first, then brush the area to clean."}
-              </p>
             )}
           </div>
         )}
@@ -955,7 +952,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           onChange={(event) => setPrompt(event.target.value)}
           disabled={controlsLocked}
           placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
         />
         {isHeadshotMode && (
           <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-white/58">
