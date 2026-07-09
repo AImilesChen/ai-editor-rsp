@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { reconcileAllPendingCreemRefunds } from "@/lib/backend/billing-store";
+import { reconcileAllPendingStripeRefunds } from "@/lib/backend/billing-store";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   }
   const limitParam = request.nextUrl.searchParams.get("limit");
   const limit = limitParam ? Number(limitParam) : 20;
-  const result = await reconcileAllPendingCreemRefunds(Number.isFinite(limit) ? limit : 20);
+  const result = await reconcileAllPendingStripeRefunds(Number.isFinite(limit) ? limit : 20);
   return NextResponse.json(result, {
     headers: {
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",

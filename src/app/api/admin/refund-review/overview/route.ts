@@ -142,14 +142,14 @@ export async function GET(request: NextRequest) {
       u.status userStatus,
       u.credits_remaining creditsRemaining,
       s.id subscriptionId,
-      s.creem_subscription_id creemSubscriptionId,
+      s.stripe_subscription_id stripeSubscriptionId,
       s.plan subscriptionPlan,
       s.status subscriptionStatus,
       s.current_period_start periodStart,
       s.current_period_end periodEnd,
       s.updated_at updatedAt,
       p.id paymentId,
-      p.creem_transaction_id creemTransactionId,
+      p.stripe_transaction_id stripeTransactionId,
       p.status paymentStatus,
       p.amount_cents amountCents,
       p.currency,
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         WHEN 'starter' THEN 100
         WHEN 'creator' THEN 240
         WHEN 'studio' THEN 500
-        ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0), 0)
+        ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'stripe_credit_grant' AND delta > 0), 0)
       END paidCreditsGranted,
       COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at >= COALESCE(s.current_period_start, p.paid_at, s.created_at) AND created_at <= COALESCE(s.current_period_end, strftime('%s','now') * 1000)), 0) generationCreditsUsed,
       COALESCE((SELECT COUNT(*) FROM generation_jobs WHERE user_id = u.id AND created_at >= COALESCE(s.current_period_start, p.paid_at, s.created_at) AND created_at <= COALESCE(s.current_period_end, strftime('%s','now') * 1000)), 0) generationJobs
@@ -189,13 +189,13 @@ export async function GET(request: NextRequest) {
       p.currency paymentCurrency,
       p.paid_at paidAt,
       s.id subscriptionId,
-      s.creem_subscription_id creemSubscriptionId,
+      s.stripe_subscription_id stripeSubscriptionId,
       s.status subscriptionStatus,
       CASE LOWER(p.plan)
         WHEN 'starter' THEN 100
         WHEN 'creator' THEN 240
         WHEN 'studio' THEN 500
-        ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'creem_credit_grant' AND delta > 0 AND created_at >= COALESCE(p.paid_at, p.created_at) AND created_at <= rr.requested_at), 0)
+        ELSE COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'stripe_credit_grant' AND delta > 0 AND created_at >= COALESCE(p.paid_at, p.created_at) AND created_at <= rr.requested_at), 0)
       END paidCreditsGranted,
       COALESCE((SELECT SUM(delta) FROM credit_ledger WHERE user_id = u.id AND source_type IN ('signup_grant', 'kv_backfill') AND delta > 0), 0) lifetimeFreeCreditsGranted,
       COALESCE((SELECT SUM(-delta) FROM credit_ledger WHERE user_id = u.id AND source_type = 'generation_debit' AND delta < 0 AND created_at < COALESCE(p.paid_at, p.created_at, 0)), 0) generationUsedBeforePayment,
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
       u.status userStatus,
       u.credits_remaining creditsRemaining,
       s.id subscriptionId,
-      s.creem_subscription_id creemSubscriptionId,
+      s.stripe_subscription_id stripeSubscriptionId,
       s.plan subscriptionPlan,
       s.status subscriptionStatus,
       s.canceled_at canceledAt,

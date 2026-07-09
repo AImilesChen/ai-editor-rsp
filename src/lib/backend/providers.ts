@@ -21,13 +21,13 @@ export function falConfigured() {
   return Boolean(process.env.FAL_API_KEY || process.env.FAL_KEY);
 }
 
-export function creemConfigured() {
+export function stripeConfigured() {
   return Boolean(
-    process.env.CREEM_API_KEY
-      && process.env.CREEM_WEBHOOK_SECRET
-      && process.env.CREEM_STARTER_PRODUCT_ID
-      && process.env.CREEM_CREATOR_PRODUCT_ID
-      && process.env.CREEM_STUDIO_PRODUCT_ID,
+    (process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY)
+      && process.env.STRIPE_WEBHOOK_SECRET
+      && (process.env.STRIPE_STARTER_PRICE_ID || process.env.STRIPE_STARTER_PRODUCT_ID)
+      && (process.env.STRIPE_CREATOR_PRICE_ID || process.env.STRIPE_CREATOR_PRODUCT_ID)
+      && (process.env.STRIPE_STUDIO_PRICE_ID || process.env.STRIPE_STUDIO_PRODUCT_ID),
   );
 }
 

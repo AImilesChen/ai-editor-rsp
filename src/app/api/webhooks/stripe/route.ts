@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { grantCreditsFromCreem, markRefundedAccount, updateSubscriptionState } from "@/lib/backend/billing-store";
+import { grantCreditsFromStripe, markRefundedAccount, updateSubscriptionState } from "@/lib/backend/billing-store";
 import {
-  CREEM_PLAN_CREDITS,
-  extractCreemEventId,
-  extractCreemEventType,
-  planFromCreemPayload,
-  verifyCreemSignature,
-} from "@/lib/backend/creem";
+  STRIPE_PLAN_CREDITS,
+  extractStripeEventId,
+  extractStripeEventType,
+  planFromStripePayload,
+  verifyStripeSignature,
+} from "@/lib/backend/stripe";
 
 const BILLING_EVENTS = new Set([
   "checkout.completed",
@@ -31,15 +31,15 @@ const BILLING_EVENTS = new Set([
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
-  const signature = request.headers.get("creem-signature") || request.headers.get("x-creem-signature");
+  const signature = request.headers.get("stripe-signature") || request.headers.get("x-stripe-signature");
 
-  if (!process.env.CREEM_WEBHOOK_SECRET) {
-    return NextResponse.json({ ok: false, error: "CREEM_WEBHOOK_SECRET is not configured." }, { status: 503 });
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ ok: false, error: "STRIPE_WEBHOOK_SECRET is not configured." }, { status: 503 });
   }
 
-  const verified = await verifyCreemSignature(rawBody, signature);
+  const verified = await verifyStripeSignature(rawBody, signature);
   if (!verified) {
-    return NextResponse.json({ ok: false, error: "Invalid Creem webhook signature." }, { status: 401 });
+    return NextResponse.json({ ok: false, error: "Invalid Stripe webhook signature." }, { status: 401 });
   }
 
   let event: unknown;
@@ -49,16 +49,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Invalid JSON webhook payload." }, { status: 400 });
   }
 
-  const eventId = extractCreemEventId(event, rawBody);
-  const eventType = extractCreemEventType(event);
-  const plan = planFromCreemPayload(event);
-  const credits = plan ? CREEM_PLAN_CREDITS[plan] : 0;
+  const eventId = extractStripeEventId(event, rawBody);
+  const eventType = extractStripeEventType(event);
+  const plan = planFromStripePayload(event);
+  const credits = plan ? STRIPE_PLAN_CREDITS[plan] : 0;
   const identity = extractIdentity(event);
   const ids = extractBillingIds(event);
   let persistence: unknown = { persisted: false, reason: "record_only" };
 
   if (plan && credits > 0 && (eventType === "checkout.completed" || eventType === "subscription.active" || eventType === "subscription.paid")) {
-    persistence = await grantCreditsFromCreem({
+    persistence = await grantCreditsFromStripe({
       eventId,
       eventType,
       userId: identity.userId,

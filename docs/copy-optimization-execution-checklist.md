@@ -36,7 +36,7 @@
 - Creator 显示 `Most Popular` 并加强边框/阴影。
 
 ### FAQ
-- 覆盖：free credits、credits 消耗、no card、uploaded image editing、commercial use、Creem checkout。
+- 覆盖：free credits、credits 消耗、no card、uploaded image editing、commercial use、Stripe checkout。
 - 不写 broad commercial license，不写 fake testimonials，不写 unlimited / guaranteed。
 
 ## Pricing `/pricing`
@@ -52,7 +52,7 @@
   - `Free credits are available after sign-in. No payment required to try.`
 - Plan CTA：`Start free` / `Choose Starter` / `Choose Creator` / `Choose Studio`
 - Creator badge：`Most Popular`
-- Checkout trust：`Payments are processed by Creem after sign-in. AI Editor RSP does not store your payment details.`
+- Checkout trust：`Payments are processed by Stripe after sign-in. AI Editor RSP does not store your payment details.`
 - FAQ 增加 commercial-use 风险边界。
 
 ## Image Editor `/image-editor`

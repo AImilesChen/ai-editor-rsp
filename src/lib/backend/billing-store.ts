@@ -1,7 +1,7 @@
 import type { AuthUser } from "@/lib/backend/auth";
 import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
-import type { BillingPlan } from "@/lib/backend/creem";
-import { cancelCreemSubscription, creemProductId, CREEM_PLAN_CREDITS, lookupCreemRefundStatus, upgradeCreemSubscription } from "@/lib/backend/creem";
+import type { BillingPlan } from "@/lib/backend/stripe";
+import { cancelStripeSubscription, stripeProductId, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
 
 export type BillingAccount = {
@@ -13,7 +13,7 @@ export type BillingAccount = {
   subscriptionStatus: "none" | "active" | "trialing" | "paused" | "scheduled_cancel" | "canceled" | "past_due" | "expired" | "refund_requested" | "refunded" | "disputed";
   subscriptionId?: string;
   customerId?: string;
-  lastCreemEventId?: string;
+  lastStripeEventId?: string;
   lastRefundRequestId?: string;
   updatedAt: number;
   createdAt: number;
@@ -23,7 +23,7 @@ const creditLockedStatuses = new Set<BillingAccount["subscriptionStatus"]>(["ref
 const SELF_SERVICE_REFUND_WINDOW_DAYS = 7;
 const SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE = 0.2;
 const BILLING_PLAN_ORDER: Record<BillingPlan, number> = { starter: 1, creator: 2, studio: 3 };
-const CREEM_PLAN_PRICES_CENTS: Record<BillingPlan, number> = { starter: 799, creator: 1499, studio: 2999 };
+const STRIPE_PLAN_PRICES_CENTS: Record<BillingPlan, number> = { starter: 799, creator: 1499, studio: 2999 };
 const DEFAULT_BILLING_PERIOD_DAYS = 30;
 
 type ProratedUpgradePreview = {
@@ -153,15 +153,15 @@ type UserRow = {
   plan: BillingAccount["plan"];
   status: BillingAccount["subscriptionStatus"];
   credits_remaining: number;
-  creem_customer_id: string | null;
+  stripe_customer_id: string | null;
   created_at: number;
   updated_at: number;
 };
 
 type SubscriptionRow = {
   id: string;
-  creem_subscription_id: string | null;
-  creem_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
   plan?: BillingPlan | null;
   status: BillingAccount["subscriptionStatus"];
   current_period_start?: number | null;
@@ -212,7 +212,7 @@ export async function accountForPublicUser(user: AuthUser) {
   const account = await ensureBillingAccount(user);
   const pendingRefund = await pendingRefundRequestForUser(user.id);
   if (account?.subscriptionStatus === "refund_requested" || pendingRefund) {
-    const reconciled = await reconcilePendingCreemRefund(user.id);
+    const reconciled = await reconcilePendingStripeRefund(user.id);
     if (reconciled) return publicBillingAccount(reconciled);
     if (pendingRefund && account && account.subscriptionStatus !== "refunded") {
       const synced = await syncAccountToPendingRefund(user.id);
@@ -261,7 +261,7 @@ export async function hasRecentPendingCheckout(userId: string, windowMs = 30 * 6
         FROM payments completed
         WHERE completed.user_id = pending.user_id
           AND completed.id != pending.id
-          AND completed.creem_checkout_id = pending.creem_checkout_id
+          AND completed.stripe_checkout_id = pending.stripe_checkout_id
           AND completed.status IN ('paid', 'refunded', 'canceled', 'expired', 'disputed')
       )
     ORDER BY pending.created_at DESC
@@ -275,7 +275,7 @@ export async function recordPendingCheckoutForUser(input: { userId: string; plan
   const db = await billingDb();
   if (!db || !input.checkoutId) return { persisted: false };
   const now = Date.now();
-  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, creem_checkout_id, creem_transaction_id, creem_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
+  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, stripe_checkout_id, stripe_transaction_id, stripe_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
     VALUES (?, ?, NULL, ?, NULL, NULL, ?, 'checkout_pending', ?, ?, ?, NULL, ?, ?)
     ON CONFLICT(id) DO UPDATE SET status = payments.status, updated_at = excluded.updated_at`)
     .bind(input.checkoutId, input.userId, input.checkoutId, input.plan, input.currency || "USD", input.amountCents || 0, `checkout_started_${input.checkoutId}`, now, now)
@@ -283,57 +283,57 @@ export async function recordPendingCheckoutForUser(input: { userId: string; plan
   return { persisted: true };
 }
 
-export async function reconcilePendingCreemRefund(userId: string) {
+export async function reconcilePendingStripeRefund(userId: string) {
   const db = await billingDb();
-  if (!db || !process.env.CREEM_API_KEY) return null;
+  if (!db || !(process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY)) return null;
   const pending = await db.prepare(`SELECT
       rr.id AS refund_request_id,
       rr.payment_id AS refund_payment_id,
       rr.subscription_id AS refund_subscription_id,
       p.id AS payment_id,
-      p.creem_transaction_id,
-      p.creem_checkout_id,
-      p.creem_invoice_id,
+      p.stripe_transaction_id,
+      p.stripe_checkout_id,
+      p.stripe_invoice_id,
       p.subscription_id AS payment_subscription_id
     FROM refund_requests rr
-    LEFT JOIN payments p ON p.user_id = rr.user_id AND (p.id = rr.payment_id OR p.creem_transaction_id = rr.payment_id OR p.subscription_id = rr.subscription_id)
+    LEFT JOIN payments p ON p.user_id = rr.user_id AND (p.id = rr.payment_id OR p.stripe_transaction_id = rr.payment_id OR p.subscription_id = rr.subscription_id)
     WHERE rr.user_id = ? AND rr.status IN ('submitted', 'pending', 'refund_requested')
     ORDER BY rr.requested_at DESC, p.created_at DESC
     LIMIT 1`)
     .bind(userId)
-    .first<{ refund_request_id: string; refund_payment_id: string | null; refund_subscription_id: string | null; payment_id: string | null; creem_transaction_id: string | null; creem_checkout_id: string | null; creem_invoice_id: string | null; payment_subscription_id: string | null }>();
+    .first<{ refund_request_id: string; refund_payment_id: string | null; refund_subscription_id: string | null; payment_id: string | null; stripe_transaction_id: string | null; stripe_checkout_id: string | null; stripe_invoice_id: string | null; payment_subscription_id: string | null }>();
   if (!pending?.refund_request_id) return null;
 
-  const lookup = await lookupCreemRefundStatus({
+  const lookup = await lookupStripeRefundStatus({
     paymentId: pending.refund_payment_id || pending.payment_id,
-    transactionId: pending.creem_transaction_id || pending.refund_payment_id,
-    checkoutId: pending.creem_checkout_id,
-    invoiceId: pending.creem_invoice_id,
+    transactionId: pending.stripe_transaction_id || pending.refund_payment_id,
+    checkoutId: pending.stripe_checkout_id,
+    invoiceId: pending.stripe_invoice_id,
     subscriptionId: pending.refund_subscription_id || pending.payment_subscription_id,
   });
   if (!lookup.refunded) return null;
 
-  const eventId = `creem_reconcile_refund_${Date.now()}_${pending.refund_request_id}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  const eventId = `stripe_reconcile_refund_${Date.now()}_${pending.refund_request_id}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   const result = await markRefundedAccountD1(db, {
     eventId,
     eventType: "refund.created",
     userId,
     subscriptionId: pending.refund_subscription_id || pending.payment_subscription_id,
-    transactionId: pending.creem_transaction_id || pending.refund_payment_id || pending.payment_id,
-    checkoutId: pending.creem_checkout_id,
-    invoiceId: pending.creem_invoice_id,
+    transactionId: pending.stripe_transaction_id || pending.refund_payment_id || pending.payment_id,
+    checkoutId: pending.stripe_checkout_id,
+    invoiceId: pending.stripe_invoice_id,
     refundId: lookup.refundId || eventId,
-    rawEvent: { source: "creem_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } },
+    rawEvent: { source: "stripe_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } },
   });
   if (result.persisted) {
-    await recordWebhookEvent(db, eventId, "creem.reconcile_refund", { source: "creem_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } }, userId, "processed", null, true);
+    await recordWebhookEvent(db, eventId, "stripe.reconcile_refund", { source: "stripe_api_reconciliation", lookup: { source: lookup.source, resourceId: lookup.resourceId, status: lookup.status, refundId: lookup.refundId } }, userId, "processed", null, true);
   }
   return result.account || null;
 }
 
-export async function reconcileAllPendingCreemRefunds(limit = 20) {
+export async function reconcileAllPendingStripeRefunds(limit = 20) {
   const db = await billingDb();
-  if (!db || !process.env.CREEM_API_KEY) return { ok: false, reason: "missing_db_or_creem_api_key", checked: 0, reconciled: 0 };
+  if (!db || !process.env.STRIPE_API_KEY) return { ok: false, reason: "missing_db_or_stripe_api_key", checked: 0, reconciled: 0 };
   const rows = await db.prepare(`SELECT DISTINCT user_id
     FROM refund_requests
     WHERE status IN ('submitted', 'pending', 'refund_requested')
@@ -348,7 +348,7 @@ export async function reconcileAllPendingCreemRefunds(limit = 20) {
     if (!row.user_id) continue;
     checked += 1;
     try {
-      const result = await reconcilePendingCreemRefund(row.user_id);
+      const result = await reconcilePendingStripeRefund(row.user_id);
       if (result?.subscriptionStatus === "refunded") reconciled += 1;
     } catch (error) {
       errors.push({ userId: row.user_id, message: error instanceof Error ? error.message : String(error) });
@@ -357,9 +357,9 @@ export async function reconcileAllPendingCreemRefunds(limit = 20) {
   return { ok: true, checked, reconciled, errors };
 }
 
-export async function grantCreditsFromCreem(input: CreditGrantInput) {
+export async function grantCreditsFromStripe(input: CreditGrantInput) {
   const db = await billingDb();
-  if (db) return grantCreditsFromCreemD1(db, input);
+  if (db) return grantCreditsFromStripeD1(db, input);
 
   const kv = await billingKv();
   if (!kv) return { persisted: false, duplicate: false, reason: "No D1 DB or BILLING_KV binding" };
@@ -392,7 +392,7 @@ export async function grantCreditsFromCreem(input: CreditGrantInput) {
     subscriptionStatus: "active",
     subscriptionId: input.subscriptionId || current?.subscriptionId,
     customerId: input.customerId || current?.customerId,
-    lastCreemEventId: input.eventId,
+    lastStripeEventId: input.eventId,
     createdAt: current?.createdAt || now,
     updatedAt: now,
   };
@@ -426,7 +426,7 @@ export async function debitCreditForUser(user: AuthUser, amount = 1, sourceId?: 
     subscriptionStatus: account?.subscriptionStatus || "none",
     subscriptionId: account?.subscriptionId,
     customerId: account?.customerId,
-    lastCreemEventId: account?.lastCreemEventId,
+    lastStripeEventId: account?.lastStripeEventId,
     createdAt: account?.createdAt || now,
     updatedAt: now,
   };
@@ -461,7 +461,7 @@ export async function refundCreditForUser(user: AuthUser, amount = 1, sourceId?:
     subscriptionStatus: account?.subscriptionStatus || "none",
     subscriptionId: account?.subscriptionId,
     customerId: account?.customerId,
-    lastCreemEventId: account?.lastCreemEventId,
+    lastStripeEventId: account?.lastStripeEventId,
     createdAt: account?.createdAt || now,
     updatedAt: now,
   };
@@ -501,7 +501,7 @@ export async function updateSubscriptionState(input: {
     subscriptionStatus: input.status,
     subscriptionId: input.subscriptionId || current?.subscriptionId,
     customerId: input.customerId || current?.customerId,
-    lastCreemEventId: input.eventId,
+    lastStripeEventId: input.eventId,
     createdAt: current?.createdAt || now,
     updatedAt: now,
   };
@@ -594,10 +594,10 @@ export async function submitSubscriptionCancellationForUser(user: AuthUser) {
   if (!account) return { ok: false, reason: "Account not found" };
   if (account.plan === "free") return { ok: false, reason: "No paid subscription on this account" };
   if (account.subscriptionStatus === "canceled" || account.subscriptionStatus === "scheduled_cancel") return { ok: true, duplicate: true, account };
-  if (!account.subscriptionId) return { ok: false, reason: "Creem subscription ID is not available for this account" };
+  if (!account.subscriptionId) return { ok: false, reason: "Stripe subscription ID is not available for this account" };
 
-  const creemResult = await cancelCreemSubscription(account.subscriptionId);
-  if (!creemResult.ok) return { ok: false, reason: creemResult.message || "Creem subscription cancellation failed", status: creemResult.status };
+  const stripeResult = await cancelStripeSubscription(account.subscriptionId);
+  if (!stripeResult.ok) return { ok: false, reason: stripeResult.message || "Stripe subscription cancellation failed", status: stripeResult.status };
 
   const now = Date.now();
   const updated: BillingAccount = { ...account, subscriptionStatus: "canceled", updatedAt: now };
@@ -605,16 +605,16 @@ export async function submitSubscriptionCancellationForUser(user: AuthUser) {
   if (db) {
     await upsertUserFromAccount(db, updated);
     await upsertSubscription(db, updated.userId, updated.plan === "free" ? "starter" : updated.plan, "canceled", updated.subscriptionId, updated.customerId, now);
-    await insertCreditLedger(db, updated.userId, "subscription_cancel", `cancel_${now}`, 0, updated.creditsRemaining, "subscription_cancel", { creem: creemResult.payload });
+    await insertCreditLedger(db, updated.userId, "subscription_cancel", `cancel_${now}`, 0, updated.creditsRemaining, "subscription_cancel", { stripe: stripeResult.payload });
   } else {
     const kv = await billingKv();
     if (!kv) return { ok: false, reason: "No D1 DB or BILLING_KV binding" };
     await writeAccount(updated, kv);
     if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
     const cancellationId = `cancel_${now}_${crypto.randomUUID()}`;
-    await kv.put(ledgerKey(updated.userId, cancellationId), JSON.stringify({ type: "subscription_cancel", userId: updated.userId, email: updated.email, subscriptionId: updated.subscriptionId, creem: creemResult.payload, at: now }));
+    await kv.put(ledgerKey(updated.userId, cancellationId), JSON.stringify({ type: "subscription_cancel", userId: updated.userId, email: updated.email, subscriptionId: updated.subscriptionId, stripe: stripeResult.payload, at: now }));
   }
-  return { ok: true, duplicate: false, account: updated, creem: creemResult.payload };
+  return { ok: true, duplicate: false, account: updated, stripe: stripeResult.payload };
 }
 
 export async function previewSubscriptionUpgradeForUser(user: AuthUser, targetPlan: BillingPlan) {
@@ -622,7 +622,7 @@ export async function previewSubscriptionUpgradeForUser(user: AuthUser, targetPl
   if (!account) return { ok: false as const, code: "ACCOUNT_UNAVAILABLE", message: "Billing account is unavailable." };
   if (!isUpgradeableAccountPlan(account.plan)) return { ok: false as const, code: "NO_PAID_PLAN", message: "Choose a paid plan before upgrading." };
   if (!isActiveSubscriptionStatus(account.subscriptionStatus)) return { ok: false as const, code: "SUBSCRIPTION_NOT_ACTIVE", message: "Only active subscriptions can be upgraded." };
-  if (!account.subscriptionId) return { ok: false as const, code: "SUBSCRIPTION_ID_MISSING", message: "Creem subscription ID is not available for this account yet." };
+  if (!account.subscriptionId) return { ok: false as const, code: "SUBSCRIPTION_ID_MISSING", message: "Stripe subscription ID is not available for this account yet." };
   if (BILLING_PLAN_ORDER[targetPlan] <= BILLING_PLAN_ORDER[account.plan]) {
     return { ok: false as const, code: "TARGET_PLAN_NOT_HIGHER", message: "Select a higher plan to upgrade." };
   }
@@ -634,12 +634,12 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
   if (!previewResult.ok) return previewResult;
 
   const { account, preview } = previewResult;
-  const productId = creemProductId(targetPlan);
-  if (!productId) return { ok: false as const, code: "CREEM_PRODUCT_NOT_CONFIGURED", message: "Target plan is not configured." };
+  const productId = stripeProductId(targetPlan);
+  if (!productId) return { ok: false as const, code: "STRIPE_PRODUCT_NOT_CONFIGURED", message: "Target plan is not configured." };
 
-  const creemResult = await upgradeCreemSubscription(account.subscriptionId!, productId);
-  if (!creemResult.ok) {
-    return { ok: false as const, code: "CREEM_UPGRADE_FAILED", message: creemResult.message || "Creem subscription upgrade failed.", status: creemResult.status };
+  const stripeResult = await upgradeStripeSubscription(account.subscriptionId!, productId);
+  if (!stripeResult.ok) {
+    return { ok: false as const, code: "STRIPE_UPGRADE_FAILED", message: stripeResult.message || "Stripe subscription upgrade failed.", status: stripeResult.status };
   }
 
   const db = await billingDb();
@@ -657,23 +657,23 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
     const existing = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'subscription_upgrade_proration_credit' AND source_id = ?")
       .bind(account.userId, sourceId)
       .first<{ id: string }>();
-    if (existing) return { ok: true as const, duplicate: true, account: await readD1Account(db, account.userId), preview, creem: creemResult.payload };
+    if (existing) return { ok: true as const, duplicate: true, account: await readD1Account(db, account.userId), preview, stripe: stripeResult.payload };
 
     await db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, updated_at = ? WHERE id = ?")
       .bind(targetPlan, updated.creditsRemaining, now, account.userId)
       .run();
     await upsertSubscription(db, account.userId, targetPlan, "active", account.subscriptionId, account.customerId, now, preview.periodStart, preview.periodEnd);
-    await upsertUpgradePayment(db, account.userId, account.subscriptionId || null, targetPlan, sourceId, preview, creemResult.payload, now);
-    await insertCreditLedger(db, account.userId, "subscription_upgrade_credit_delta", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Credits added after subscription upgrade", { ...preview, creem: creemResult.payload });
-    return { ok: true as const, duplicate: false, account: await readD1Account(db, account.userId), preview, creem: creemResult.payload };
+    await upsertUpgradePayment(db, account.userId, account.subscriptionId || null, targetPlan, sourceId, preview, stripeResult.payload, now);
+    await insertCreditLedger(db, account.userId, "subscription_upgrade_credit_delta", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Credits added after subscription upgrade", { ...preview, stripe: stripeResult.payload });
+    return { ok: true as const, duplicate: false, account: await readD1Account(db, account.userId), preview, stripe: stripeResult.payload };
   }
 
   const kv = await billingKv();
   if (!kv) return { ok: false as const, code: "BILLING_STORE_UNAVAILABLE", message: "No D1 DB or BILLING_KV binding." };
   await writeAccount(updated, kv);
   if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
-  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_credit_delta", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, creem: creemResult.payload, at: now }));
-  return { ok: true as const, duplicate: false, account: updated, preview, creem: creemResult.payload };
+  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_credit_delta", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, stripe: stripeResult.payload, at: now }));
+  return { ok: true as const, duplicate: false, account: updated, preview, stripe: stripeResult.payload };
 }
 
 export async function markRefundedAccount(input: RefundStateInput) {
@@ -711,10 +711,10 @@ async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: 
   const fullPeriod = Math.max(1, effectiveEnd - effectiveStart);
   const remainingMs = Math.max(0, effectiveEnd - now);
   const remainingRatio = Math.max(0, Math.min(1, remainingMs / fullPeriod));
-  const currentCredits = CREEM_PLAN_CREDITS[account.plan];
-  const targetCredits = CREEM_PLAN_CREDITS[targetPlan];
+  const currentCredits = STRIPE_PLAN_CREDITS[account.plan];
+  const targetCredits = STRIPE_PLAN_CREDITS[targetPlan];
   const creditsDeltaMonthly = Math.max(0, targetCredits - currentCredits);
-  const priceDeltaCents = Math.max(0, CREEM_PLAN_PRICES_CENTS[targetPlan] - CREEM_PLAN_PRICES_CENTS[account.plan]);
+  const priceDeltaCents = Math.max(0, STRIPE_PLAN_PRICES_CENTS[targetPlan] - STRIPE_PLAN_PRICES_CENTS[account.plan]);
   const creditsToGrant = creditsDeltaMonthly;
   const nextCreditsBalance = account.creditsRemaining + creditsToGrant;
   return {
@@ -724,8 +724,8 @@ async function buildProratedUpgradePreview(account: BillingAccount, targetPlan: 
     targetCredits,
     creditsDeltaMonthly,
     creditsToGrant,
-    currentPriceCents: CREEM_PLAN_PRICES_CENTS[account.plan],
-    targetPriceCents: CREEM_PLAN_PRICES_CENTS[targetPlan],
+    currentPriceCents: STRIPE_PLAN_PRICES_CENTS[account.plan],
+    targetPriceCents: STRIPE_PLAN_PRICES_CENTS[targetPlan],
     priceDeltaCents,
     estimatedProratedChargeCents: Math.max(0, Math.round(priceDeltaCents * remainingRatio)),
     remainingRatio: Math.round(remainingRatio * 10000) / 10000,
@@ -740,7 +740,7 @@ async function readCurrentSubscriptionPeriod(userId: string, subscriptionId?: st
   const db = await billingDb();
   if (!db) return null;
   const row = subscriptionId
-    ? await db.prepare("SELECT current_period_start, current_period_end FROM subscriptions WHERE user_id = ? AND (id = ? OR creem_subscription_id = ?) ORDER BY updated_at DESC LIMIT 1")
+    ? await db.prepare("SELECT current_period_start, current_period_end FROM subscriptions WHERE user_id = ? AND (id = ? OR stripe_subscription_id = ?) ORDER BY updated_at DESC LIMIT 1")
       .bind(userId, subscriptionId, subscriptionId)
       .first<{ current_period_start: number | null; current_period_end: number | null }>()
     : await db.prepare("SELECT current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
@@ -775,7 +775,7 @@ async function readD1Account(db: D1Database, userId?: string | null, email?: str
   if (userId) row = await db.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first<UserRow>();
   if (!row && email) row = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email.trim().toLowerCase()).first<UserRow>();
   if (!row) return null;
-  const sub = await db.prepare("SELECT id, creem_subscription_id, creem_customer_id, plan, status, current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+  const sub = await db.prepare("SELECT id, stripe_subscription_id, stripe_customer_id, plan, status, current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
     .bind(row.id)
     .first<SubscriptionRow>();
   const refund = await db.prepare("SELECT id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested') ORDER BY requested_at DESC LIMIT 1")
@@ -787,15 +787,15 @@ async function readD1Account(db: D1Database, userId?: string | null, email?: str
     plan: row.plan || "free",
     creditsRemaining: Number(row.credits_remaining || 0),
     subscriptionStatus: row.status || sub?.status || "none",
-    subscriptionId: sub?.creem_subscription_id || undefined,
-    customerId: row.creem_customer_id || sub?.creem_customer_id || undefined,
+    subscriptionId: sub?.stripe_subscription_id || undefined,
+    customerId: row.stripe_customer_id || sub?.stripe_customer_id || undefined,
     lastRefundRequestId: refund?.id,
     createdAt: Number(row.created_at || Date.now()),
     updatedAt: Number(row.updated_at || Date.now()),
   };
 }
 
-async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) {
+async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput) {
   if (!input.eventId || !input.plan || input.credits <= 0) return { persisted: false, duplicate: false, reason: "Missing grant fields" };
   const dedupeKey = webhookDedupeKey(input.eventId);
   const existing = await db.prepare("SELECT processed_status, related_user_id FROM webhook_events WHERE dedupe_key = ?").bind(dedupeKey).first<WebhookRow>();
@@ -819,13 +819,13 @@ async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) 
   const email = input.email?.trim().toLowerCase() || current?.email || `${userId}@unknown.local`;
   const now = Date.now();
   if (!current) {
-    await db.prepare("INSERT INTO users (id, email, plan, status, credits_remaining, creem_customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    await db.prepare("INSERT INTO users (id, email, plan, status, credits_remaining, stripe_customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
       .bind(userId, email, input.plan, "active", DEFAULT_LIFETIME_CREDITS, input.customerId || null, now, now)
       .run();
   }
 
   const cycleSourceId = grantCycleSourceId(input);
-  const cycleGrant = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'creem_credit_grant' AND source_id = ?")
+  const cycleGrant = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'stripe_credit_grant' AND source_id = ?")
     .bind(userId, cycleSourceId)
     .first<{ id: string }>();
   if (cycleGrant) {
@@ -835,12 +835,12 @@ async function grantCreditsFromCreemD1(db: D1Database, input: CreditGrantInput) 
 
   const before = current?.creditsRemaining ?? DEFAULT_LIFETIME_CREDITS;
   const after = before + input.credits;
-  await db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, creem_customer_id = COALESCE(?, creem_customer_id), updated_at = ? WHERE id = ?")
+  await db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
     .bind(input.plan, after, input.customerId || null, now, userId)
     .run();
   await upsertSubscription(db, userId, input.plan, "active", input.subscriptionId, input.customerId, now);
   await upsertPayment(db, userId, input, now);
-  await insertCreditLedger(db, userId, "creem_credit_grant", cycleSourceId, input.credits, after, input.eventType, { eventId: input.eventId, plan: input.plan, subscriptionId: input.subscriptionId, customerId: input.customerId });
+  await insertCreditLedger(db, userId, "stripe_credit_grant", cycleSourceId, input.credits, after, input.eventType, { eventId: input.eventId, plan: input.plan, subscriptionId: input.subscriptionId, customerId: input.customerId });
   await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "processed", null, true);
   return { persisted: true, duplicate: false, account: await readD1Account(db, userId) };
 }
@@ -888,7 +888,7 @@ async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStat
     if (sameSubscription) accountStatus = "refunded";
   }
   if (current) {
-    await db.prepare("UPDATE users SET plan = COALESCE(?, plan), status = ?, creem_customer_id = COALESCE(?, creem_customer_id), updated_at = ? WHERE id = ?")
+    await db.prepare("UPDATE users SET plan = COALESCE(?, plan), status = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
       .bind(input.plan || null, accountStatus, input.customerId || null, now, userId)
       .run();
   }
@@ -930,32 +930,32 @@ async function submitRefundRequestD1(db: D1Database, user: AuthUser, reason?: st
 
 async function cancelActiveSubscriptionForRefundD1(db: D1Database, account: BillingAccount, userId: string) {
   const activeStatuses = new Set(["active", "trialing", "past_due", "paused", "refund_requested"]);
-  const subscription = await db.prepare("SELECT id, creem_subscription_id, creem_customer_id, status FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+  const subscription = await db.prepare("SELECT id, stripe_subscription_id, stripe_customer_id, status FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
     .bind(userId)
     .first<SubscriptionRow>();
-  const subscriptionId = account.subscriptionId || subscription?.creem_subscription_id;
+  const subscriptionId = account.subscriptionId || subscription?.stripe_subscription_id;
   const currentStatus = account.subscriptionStatus || subscription?.status;
-  if (!subscriptionId || !activeStatuses.has(currentStatus || "")) return { ok: true as const, canceled: false, reason: "No active Creem subscription to cancel" };
+  if (!subscriptionId || !activeStatuses.has(currentStatus || "")) return { ok: true as const, canceled: false, reason: "No active Stripe subscription to cancel" };
 
-  const creemResult = await cancelCreemSubscription(subscriptionId);
-  if (!creemResult.ok) {
+  const stripeResult = await cancelStripeSubscription(subscriptionId);
+  if (!stripeResult.ok) {
     return {
       ok: false as const,
       canceled: false,
-      code: "CREEM_SUBSCRIPTION_CANCEL_FAILED",
-      status: creemResult.status,
-      reason: creemResult.message || "Creem subscription cancellation failed before refund request. Please use Manage billing or contact support.",
+      code: "STRIPE_SUBSCRIPTION_CANCEL_FAILED",
+      status: stripeResult.status,
+      reason: stripeResult.message || "Stripe subscription cancellation failed before refund request. Please use Manage billing or contact support.",
     };
   }
 
   const now = Date.now();
-  await upsertSubscription(db, userId, account.plan === "free" ? "starter" : account.plan, "canceled", subscriptionId, account.customerId || subscription?.creem_customer_id, now);
-  await insertCreditLedger(db, userId, "subscription_cancel_for_refund", `cancel_for_refund_${now}`, 0, account.creditsRemaining, "Active subscription canceled before refund request", { creem: creemResult.payload, subscriptionId });
-  return { ok: true as const, canceled: true, creem: creemResult.payload };
+  await upsertSubscription(db, userId, account.plan === "free" ? "starter" : account.plan, "canceled", subscriptionId, account.customerId || subscription?.stripe_customer_id, now);
+  await insertCreditLedger(db, userId, "subscription_cancel_for_refund", `cancel_for_refund_${now}`, 0, account.creditsRemaining, "Active subscription canceled before refund request", { stripe: stripeResult.payload, subscriptionId });
+  return { ok: true as const, canceled: true, stripe: stripeResult.payload };
 }
 
-function extractCancellationTransactionId(cancellation: { creem?: unknown }) {
-  const payload = cancellation.creem;
+function extractCancellationTransactionId(cancellation: { stripe?: unknown }) {
+  const payload = cancellation.stripe;
   if (!payload || typeof payload !== "object") return null;
   const record = payload as Record<string, unknown>;
   const direct = stringRecordValue(record.last_transaction_id || record.lastTransactionId || record.transaction_id || record.transactionId || record.transaction);
@@ -1009,16 +1009,16 @@ async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
   const revoked = Math.max(0, account.creditsRemaining - preservedFreeCredits);
   await db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, account.userId).run();
   await db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE user_id = ? AND status = 'paid'").bind(now, account.userId).run();
-  await db.prepare("UPDATE refund_requests SET status = 'refunded', creem_refund_id = COALESCE(?, creem_refund_id), resolved_at = ?, metadata_json = COALESCE(metadata_json, ?) WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested')")
+  await db.prepare("UPDATE refund_requests SET status = 'refunded', stripe_refund_id = COALESCE(?, stripe_refund_id), resolved_at = ?, metadata_json = COALESCE(metadata_json, ?) WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested')")
     .bind(input.refundId || null, now, JSON.stringify({ eventId: input.eventId }), account.userId)
     .run();
-  await insertCreditLedger(db, account.userId, "refund_paid_credit_revoke", input.eventId, -revoked, preservedFreeCredits, "Creem refund confirmed; paid credits revoked and unused free signup credits preserved", { eventType: input.eventType, refundId: input.refundId, preservedFreeCredits, ...freeBalance });
+  await insertCreditLedger(db, account.userId, "refund_paid_credit_revoke", input.eventId, -revoked, preservedFreeCredits, "Stripe refund confirmed; paid credits revoked and unused free signup credits preserved", { eventType: input.eventType, refundId: input.refundId, preservedFreeCredits, ...freeBalance });
   return { ...state, account: { ...account, subscriptionStatus: "refunded" as const, creditsRemaining: preservedFreeCredits, updatedAt: now } };
 }
 
 async function calculateFreeCreditRefundBalanceD1(db: D1Database, userId: string): Promise<FreeCreditRefundBalance> {
   const row = await db.prepare(`SELECT
-      COALESCE(SUM(CASE WHEN source_type = 'creem_credit_grant' AND delta > 0 THEN delta ELSE 0 END), 0) AS paid_granted,
+      COALESCE(SUM(CASE WHEN source_type = 'stripe_credit_grant' AND delta > 0 THEN delta ELSE 0 END), 0) AS paid_granted,
       COALESCE(SUM(CASE WHEN source_type IN ('free_signup', 'manual_free_signup_restore_after_refund') AND delta > 0 THEN delta ELSE 0 END), 0) AS free_granted,
       COALESCE(SUM(CASE WHEN source_type = 'generation_debit' AND delta < 0 THEN -delta ELSE 0 END), 0) AS generation_debited,
       COALESCE(SUM(CASE WHEN source_type = 'generation_refund' AND delta > 0 THEN delta ELSE 0 END), 0) AS generation_refunded
@@ -1061,18 +1061,18 @@ async function resolveD1UserId(db: D1Database, input: {
     if (row?.id) return row.id;
   }
   if (input.customerId) {
-    const row = await db.prepare("SELECT id FROM users WHERE creem_customer_id = ?").bind(input.customerId).first<{ id: string }>();
+    const row = await db.prepare("SELECT id FROM users WHERE stripe_customer_id = ?").bind(input.customerId).first<{ id: string }>();
     if (row?.id) return row.id;
   }
   if (input.subscriptionId) {
-    const row = await db.prepare("SELECT user_id AS id FROM subscriptions WHERE id = ? OR creem_subscription_id = ? ORDER BY updated_at DESC LIMIT 1")
+    const row = await db.prepare("SELECT user_id AS id FROM subscriptions WHERE id = ? OR stripe_subscription_id = ? ORDER BY updated_at DESC LIMIT 1")
       .bind(input.subscriptionId, input.subscriptionId)
       .first<{ id: string }>();
     if (row?.id) return row.id;
   }
   const paymentIds = [input.transactionId, input.checkoutId, input.invoiceId].filter((value): value is string => Boolean(value));
   for (const paymentId of paymentIds) {
-    const row = await db.prepare("SELECT user_id AS id FROM payments WHERE id = ? OR creem_transaction_id = ? OR creem_checkout_id = ? OR creem_invoice_id = ? ORDER BY updated_at DESC LIMIT 1")
+    const row = await db.prepare("SELECT user_id AS id FROM payments WHERE id = ? OR stripe_transaction_id = ? OR stripe_checkout_id = ? OR stripe_invoice_id = ? ORDER BY updated_at DESC LIMIT 1")
       .bind(paymentId, paymentId, paymentId, paymentId)
       .first<{ id: string }>();
     if (row?.id) return row.id;
@@ -1081,7 +1081,7 @@ async function resolveD1UserId(db: D1Database, input: {
 }
 
 async function upsertUserFromAccount(db: D1Database, account: BillingAccount) {
-  await db.prepare("UPDATE users SET email = COALESCE(?, email), plan = ?, status = ?, credits_remaining = ?, creem_customer_id = COALESCE(?, creem_customer_id), updated_at = ? WHERE id = ?")
+  await db.prepare("UPDATE users SET email = COALESCE(?, email), plan = ?, status = ?, credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
     .bind(account.email || null, account.plan, account.subscriptionStatus, account.creditsRemaining, account.customerId || null, account.updatedAt, account.userId)
     .run();
 }
@@ -1089,25 +1089,25 @@ async function upsertUserFromAccount(db: D1Database, account: BillingAccount) {
 async function upsertSubscription(db: D1Database, userId: string, plan: BillingPlan, status: BillingAccount["subscriptionStatus"], subscriptionId?: string | null, customerId?: string | null, now = Date.now(), periodStart?: number | null, periodEnd?: number | null) {
   if (!subscriptionId && !customerId) return;
   const id = subscriptionId || `sub_${userId}_${customerId}`;
-  await db.prepare(`INSERT INTO subscriptions (id, user_id, creem_subscription_id, creem_customer_id, plan, status, current_period_start, current_period_end, created_at, updated_at)
+  await db.prepare(`INSERT INTO subscriptions (id, user_id, stripe_subscription_id, stripe_customer_id, plan, status, current_period_start, current_period_end, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET creem_subscription_id = excluded.creem_subscription_id, creem_customer_id = excluded.creem_customer_id, plan = excluded.plan, status = excluded.status, current_period_start = COALESCE(excluded.current_period_start, subscriptions.current_period_start), current_period_end = COALESCE(excluded.current_period_end, subscriptions.current_period_end), updated_at = excluded.updated_at`)
+    ON CONFLICT(id) DO UPDATE SET stripe_subscription_id = excluded.stripe_subscription_id, stripe_customer_id = excluded.stripe_customer_id, plan = excluded.plan, status = excluded.status, current_period_start = COALESCE(excluded.current_period_start, subscriptions.current_period_start), current_period_end = COALESCE(excluded.current_period_end, subscriptions.current_period_end), updated_at = excluded.updated_at`)
     .bind(id, userId, subscriptionId || null, customerId || null, plan, status, periodStart || null, periodEnd || null, now, now)
     .run();
 }
 
-async function upsertUpgradePayment(db: D1Database, userId: string, subscriptionId: string | null, plan: BillingPlan, sourceId: string, preview: ProratedUpgradePreview, creemPayload: unknown, now = Date.now()) {
-  const payment = extractCreemUpgradePayment(creemPayload);
+async function upsertUpgradePayment(db: D1Database, userId: string, subscriptionId: string | null, plan: BillingPlan, sourceId: string, preview: ProratedUpgradePreview, stripePayload: unknown, now = Date.now()) {
+  const payment = extractStripeUpgradePayment(stripePayload);
   const paymentId = payment.transactionId || payment.invoiceId || `subscription_upgrade_${sourceId}`;
   const amountCents = payment.amountCents ?? preview.estimatedProratedChargeCents;
-  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, creem_checkout_id, creem_transaction_id, creem_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
+  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, stripe_checkout_id, stripe_transaction_id, stripe_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       status = 'paid',
       subscription_id = COALESCE(excluded.subscription_id, payments.subscription_id),
-      creem_checkout_id = COALESCE(excluded.creem_checkout_id, payments.creem_checkout_id),
-      creem_transaction_id = COALESCE(excluded.creem_transaction_id, payments.creem_transaction_id),
-      creem_invoice_id = COALESCE(excluded.creem_invoice_id, payments.creem_invoice_id),
+      stripe_checkout_id = COALESCE(excluded.stripe_checkout_id, payments.stripe_checkout_id),
+      stripe_transaction_id = COALESCE(excluded.stripe_transaction_id, payments.stripe_transaction_id),
+      stripe_invoice_id = COALESCE(excluded.stripe_invoice_id, payments.stripe_invoice_id),
       currency = COALESCE(excluded.currency, payments.currency),
       amount_cents = CASE WHEN excluded.amount_cents > 0 THEN excluded.amount_cents ELSE payments.amount_cents END,
       raw_event_id = excluded.raw_event_id,
@@ -1117,7 +1117,7 @@ async function upsertUpgradePayment(db: D1Database, userId: string, subscription
     .run();
 }
 
-function extractCreemUpgradePayment(payload: unknown): { transactionId?: string; invoiceId?: string; checkoutId?: string; amountCents?: number; currency?: string } {
+function extractStripeUpgradePayment(payload: unknown): { transactionId?: string; invoiceId?: string; checkoutId?: string; amountCents?: number; currency?: string } {
   const matches: Record<string, unknown>[] = [];
   collectRecords(payload, matches, 0);
   const transactionId = firstString(matches, ["transaction_id", "transactionId", "last_transaction_id", "lastTransactionId", "payment_id", "paymentId", "order_id", "orderId"])
@@ -1203,14 +1203,14 @@ function toCamelCase(value: string) {
 
 async function upsertPayment(db: D1Database, userId: string, input: CreditGrantInput, now = Date.now()) {
   const paymentId = input.transactionId || input.checkoutId || `${input.eventId}_payment`;
-  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, creem_checkout_id, creem_transaction_id, creem_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
+  await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, stripe_checkout_id, stripe_transaction_id, stripe_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       status = 'paid',
       subscription_id = COALESCE(excluded.subscription_id, payments.subscription_id),
-      creem_checkout_id = COALESCE(excluded.creem_checkout_id, payments.creem_checkout_id),
-      creem_transaction_id = COALESCE(excluded.creem_transaction_id, payments.creem_transaction_id),
-      creem_invoice_id = COALESCE(excluded.creem_invoice_id, payments.creem_invoice_id),
+      stripe_checkout_id = COALESCE(excluded.stripe_checkout_id, payments.stripe_checkout_id),
+      stripe_transaction_id = COALESCE(excluded.stripe_transaction_id, payments.stripe_transaction_id),
+      stripe_invoice_id = COALESCE(excluded.stripe_invoice_id, payments.stripe_invoice_id),
       currency = COALESCE(excluded.currency, payments.currency),
       amount_cents = CASE WHEN excluded.amount_cents > 0 THEN excluded.amount_cents ELSE payments.amount_cents END,
       raw_event_id = excluded.raw_event_id,
@@ -1231,7 +1231,7 @@ async function recordWebhookEvent(db: D1Database, eventId: string, eventType: st
   const now = Date.now();
   const id = `wh_${eventId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   await db.prepare(`INSERT INTO webhook_events (id, provider, event_type, provider_event_id, dedupe_key, related_user_id, payload_json, signature_verified, processed_status, processed_at, error_message, created_at)
-    VALUES (?, 'creem', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(dedupe_key) DO UPDATE SET related_user_id = COALESCE(excluded.related_user_id, webhook_events.related_user_id), processed_status = excluded.processed_status, processed_at = excluded.processed_at, error_message = excluded.error_message`)
     .bind(id, eventType, eventId, webhookDedupeKey(eventId), userId, JSON.stringify(payload), signatureVerified ? 1 : 0, status, status === "received" ? null : now, errorMessage, now)
     .run();
@@ -1244,7 +1244,7 @@ function grantCycleSourceId(input: CreditGrantInput) {
 }
 
 function webhookDedupeKey(eventId: string) {
-  return `creem:${eventId}`;
+  return `stripe:${eventId}`;
 }
 
 async function readAccountByUserId(userId: string, kv: KV): Promise<BillingAccount | null> {

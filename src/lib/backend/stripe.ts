@@ -1,0 +1,452 @@
+import { NextRequest } from "next/server";
+import { SITE_URL } from "@/lib/site";
+
+export type BillingPlan = "starter" | "creator" | "studio";
+
+export type StripePromptModerationResult = {
+  ok: boolean;
+  decision: "allow" | "flag" | "deny";
+  mode: "local" | "remote" | "disabled";
+  moderationId?: string | null;
+  status?: number | string | null;
+  requestUrl?: string | null;
+  message?: string | null;
+  payload?: unknown;
+};
+
+export const STRIPE_PLAN_CREDITS: Record<BillingPlan, number> = {
+  starter: 100,
+  creator: 240,
+  studio: 500,
+};
+
+export const STRIPE_PLAN_PRICES_CENTS: Record<BillingPlan, number> = {
+  starter: 799,
+  creator: 1499,
+  studio: 2999,
+};
+
+const encoder = new TextEncoder();
+
+export function isBillingPlan(plan: unknown): plan is BillingPlan {
+  return plan === "starter" || plan === "creator" || plan === "studio";
+}
+
+export function stripeApiBase() {
+  return (process.env.STRIPE_API_BASE || "https://api.stripe.com/v1").replace(/\/+$/, "");
+}
+
+export function stripeMode() {
+  const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || "";
+  return key.startsWith("sk_live_") ? "live" : "test";
+}
+
+export function stripeSecretKey() {
+  return process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || "";
+}
+
+export function stripePriceId(plan: BillingPlan) {
+  switch (plan) {
+    case "starter":
+      return process.env.STRIPE_STARTER_PRICE_ID || process.env.STRIPE_STARTER_PRODUCT_ID;
+    case "creator":
+      return process.env.STRIPE_CREATOR_PRICE_ID || process.env.STRIPE_CREATOR_PRODUCT_ID;
+    case "studio":
+      return process.env.STRIPE_STUDIO_PRICE_ID || process.env.STRIPE_STUDIO_PRODUCT_ID;
+  }
+}
+
+export const stripeProductId = stripePriceId;
+
+const LOCAL_BLOCK_PATTERNS = [
+  /\b(nsfw|porn|porno|nude|naked|topless|erotic|explicit sex|genitals?|hentai|fetish)\b/i,
+  /\b(minor|underage|child|children|teen|schoolgirl|schoolboy)\b/i,
+  /\b(deepfake|face[- ]?swap|impersonat(e|ion)|celebrity|public figure|politician|president|famous actor|influencer)\b/i,
+  /\b(fake passport|fake id|driver'?s license|official document|bank statement|certificate|counterfeit|forged)\b/i,
+];
+
+const LOCAL_FLAG_PATTERNS = [
+  /\b(sexy|seductive|revealing|bikini|swimsuit|provocative|cleavage)\b/i,
+  /\b(disney|pixar|marvel|pokemon|nintendo|star wars|nike logo|apple logo)\b/i,
+];
+
+export async function moderatePromptWithStripe(input: { prompt: string; externalId?: string; timeoutMs?: number }): Promise<StripePromptModerationResult> {
+  const text = input.prompt.normalize("NFKC");
+  if (LOCAL_BLOCK_PATTERNS.some((pattern) => pattern.test(text))) {
+    return {
+      ok: true,
+      decision: "deny",
+      mode: "local",
+      moderationId: input.externalId || null,
+      status: "local_block",
+      message: "Blocked by local Stripe-readiness policy for unsafe, unauthorized, impersonation, document, or adult content.",
+    };
+  }
+  if (LOCAL_FLAG_PATTERNS.some((pattern) => pattern.test(text))) {
+    return {
+      ok: true,
+      decision: "flag",
+      mode: "local",
+      moderationId: input.externalId || null,
+      status: "local_flag",
+      message: "Flagged by local Stripe-readiness policy for review-only content risk.",
+    };
+  }
+
+  const moderationUrl = process.env.STRIPE_CONTENT_MODERATION_URL || process.env.CONTENT_MODERATION_URL;
+  const moderationKey = process.env.STRIPE_CONTENT_MODERATION_KEY || process.env.CONTENT_MODERATION_KEY;
+  if (!moderationUrl) {
+    return { ok: true, decision: "allow", mode: "local", moderationId: input.externalId || null, status: "local_allow" };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), input.timeoutMs || 5000);
+  try {
+    const response = await fetch(moderationUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(moderationKey ? { "Authorization": `Bearer ${moderationKey}` } : {}),
+      },
+      body: JSON.stringify({ prompt: input.prompt, external_id: input.externalId, policy: "stripe_ai_image_editor" }),
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      return { ok: false, decision: "deny", mode: "remote", status: response.status, requestUrl: moderationUrl, message: "Remote moderation service rejected or failed.", payload };
+    }
+    const decisionValue = payload && typeof payload === "object" ? String((payload as Record<string, unknown>).decision || "allow").toLowerCase() : "allow";
+    const decision = decisionValue === "deny" || decisionValue === "block" ? "deny" : decisionValue === "flag" || decisionValue === "review" ? "flag" : "allow";
+    const id = payload && typeof payload === "object" && typeof (payload as Record<string, unknown>).id === "string" ? String((payload as Record<string, unknown>).id) : input.externalId || null;
+    return { ok: true, decision, mode: "remote", moderationId: id, status: response.status, requestUrl: moderationUrl, payload };
+  } catch (error) {
+    return { ok: false, decision: "deny", mode: "remote", status: "network_error", requestUrl: moderationUrl, message: error instanceof Error ? error.message : "Remote moderation failed." };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export function stripeConfigStatus() {
+  return {
+    apiKey: Boolean(stripeSecretKey()),
+    webhookSecret: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
+    prices: {
+      starter: Boolean(stripePriceId("starter")),
+      creator: Boolean(stripePriceId("creator")),
+      studio: Boolean(stripePriceId("studio")),
+    },
+    mode: stripeMode(),
+  };
+}
+
+export function stripeReady() {
+  const status = stripeConfigStatus();
+  return Boolean(status.apiKey && status.webhookSecret && status.prices.starter && status.prices.creator && status.prices.studio);
+}
+
+export function missingStripeConfig() {
+  const missing: string[] = [];
+  const status = stripeConfigStatus();
+  if (!status.apiKey) missing.push("STRIPE_SECRET_KEY");
+  if (process.env.STRIPE_ENABLE_PAID_CHECKOUT !== "true") missing.push("STRIPE_ENABLE_PAID_CHECKOUT=true");
+  if (!status.webhookSecret) missing.push("STRIPE_WEBHOOK_SECRET");
+  if (!status.prices.starter) missing.push("STRIPE_STARTER_PRICE_ID");
+  if (!status.prices.creator) missing.push("STRIPE_CREATOR_PRICE_ID");
+  if (!status.prices.studio) missing.push("STRIPE_STUDIO_PRICE_ID");
+  return missing;
+}
+
+export async function createStripeCheckoutSession(input: {
+  plan: BillingPlan;
+  userId: string;
+  email: string;
+  successUrl: string;
+  cancelUrl: string;
+}) {
+  const priceId = stripePriceId(input.plan);
+  if (!priceId) return { ok: false as const, status: 503, message: "Selected Stripe price is not configured." };
+  const form = new URLSearchParams();
+  form.set("mode", "subscription");
+  form.set("line_items[0][price]", priceId);
+  form.set("line_items[0][quantity]", "1");
+  form.set("success_url", input.successUrl);
+  form.set("cancel_url", input.cancelUrl);
+  form.set("client_reference_id", input.userId);
+  form.set("customer_email", input.email);
+  form.set("allow_promotion_codes", "true");
+  form.set("metadata[user_id]", input.userId);
+  form.set("metadata[email]", input.email);
+  form.set("metadata[plan]", input.plan);
+  form.set("subscription_data[metadata][user_id]", input.userId);
+  form.set("subscription_data[metadata][email]", input.email);
+  form.set("subscription_data[metadata][plan]", input.plan);
+  return stripeFormRequest("/checkout/sessions", form);
+}
+
+export async function createStripeCustomerPortal(customerId: string, returnUrl?: string) {
+  const form = new URLSearchParams();
+  form.set("customer", customerId);
+  if (returnUrl) form.set("return_url", returnUrl);
+  const result = await stripeFormRequest("/billing_portal/sessions", form);
+  if (result.ok) return { ok: true as const, url: extractPortalUrl(result.payload), payload: result.payload };
+  return { ok: false as const, status: result.status, message: result.message || "Stripe customer portal is unavailable." };
+}
+
+export async function cancelStripeSubscription(subscriptionId: string) {
+  return stripeDeleteRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}`);
+}
+
+export async function upgradeStripeSubscription(subscriptionId: string, priceId: string): Promise<
+  { ok: true; status: number; payload: unknown }
+  | { ok: false; status: number; message: string; payload?: unknown }
+> {
+  // Stripe upgrades require subscription item IDs. Keep this fail-closed and use the customer portal until item-level upgrade is implemented.
+  return { ok: false, status: 409, message: `Plan changes are handled in Stripe Customer Portal for subscription ${subscriptionId} and price ${priceId}.`, payload: null };
+}
+
+export type StripeRefundLookupResult = {
+  ok: boolean;
+  refunded: boolean;
+  source?: string;
+  resourceId?: string;
+  status?: string | null;
+  refundId?: string | null;
+  payload?: unknown;
+  error?: string;
+};
+
+export async function lookupStripeRefundStatus(input: { paymentId?: string | null; transactionId?: string | null; checkoutId?: string | null; invoiceId?: string | null; subscriptionId?: string | null }) {
+  const ids = uniqueTruthy([input.transactionId, input.paymentId, input.invoiceId, input.checkoutId, input.subscriptionId]);
+  const paths: Array<{ path: string; id: string }> = [];
+  for (const id of ids) {
+    const encoded = encodeURIComponent(id);
+    if (id.startsWith("pi_")) paths.push({ path: `/payment_intents/${encoded}`, id });
+    if (id.startsWith("ch_")) paths.push({ path: `/charges/${encoded}`, id });
+    if (id.startsWith("in_")) paths.push({ path: `/invoices/${encoded}`, id });
+    if (id.startsWith("cs_")) paths.push({ path: `/checkout/sessions/${encoded}`, id });
+    if (id.startsWith("sub_")) paths.push({ path: `/subscriptions/${encoded}`, id });
+  }
+  let lastError: string | undefined;
+  for (const candidate of paths) {
+    const response = await stripeGetRequest(candidate.path);
+    if (!response.ok) {
+      lastError = `${candidate.path}: ${response.status || "error"} ${response.message || ""}`.trim();
+      continue;
+    }
+    const status = extractRefundStatus(response.payload);
+    if (status.refunded) return { ok: true, refunded: true, source: candidate.path, resourceId: candidate.id, status: status.status, refundId: status.refundId, payload: response.payload } satisfies StripeRefundLookupResult;
+    if (status.status) lastError = `${candidate.path}: status=${status.status}`;
+  }
+  return { ok: Boolean(paths.length), refunded: false, error: lastError || (paths.length ? "No Stripe resource reported refunded." : "No Stripe resource id to inspect.") } satisfies StripeRefundLookupResult;
+}
+
+async function stripeFormRequest(path: string, form: URLSearchParams) {
+  const secret = stripeSecretKey();
+  if (!secret) return { ok: false as const, status: 503, message: "STRIPE_SECRET_KEY is not configured." };
+  const response = await fetch(`${stripeApiBase()}${path}`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${secret}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: form.toString(),
+  });
+  return parseStripeResponse(response);
+}
+
+async function stripeDeleteRequest(path: string) {
+  const secret = stripeSecretKey();
+  if (!secret) return { ok: false as const, status: 503, message: "STRIPE_SECRET_KEY is not configured." };
+  const response = await fetch(`${stripeApiBase()}${path}`, {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${secret}` },
+  });
+  return parseStripeResponse(response);
+}
+
+async function stripeGetRequest(path: string) {
+  const secret = stripeSecretKey();
+  if (!secret) return { ok: false as const, status: 503, message: "STRIPE_SECRET_KEY is not configured." };
+  const response = await fetch(`${stripeApiBase()}${path}`, {
+    method: "GET",
+    headers: { "Authorization": `Bearer ${secret}` },
+  });
+  return parseStripeResponse(response);
+}
+
+async function parseStripeResponse(response: Response) {
+  const text = await response.text();
+  let payload: unknown = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = { raw: text.slice(0, 500) };
+  }
+  if (!response.ok) {
+    const record = payload && typeof payload === "object" ? payload as Record<string, unknown> : {};
+    const error = record.error && typeof record.error === "object" ? record.error as Record<string, unknown> : record;
+    const message = String(error.message || response.statusText || "Stripe request failed.");
+    return { ok: false as const, status: response.status, message, payload };
+  }
+  return { ok: true as const, status: response.status, payload };
+}
+
+function extractRefundStatus(payload: unknown) {
+  const statuses: string[] = [];
+  const refundIds: string[] = [];
+  let refunded = false;
+  function visit(value: unknown, depth = 0) {
+    if (!value || depth > 6) return;
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item, depth + 1);
+      return;
+    }
+    if (typeof value !== "object") return;
+    const record = value as Record<string, unknown>;
+    if (record.refunded === true) refunded = true;
+    if (typeof record.amount_refunded === "number" && record.amount_refunded > 0) refunded = true;
+    if (typeof record.status === "string") statuses.push(record.status.toLowerCase());
+    if (typeof record.id === "string" && record.id.startsWith("re_")) refundIds.push(record.id);
+    for (const nested of Object.values(record)) visit(nested, depth + 1);
+  }
+  visit(payload);
+  const status = statuses.find(Boolean) || null;
+  if (statuses.some((item) => ["refunded", "succeeded"].includes(item)) && refundIds.length > 0) refunded = true;
+  return { refunded, status, refundId: refundIds[0] || null };
+}
+
+function uniqueTruthy(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))));
+}
+
+export function extractPortalUrl(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const record = payload as Record<string, unknown>;
+  const url = record.url;
+  return typeof url === "string" && url.startsWith("https://") ? url : null;
+}
+
+export function extractCheckoutUrl(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const record = payload as Record<string, unknown>;
+  const url = record.url;
+  return typeof url === "string" && url.startsWith("https://") ? url : null;
+}
+
+export function planFromStripePayload(payload: unknown): BillingPlan | null {
+  const records: Record<string, unknown>[] = [];
+  collectRecords(payload, records, 0);
+  for (const record of records) {
+    const metadata = record.metadata;
+    if (metadata && typeof metadata === "object") {
+      const plan = (metadata as Record<string, unknown>).plan;
+      if (isBillingPlan(plan)) return plan;
+    }
+    const plan = record.plan;
+    if (isBillingPlan(plan)) return plan;
+    const priceId = stringValue(record.price || record.price_id || record.priceId || record.id);
+    const matched = planFromPriceId(priceId);
+    if (matched) return matched;
+  }
+  return null;
+}
+
+function planFromPriceId(priceId: string | null) {
+  if (!priceId) return null;
+  for (const plan of ["starter", "creator", "studio"] as const) {
+    if (stripePriceId(plan) === priceId) return plan;
+  }
+  return null;
+}
+
+export function extractStripeEventId(event: unknown, rawBody: string) {
+  if (event && typeof event === "object") {
+    const id = (event as Record<string, unknown>).id;
+    if (typeof id === "string" && id.trim()) return id.trim();
+  }
+  return `evt_${hashString(rawBody)}`;
+}
+
+export function extractStripeEventType(event: unknown) {
+  if (event && typeof event === "object") {
+    const type = (event as Record<string, unknown>).type;
+    if (typeof type === "string" && type.trim()) return normalizeStripeEventType(type.trim());
+  }
+  return "unknown";
+}
+
+function normalizeStripeEventType(type: string) {
+  switch (type) {
+    case "checkout.session.completed": return "checkout.completed";
+    case "customer.subscription.created":
+    case "customer.subscription.resumed": return "subscription.active";
+    case "invoice.paid":
+    case "invoice.payment_succeeded": return "subscription.paid";
+    case "customer.subscription.deleted": return "subscription.canceled";
+    case "customer.subscription.paused": return "subscription.paused";
+    case "invoice.payment_failed": return "subscription.past_due";
+    case "charge.refunded":
+    case "refund.created":
+    case "refund.updated": return "refund.created";
+    case "charge.dispute.created": return "dispute.created";
+    default: return type;
+  }
+}
+
+export async function verifyStripeSignature(rawBody: string, signatureHeader: string | null) {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret || !signatureHeader) return false;
+  const parts = Object.fromEntries(signatureHeader.split(",").map((part) => {
+    const [key, ...rest] = part.split("=");
+    return [key, rest.join("=")];
+  }));
+  const timestamp = parts.t;
+  const signatures = signatureHeader.split(",").filter((part) => part.startsWith("v1=")).map((part) => part.slice(3));
+  if (!timestamp || signatures.length === 0) return false;
+  const ageSeconds = Math.abs(Date.now() / 1000 - Number(timestamp));
+  if (!Number.isFinite(ageSeconds) || ageSeconds > 300) return false;
+  const expected = await hmacHex(secret, `${timestamp}.${rawBody}`);
+  return signatures.some((signature) => timingSafeEqual(signature, expected));
+}
+
+async function hmacHex(secret: string, message: string) {
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
+  return Array.from(new Uint8Array(sig)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function timingSafeEqual(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function hashString(value: string) {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i += 1) hash = ((hash << 5) + hash) ^ value.charCodeAt(i);
+  return (hash >>> 0).toString(16);
+}
+
+function collectRecords(value: unknown, output: Record<string, unknown>[], depth: number) {
+  if (!value || typeof value !== "object" || depth > 7) return;
+  if (Array.isArray(value)) {
+    for (const item of value) collectRecords(item, output, depth + 1);
+    return;
+  }
+  const record = value as Record<string, unknown>;
+  output.push(record);
+  for (const nested of Object.values(record)) collectRecords(nested, output, depth + 1);
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+export function originFromRequest(request: NextRequest) {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL;
+  if (configured) return configured.replace(/\/+$/, "");
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "aieditorrspediting.org";
+  return `${proto}://${host}`;
+}

@@ -1,5 +1,5 @@
 import { billingDb } from "@/lib/backend/cloudflare";
-import type { CreemPromptModerationResult } from "@/lib/backend/creem";
+import type { StripePromptModerationResult } from "@/lib/backend/stripe";
 
 export type ModerationCreditDecision = "not_charged" | "charged" | "refunded" | "unchanged";
 
@@ -8,7 +8,7 @@ export async function recordModerationEvent(input: {
   userId?: string | null;
   endpoint: string;
   promptHash: string;
-  moderation: CreemPromptModerationResult;
+  moderation: StripePromptModerationResult;
   creditDecision?: ModerationCreditDecision;
   modelCalled?: boolean;
   generationJobId?: string | null;
@@ -18,7 +18,7 @@ export async function recordModerationEvent(input: {
   const now = Date.now();
   const blocked = input.moderation.decision !== "allow";
   const metadata = {
-    creemMode: input.moderation.mode || null,
+    stripeMode: input.moderation.mode || null,
     requestUrl: input.moderation.requestUrl || null,
     payloadShape: sanitizeModerationPayloadShape(input.moderation.payload),
   };
@@ -31,8 +31,8 @@ export async function recordModerationEvent(input: {
       promptHash: input.promptHash,
       decision: input.moderation.decision,
       blocked,
-      creemModerationId: input.moderation.moderationId || null,
-      creemStatus: input.moderation.status || null,
+      stripeModerationId: input.moderation.moderationId || null,
+      stripeStatus: input.moderation.status || null,
       creditDecision: input.creditDecision || "not_charged",
       modelCalled: Boolean(input.modelCalled),
       timestamp: new Date(now).toISOString(),
@@ -42,15 +42,15 @@ export async function recordModerationEvent(input: {
 
   try {
     await db.prepare(`INSERT INTO moderation_events (
-      id, external_id, user_id, endpoint, prompt_hash, decision, blocked, creem_moderation_id,
-      creem_status, credit_decision, model_called, generation_job_id, provider_request_id,
+      id, external_id, user_id, endpoint, prompt_hash, decision, blocked, stripe_moderation_id,
+      stripe_status, credit_decision, model_called, generation_job_id, provider_request_id,
       error_message, metadata_json, created_at, updated_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(external_id) DO UPDATE SET
       decision = excluded.decision,
       blocked = excluded.blocked,
-      creem_moderation_id = excluded.creem_moderation_id,
-      creem_status = excluded.creem_status,
+      stripe_moderation_id = excluded.stripe_moderation_id,
+      stripe_status = excluded.stripe_status,
       credit_decision = excluded.credit_decision,
       model_called = excluded.model_called,
       generation_job_id = COALESCE(excluded.generation_job_id, moderation_events.generation_job_id),

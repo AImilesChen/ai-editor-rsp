@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/backend/auth";
-import { isBillingPlan } from "@/lib/backend/creem";
+import { isBillingPlan } from "@/lib/backend/stripe";
 import { previewSubscriptionUpgradeForUser, upgradeSubscriptionForUser } from "@/lib/backend/billing-store";
 
 export async function GET(request: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   if (!result.ok) {
     const status = result.code === "AUTH_REQUIRED" ? 401
       : result.code === "SUBSCRIPTION_ID_MISSING" || result.code === "TARGET_PLAN_NOT_HIGHER" || result.code === "NO_PAID_PLAN" ? 409
-      : result.code === "CREEM_UPGRADE_FAILED" ? 502
+      : result.code === "STRIPE_UPGRADE_FAILED" ? 502
       : 400;
     return NextResponse.json(result, { status });
   }

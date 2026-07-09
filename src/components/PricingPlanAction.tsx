@@ -54,7 +54,7 @@ function shouldTreatAsCurrentPaidPlan(planName: string, data: AuthResponse | nul
   if (refundPendingStatuses.has(status)) return false;
   // Avoid misleading paid users into starting a duplicate checkout when the account
   // already carries a paid plan but the subscription status is temporarily missing,
-  // delayed, or not one of the active-like Creem states yet.
+  // delayed, or not one of the active-like Stripe states yet.
   return !endedPlanStatuses.has(status);
 }
 

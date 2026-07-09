@@ -4,7 +4,7 @@ import { getAuthUser } from "@/lib/backend/auth";
 import { accountForPublicUser, debitCreditForUser } from "@/lib/backend/billing-store";
 import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
 import { checkPromptSafety, logSafetyEvent, promptHash, rewritePromptForSoftSafety } from "@/lib/backend/safety";
-import { moderatePromptWithCreem } from "@/lib/backend/creem";
+import { moderatePromptWithStripe } from "@/lib/backend/stripe";
 import { createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
 import { recordModerationEvent, updateModerationEventOutcome } from "@/lib/backend/moderation-store";
 import { quoteGenerationCredits } from "@/lib/generation-pricing";
@@ -21,6 +21,7 @@ type Body = {
     width?: number;
     height?: number;
   };
+  authorizedImageUse?: boolean;
 };
 
 function isSupportedImageReference(value: string) {
@@ -72,6 +73,15 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
+  if (body.imageDataUrl && body.authorizedImageUse !== true) {
+    const response = NextResponse.json({
+      ok: false,
+      error: "Confirm you own this photo or have permission from every recognizable person before editing it.",
+      code: "IMAGE_AUTHORIZATION_REQUIRED",
+    }, { status: 400 });
+    await setSessionCookie(response, session);
+    return response;
+  }
   if (body.maskDataUrl && body.maskDataUrl.length > 3_000_000) {
     const response = NextResponse.json({ ok: false, error: "Brush mask is too large. Please use a smaller image or repaint a smaller area.", code: "MASK_TOO_LARGE" }, { status: 413 });
     await setSessionCookie(response, session);
@@ -86,50 +96,50 @@ export async function POST(request: NextRequest) {
 
   const promptDigest = await promptHash(prompt);
   const moderationExternalId = `user_${user.id}:gen_${crypto.randomUUID()}`;
-  const creemModeration = await moderatePromptWithCreem({ prompt, externalId: moderationExternalId });
+  const stripeModeration = await moderatePromptWithStripe({ prompt, externalId: moderationExternalId });
   await recordModerationEvent({
     externalId: moderationExternalId,
     userId: user.id,
     endpoint: "/api/generate",
     promptHash: promptDigest,
-    moderation: creemModeration,
+    moderation: stripeModeration,
     creditDecision: "not_charged",
     modelCalled: false,
   });
-  if (creemModeration.decision === "deny" || creemModeration.decision === "flag") {
-    const nextSession = recordSafetyStrike(session, creemModeration.decision === "deny" ? "high" : "medium");
+  if (stripeModeration.decision === "deny" || stripeModeration.decision === "flag") {
+    const nextSession = recordSafetyStrike(session, stripeModeration.decision === "deny" ? "high" : "medium");
     logSafetyEvent({
       sid: session.sid,
       promptHash: promptDigest,
-      category: ["creem_moderation"],
-      severity: creemModeration.decision === "deny" ? "high" : "medium",
+      category: ["stripe_moderation"],
+      severity: stripeModeration.decision === "deny" ? "high" : "medium",
       decision: "block",
-      reason: `creem_moderation_${creemModeration.decision}`,
+      reason: `stripe_moderation_${stripeModeration.decision}`,
       creditDecision: "not_charged",
     });
     const response = NextResponse.json({
       ok: false,
       error: "This prompt cannot be processed because it appears to request NSFW, sexually explicit, or otherwise disallowed content. Please revise your prompt and try again.",
-      code: "CREEM_MODERATION_BLOCKED",
-      safety: { decision: "block", categories: ["creem_moderation"], severity: creemModeration.decision === "deny" ? "high" : "medium" },
+      code: "STRIPE_MODERATION_BLOCKED",
+      safety: { decision: "block", categories: ["stripe_moderation"], severity: stripeModeration.decision === "deny" ? "high" : "medium" },
     }, { status: 451 });
     await setSessionCookie(response, nextSession);
     return response;
   }
-  if (!creemModeration.ok) {
+  if (!stripeModeration.ok) {
     logSafetyEvent({
       sid: session.sid,
       promptHash: promptDigest,
-      category: ["creem_moderation"],
+      category: ["stripe_moderation"],
       severity: "high",
       decision: "block",
-      reason: `creem_moderation_unavailable:${creemModeration.status || "error"}`,
+      reason: `stripe_moderation_unavailable:${stripeModeration.status || "error"}`,
       creditDecision: "not_charged",
     });
     const response = NextResponse.json({
       ok: false,
       error: "Content moderation is temporarily unavailable. Please try again in a moment.",
-      code: "CREEM_MODERATION_UNAVAILABLE",
+      code: "STRIPE_MODERATION_UNAVAILABLE",
     }, { status: 503 });
     await setSessionCookie(response, session);
     return response;
@@ -139,7 +149,7 @@ export async function POST(request: NextRequest) {
   if (["refund_requested", "refunded", "disputed"].includes(billingAccount.subscriptionStatus)) {
     const response = NextResponse.json({
       ok: false,
-      error: "Credits are locked while your refund is being reviewed. Please wait for Creem refund confirmation or contact support.",
+      error: "Credits are locked while your refund is being reviewed. Please wait for Stripe refund confirmation or contact support.",
       code: "CREDITS_LOCKED_FOR_REFUND",
       creditsRemaining: 0,
       pricing: quote,

@@ -2,7 +2,7 @@ export const SITE_URL = "https://aieditorrspediting.org";
 export const SITE_NAME = "AI Editor RSP";
 export const SUPPORT_EMAIL = "support@aieditorrspediting.org";
 export const AI_PROVIDER = "fal.ai";
-export const PAYMENT_PROVIDER = "Creem";
+export const PAYMENT_PROVIDER = "Stripe";
 
 export const pricingPlans = [
   {

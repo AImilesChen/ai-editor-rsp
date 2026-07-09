@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { creemConfigured, falConfigured } from "@/lib/backend/providers";
+import { stripeConfigured, falConfigured } from "@/lib/backend/providers";
 import { billingStoreStatus } from "@/lib/backend/billing-store";
 import { assetsBucket } from "@/lib/backend/cloudflare";
 import { getSession, setSessionCookie } from "@/lib/backend/session";
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     stage: "p0-lite",
     providers: {
       fal: falConfigured() ? "configured" : "missing",
-      creem: creemConfigured() ? "configured" : "missing",
+      stripe: stripeConfigured() ? "configured" : "missing",
       googleOAuth: process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? "configured" : "missing",
       resend: process.env.RESEND_API_KEY ? "configured" : "missing",
     },

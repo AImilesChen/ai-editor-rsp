@@ -308,6 +308,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [headshotReferenceImage, setHeadshotReferenceImage] = useState<string | null>(null);
   const [uploadedName, setUploadedName] = useState<string | null>(null);
   const [uploadedAspect, setUploadedAspect] = useState<number | null>(null);
+  const [authorizedImageUse, setAuthorizedImageUse] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [comparePosition, setComparePosition] = useState(50);
   const [isDraggingCompare, setIsDraggingCompare] = useState(false);
@@ -345,9 +346,10 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const requiresManualMask = mode === "edit" && !isHeadshotMode;
   const minimumPromptLength = mode === "edit" && !isHeadshotMode ? 3 : 20;
   const promptReady = effectivePrompt.trim().length >= minimumPromptLength;
+  const imageAuthorizationReady = mode !== "edit" || !imageForRequest || authorizedImageUse;
   const effectiveCreditsRemaining = creditsRemaining ?? 0;
   const creditsLoaded = typeof creditsRemaining === "number";
-  const canGenerate = Boolean(authenticated) && creditsLoaded && !isUploading && !needsUpload && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing" && effectiveCreditsRemaining >= currentQuote.creditsCharged;
+  const canGenerate = Boolean(authenticated) && creditsLoaded && !isUploading && !needsUpload && imageAuthorizationReady && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing" && effectiveCreditsRemaining >= currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
@@ -500,6 +502,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setUploadedImage(prepared.dataUrl);
       setHeadshotReferenceImage(croppedHeadshotReference);
       setUploadedAspect(prepared.aspect);
+      setAuthorizedImageUse(false);
       setUploadedName(file.name);
       if (mode === "edit") {
         setRatio(task === "Professional headshot" ? "3:4" : "auto");
@@ -549,6 +552,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       setState("failed");
       return;
     }
+    if (mode === "edit" && imageForRequest && !authorizedImageUse) {
+      setError("Confirm that you own this photo or have permission from every recognizable person before generating.");
+      setState("failed");
+      return;
+    }
     if (trimmedPrompt.length < 20) {
       setError("Prompt must be at least 20 characters.");
       setState("failed");
@@ -575,6 +583,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           imageDataUrl: imageForRequest || undefined,
           editRegion: mode === "edit" && editRegion ? editRegion : undefined,
           maskDataUrl: maskDataUrl || undefined,
+          authorizedImageUse: mode === "edit" && Boolean(imageForRequest) ? authorizedImageUse : undefined,
         }),
       });
       const data = await response.json() as GenerateResponse;
@@ -703,6 +712,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setMode("edit");
     setUploadedImage(generatedImage);
     setHeadshotReferenceImage(null);
+    setAuthorizedImageUse(true);
     prepareUploadedPhoto(generatedImage).then((prepared) => setUploadedAspect(prepared.aspect)).catch(() => setUploadedAspect(4 / 3));
     setUploadedName("Generated result");
     setGeneratedImage(null);
@@ -725,6 +735,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setHeadshotReferenceImage(null);
     setUploadedName(null);
     setUploadedAspect(null);
+    setAuthorizedImageUse(false);
     setGeneratedImage(null);
     setEditScope("selected");
     clearMask();
@@ -832,6 +843,19 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               )}
             </label>
             <input id="upload-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} disabled={isUploading} className="sr-only" />
+            {uploadedImage && (
+              <label className="mb-3 flex items-start gap-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/35 p-3 text-xs leading-5 text-[#C8FADC]">
+                <input
+                  type="checkbox"
+                  checked={authorizedImageUse}
+                  onChange={(event) => setAuthorizedImageUse(event.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-[#86EFAC]"
+                />
+                <span>
+                  I own this photo or have permission from every recognizable person. No minors, public figures, celebrities, strangers, IDs, NSFW, face-swap, impersonation, or deceptive use.
+                </span>
+              </label>
+            )}
           </>
         )}
 
@@ -1004,7 +1028,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : authenticated ? (
             <>
               <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : !promptReady ? (mode === "edit" ? "Describe what to remove" : "Write or choose a prompt") : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
+                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : !promptReady ? (mode === "edit" ? "Describe what to remove" : "Write or choose a prompt") : !imageAuthorizationReady ? "Confirm photo permission" : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
               </button>
               {(uploadedImage || generatedImage) && (
                 <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">

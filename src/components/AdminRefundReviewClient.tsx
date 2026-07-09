@@ -121,8 +121,8 @@ function compactOverviewRows(rows: OverviewRow[], kind: "subscribers" | "refunds
     latest._recordCount = count;
     latest._totalRefundCents = totalRefundCents;
     latest._totalPaymentCents = totalPaymentCents;
-    latest._subscriptionCount = new Set(group.map((row) => String(row.creemSubscriptionId || row.subscriptionId || "")).filter(Boolean)).size || count;
-    latest._paymentCount = new Set(group.map((row) => String(row.paymentId || row.creemTransactionId || "")).filter(Boolean)).size || count;
+    latest._subscriptionCount = new Set(group.map((row) => String(row.stripeSubscriptionId || row.subscriptionId || "")).filter(Boolean)).size || count;
+    latest._paymentCount = new Set(group.map((row) => String(row.paymentId || row.stripeTransactionId || "")).filter(Boolean)).size || count;
     latest._plansSummary = uniquePlans.slice(0, 3).join(" / ");
     latest._statusesSummary = uniqueStatuses.slice(0, 3).join(" / ");
     return latest;
@@ -143,7 +143,7 @@ function subscriberGroups(rows: OverviewRow[]) {
   const groups = new Map<string, { subscription: OverviewRow; payments: OverviewRow[] }>();
 
   rows.forEach((record, index) => {
-    const key = String(record.creemSubscriptionId || record.subscriptionId || `subscription-${index}`);
+    const key = String(record.stripeSubscriptionId || record.subscriptionId || `subscription-${index}`);
     const current = groups.get(key);
     const paidAt = Number(record.paidAt || 0);
     const currentPaidAt = Number(current?.subscription.paidAt || 0);
@@ -282,7 +282,7 @@ export default function AdminRefundReviewClient({ adminEmail }: { adminEmail?: s
           <div>
             <p className="eyebrow">Operations overview</p>
             <h2 className="mt-2 font-heading text-3xl font-normal text-rsp-text">Billing and refund queue</h2>
-            <p className="mt-2 text-sm text-rsp-muted">See subscribers, refund requests, canceled subscriptions, and refunded accounts without opening Creem first.</p>
+            <p className="mt-2 text-sm text-rsp-muted">See subscribers, refund requests, canceled subscriptions, and refunded accounts without opening Stripe first.</p>
           </div>
           <button onClick={loadOverview} disabled={overviewLoading} className="rounded-full border border-rsp-border px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-rsp-text disabled:opacity-60">
             {overviewLoading ? "Refreshing" : "Refresh"}
@@ -414,9 +414,9 @@ function RecordDetails({ kind, rows }: { kind: "subscribers" | "refunds" | "canc
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-rsp-muted">Subscriptions and payments for this user</p>
         <div className="mt-3 space-y-3">
           {groups.map(({ subscription, payments }, groupIndex) => (
-            <div key={`${text(subscription.creemSubscriptionId || subscription.subscriptionId)}-${groupIndex}`} className="rounded-2xl border border-rsp-border bg-white p-4 text-xs">
+            <div key={`${text(subscription.stripeSubscriptionId || subscription.subscriptionId)}-${groupIndex}`} className="rounded-2xl border border-rsp-border bg-white p-4 text-xs">
               <div className="grid gap-3 md:grid-cols-3">
-                <Block label="Subscription" value={`${text(subscription.subscriptionPlan)} · ${text(subscription.subscriptionStatus)}`} sub={text(subscription.creemSubscriptionId)} />
+                <Block label="Subscription" value={`${text(subscription.subscriptionPlan)} · ${text(subscription.subscriptionStatus)}`} sub={text(subscription.stripeSubscriptionId)} />
                 <Block label="Period" value={`${formatDate(Number(subscription.periodStart || 0))}`} sub={`End: ${formatDate(Number(subscription.periodEnd || 0))}`} />
                 <Block label="Usage" value={`${text(subscription.paidCreditsGranted)} granted · ${text(subscription.generationCreditsUsed)} used`} sub={`${calcUsagePercent(subscription)} · ${text(subscription.generationJobs)} jobs`} />
               </div>
@@ -424,9 +424,9 @@ function RecordDetails({ kind, rows }: { kind: "subscribers" | "refunds" | "canc
                 <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-rsp-muted">Payment records ({payments.length})</p>
                 <div className="mt-2 space-y-2">
                   {payments.map((payment, paymentIndex) => (
-                    <div key={`${text(payment.paymentId || payment.transactionId || payment.creemTransactionId || "payment")}-${paymentIndex}`} className="grid gap-2 rounded-xl bg-rsp-cream px-3 py-3 md:grid-cols-[0.9fr_1.2fr_0.9fr]">
+                    <div key={`${text(payment.paymentId || payment.transactionId || payment.stripeTransactionId || "payment")}-${paymentIndex}`} className="grid gap-2 rounded-xl bg-rsp-cream px-3 py-3 md:grid-cols-[0.9fr_1.2fr_0.9fr]">
                       <Block label="Payment" value={`${text(payment.paymentStatus)} · ${moneyCents(Number(payment.amountCents || 0), String(payment.currency || "USD"))}`} sub={formatDate(Number(payment.paidAt || 0))} />
-                      <Block label="Payment ID" value={text(payment.paymentId || payment.transactionId || payment.creemTransactionId || "payment record")} />
+                      <Block label="Payment ID" value={text(payment.paymentId || payment.transactionId || payment.stripeTransactionId || "payment record")} />
                       <Block label="Usage snapshot" value={`${text(payment.paidCreditsGranted)} granted · ${text(payment.generationCreditsUsed)} used`} sub={`${calcUsagePercent(payment)} · ${text(payment.generationJobs)} jobs`} />
                     </div>
                   ))}
@@ -444,26 +444,26 @@ function RecordDetails({ kind, rows }: { kind: "subscribers" | "refunds" | "canc
       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-rsp-muted">Every record for this user</p>
       <div className="mt-3 space-y-2">
         {rows.map((record, detailIndex) => (
-          <div key={`${text(record.creemSubscriptionId || record.paymentId || record.refundId || record.requestedAt)}-${detailIndex}`} className="grid gap-3 rounded-2xl border border-rsp-border bg-white p-4 text-xs md:grid-cols-4">
+          <div key={`${text(record.stripeSubscriptionId || record.paymentId || record.refundId || record.requestedAt)}-${detailIndex}`} className="grid gap-3 rounded-2xl border border-rsp-border bg-white p-4 text-xs md:grid-cols-4">
             {kind === "refunds" ? (
               <>
                 <Block label="Refund decision" value={`${text(record.refundDecisionLabel)} · ${moneyCents(suggestedRefundCents(record), String(record.refundCurrency || record.paymentCurrency || "USD"))}`} sub={`${text(record.refundDecisionCode)} · ${text(record.refundStatus)} · ${formatDate(Number(record.requestedAt || 0))}`} />
                 <Block label="Payment" value={`${text(record.paymentPlan)} · ${text(record.paymentStatus)}`} sub={`${moneyCents(Number(record.paymentAmountCents || 0), String(record.paymentCurrency || "USD"))} · ${formatDate(Number(record.paidAt || 0))}`} />
                 <Block label="Usage" value={`${text(record.paidCreditsGranted)} granted · ${text(record.generationCreditsUsed)} used`} sub={`${calcUsagePercent(record)} · ${text(record.generationJobs)} jobs`} />
-                <Block label="Subscription" value={text(record.creemSubscriptionId)} sub={text(record.subscriptionStatus)} />
+                <Block label="Subscription" value={text(record.stripeSubscriptionId)} sub={text(record.subscriptionStatus)} />
               </>
             ) : kind === "canceled" ? (
               <>
-                <Block label="Subscription" value={`${text(record.subscriptionPlan)} · ${text(record.subscriptionStatus)}`} sub={text(record.creemSubscriptionId)} />
+                <Block label="Subscription" value={`${text(record.subscriptionPlan)} · ${text(record.subscriptionStatus)}`} sub={text(record.stripeSubscriptionId)} />
                 <Block label="Canceled" value={formatDate(Number(record.canceledAt || 0))} sub={`Period end: ${formatDate(Number(record.periodEnd || 0))}`} />
                 <Block label="Refund" value={text(record.latestRefundStatus)} sub={formatDate(Number(record.latestRefundRequestedAt || 0))} />
                 <Block label="User" value={`${text(record.userPlan)} / ${text(record.userStatus)}`} sub={`Credits: ${text(record.creditsRemaining)}`} />
               </>
             ) : (
               <>
-                <Block label="Subscription" value={`${text(record.subscriptionPlan)} · ${text(record.subscriptionStatus)}`} sub={text(record.creemSubscriptionId)} />
+                <Block label="Subscription" value={`${text(record.subscriptionPlan)} · ${text(record.subscriptionStatus)}`} sub={text(record.stripeSubscriptionId)} />
                 <Block label="Period" value={`${formatDate(Number(record.periodStart || 0))}`} sub={`End: ${formatDate(Number(record.periodEnd || 0))}`} />
-                <Block label="Payment" value={`${text(record.paymentStatus)} · ${moneyCents(Number(record.amountCents || 0), String(record.currency || "USD"))}`} sub={`${text(record.paymentId || record.transactionId || record.creemTransactionId || "payment record")} · ${formatDate(Number(record.paidAt || 0))}`} />
+                <Block label="Payment" value={`${text(record.paymentStatus)} · ${moneyCents(Number(record.amountCents || 0), String(record.currency || "USD"))}`} sub={`${text(record.paymentId || record.transactionId || record.stripeTransactionId || "payment record")} · ${formatDate(Number(record.paidAt || 0))}`} />
                 <Block label="Usage" value={`${text(record.paidCreditsGranted)} granted · ${text(record.generationCreditsUsed)} used`} sub={`${calcUsagePercent(record)} · ${text(record.generationJobs)} jobs`} />
               </>
             )}

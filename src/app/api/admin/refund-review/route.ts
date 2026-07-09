@@ -41,7 +41,7 @@ type UserRow = {
   plan: string;
   status: string;
   credits_remaining: number;
-  creem_customer_id: string | null;
+  stripe_customer_id: string | null;
   created_at: number;
   updated_at: number;
 };
@@ -49,9 +49,9 @@ type UserRow = {
 type PaymentRow = {
   id: string;
   subscription_id: string | null;
-  creem_checkout_id: string | null;
-  creem_transaction_id: string | null;
-  creem_invoice_id: string | null;
+  stripe_checkout_id: string | null;
+  stripe_transaction_id: string | null;
+  stripe_invoice_id: string | null;
   plan: string;
   status: string;
   currency: string;
@@ -63,8 +63,8 @@ type PaymentRow = {
 
 type SubscriptionRow = {
   id: string;
-  creem_subscription_id: string | null;
-  creem_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
   plan: string;
   status: string;
   current_period_start: number | null;
@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
     scalarSum(db, "SELECT SUM(-delta) total FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND delta < 0", user.id),
     scalarSum(db, "SELECT SUM(-delta) total FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND delta < 0 AND created_at < ?", user.id, paidAt || periodStart),
     scalarSum(db, "SELECT SUM(-delta) total FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND delta < 0 AND created_at >= ? AND created_at <= ?", user.id, periodStart, periodEnd),
-    scalarSum(db, "SELECT SUM(delta) total FROM credit_ledger WHERE user_id = ? AND source_type = 'creem_credit_grant' AND delta > 0 AND created_at >= ? AND created_at <= ?", user.id, periodStart, periodEnd),
+    scalarSum(db, "SELECT SUM(delta) total FROM credit_ledger WHERE user_id = ? AND source_type = 'stripe_credit_grant' AND delta > 0 AND created_at >= ? AND created_at <= ?", user.id, periodStart, periodEnd),
     scalarSum(db, "SELECT SUM(-delta) total FROM credit_ledger WHERE user_id = ? AND source_type = 'refund_paid_credit_revoke' AND delta < 0 AND created_at >= ?", user.id, periodStart),
     scalarCount(db, "SELECT COUNT(*) count FROM generation_jobs WHERE user_id = ?", user.id),
     scalarCount(db, "SELECT COUNT(*) count FROM generation_jobs WHERE user_id = ? AND status = 'completed'", user.id),
@@ -227,7 +227,7 @@ export async function GET(request: NextRequest) {
     },
     currentSubscription: subscription ? {
       id: subscription.id,
-      creemSubscriptionId: subscription.creem_subscription_id,
+      stripeSubscriptionId: subscription.stripe_subscription_id,
       plan: subscription.plan,
       status: subscription.status,
       periodStart: subscription.current_period_start,
@@ -242,9 +242,9 @@ export async function GET(request: NextRequest) {
       amount: centsToMajor(payment.amount_cents),
       currency: payment.currency,
       paidAt,
-      creemCheckoutId: payment.creem_checkout_id,
-      creemTransactionId: payment.creem_transaction_id,
-      creemInvoiceId: payment.creem_invoice_id,
+      stripeCheckoutId: payment.stripe_checkout_id,
+      stripeTransactionId: payment.stripe_transaction_id,
+      stripeInvoiceId: payment.stripe_invoice_id,
     } : null,
     latestRefundRequest: refund ? {
       id: refund.id,

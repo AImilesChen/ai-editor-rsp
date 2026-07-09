@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/backend/auth";
 import { accountForPublicUser, hasRecentPendingCheckout, recordPendingCheckoutForUser } from "@/lib/backend/billing-store";
 import {
-  creemApiBase,
-  creemMode,
-  creemProductId,
+  createStripeCheckoutSession,
+  stripeMode,
   extractCheckoutUrl,
   isBillingPlan,
-  missingCreemConfig,
+  missingStripeConfig,
   originFromRequest,
-} from "@/lib/backend/creem";
+} from "@/lib/backend/stripe";
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request);
@@ -56,78 +55,52 @@ export async function POST(request: NextRequest) {
     }, { status: 409 });
   }
 
-  const missing = missingCreemConfig();
+  const missing = missingStripeConfig();
   if (missing.length > 0) {
     return NextResponse.json({
       ok: false,
-      code: "CREEM_CONFIG_INCOMPLETE",
-      error: "Creem checkout is not fully configured.",
+      code: "STRIPE_CONFIG_INCOMPLETE",
+      error: "Stripe checkout is not fully configured.",
       missing,
     }, { status: 503 });
   }
 
-  const productId = creemProductId(plan);
-  if (!productId) {
-    return NextResponse.json({ ok: false, code: "CREEM_PRODUCT_NOT_CONFIGURED", error: "Selected plan is not configured." }, { status: 503 });
-  }
-
   const origin = originFromRequest(request);
-  const successUrl = `${origin}/checkout?status=success&plan=${plan}`;
-  const checkoutPayload = {
-    product_id: productId,
-    success_url: successUrl,
-    metadata: {
-      user_id: user.id,
-      email: user.email,
-      plan,
-      source: "ai-editor-rsp",
-    },
-  };
-
-  const response = await fetch(`${creemApiBase()}/checkouts`, {
-    method: "POST",
-    headers: {
-      "x-api-key": process.env.CREEM_API_KEY || "",
-      "content-type": "application/json",
-      "accept": "application/json",
-    },
-    body: JSON.stringify(checkoutPayload),
+  const successUrl = `${origin}/checkout?status=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${origin}/pricing?checkout=cancelled&plan=${plan}`;
+  const session = await createStripeCheckoutSession({
+    plan,
+    userId: user.id,
+    email: user.email,
+    successUrl,
+    cancelUrl,
   });
 
-  const text = await response.text();
-  let payload: unknown = null;
-  try {
-    payload = text ? JSON.parse(text) : null;
-  } catch {
-    payload = { raw: text.slice(0, 500) };
-  }
-
-  if (!response.ok) {
-    const record = payload && typeof payload === "object" ? payload as Record<string, unknown> : {};
+  if (!session.ok) {
     return NextResponse.json({
       ok: false,
-      code: "CREEM_CHECKOUT_FAILED",
-      error: "Creem checkout creation failed.",
-      status: response.status,
-      traceId: record.trace_id || record.traceId,
-      mode: creemMode(),
+      code: "STRIPE_CHECKOUT_FAILED",
+      error: session.message || "Stripe checkout creation failed.",
+      status: session.status,
+      mode: stripeMode(),
     }, { status: 502 });
   }
 
+  const payload = session.payload;
   const checkoutUrl = extractCheckoutUrl(payload);
   if (!checkoutUrl) {
     return NextResponse.json({
       ok: false,
-      code: "CREEM_CHECKOUT_URL_MISSING",
-      error: "Creem checkout response did not include a checkout URL.",
-      mode: creemMode(),
+      code: "STRIPE_CHECKOUT_URL_MISSING",
+      error: "Stripe checkout response did not include a checkout URL.",
+      mode: stripeMode(),
     }, { status: 502 });
   }
 
   const checkoutId = extractCheckoutId(payload) || `checkout_${Date.now()}_${crypto.randomUUID()}`;
   await recordPendingCheckoutForUser({ userId: user.id, plan, checkoutId });
 
-  return NextResponse.json({ ok: true, checkoutUrl, plan, mode: creemMode() });
+  return NextResponse.json({ ok: true, checkoutUrl, plan, mode: stripeMode() });
 }
 
 function extractCheckoutId(payload: unknown): string | null {

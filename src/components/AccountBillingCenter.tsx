@@ -254,7 +254,7 @@ export default function AccountBillingCenter() {
 
   const upgradeSubscription = async () => {
     if (!upgradeTargetPlan || !upgradePreview) return;
-    if (!confirm(`Upgrade to ${planTitle(upgradeTargetPlan)} now? Creem will charge the saved payment method immediately for the prorated price difference. No separate checkout page will open. We will add ${upgradePreview.creditsToGrant} credits to your current balance, bringing it to ${upgradePreview.nextCreditsBalance} credits.`)) return;
+    if (!confirm(`Upgrade to ${planTitle(upgradeTargetPlan)} now? Stripe will charge the saved payment method immediately for the prorated price difference. No separate checkout page will open. We will add ${upgradePreview.creditsToGrant} credits to your current balance, bringing it to ${upgradePreview.nextCreditsBalance} credits.`)) return;
     setUpgradeSubmitting(true);
     resetNotices();
     try {
@@ -335,7 +335,7 @@ export default function AccountBillingCenter() {
 
       {message ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">{message}</div> : null}
       {error ? <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div> : null}
-      {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: Creem charges the saved payment method immediately, with no separate checkout page. Estimated prorated charge: about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days. We add only the plan credit difference: {upgradePreview.creditsToGrant} credits, so your balance becomes {upgradePreview.nextCreditsBalance} credits.</div> : null}
+      {upgradePreview ? <div className="mt-5 border border-rsp-secondary/35 bg-white/80 p-4 text-sm font-semibold text-rsp-text">Upgrade preview: Stripe charges the saved payment method immediately, with no separate checkout page. Estimated prorated charge: about {usd(upgradePreview.estimatedProratedChargeCents)} for the remaining {upgradePreview.remainingDays} days. We add only the plan credit difference: {upgradePreview.creditsToGrant} credits, so your balance becomes {upgradePreview.nextCreditsBalance} credits.</div> : null}
       {refundNotice ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">{refundNotice}</div> : null}
       {refundPending ? <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Refund review pending: paid credits are temporarily unavailable while we confirm the refund status. We will update your account once the review is complete.</div> : null}
       {refundCompleted ? <div className="mt-5 border border-rsp-secondary/35 bg-rsp-secondary/10 p-4 text-sm font-semibold text-rsp-secondary">Refund completed: paid-plan credits are no longer available.</div> : null}
@@ -371,7 +371,7 @@ export default function AccountBillingCenter() {
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article className="border border-rsp-border bg-rsp-surface p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Prorated upgrade</h3>
-          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and Creem charges the saved payment method for the prorated price difference. Credits add only the difference between plans for this billing period: Creator 240 → Studio 500 adds 260 credits to your current balance.</p>
+          <p className="mt-4 leading-7 text-rsp-muted">Upgrade now and Stripe charges the saved payment method for the prorated price difference. Credits add only the difference between plans for this billing period: Creator 240 → Studio 500 adds 260 credits to your current balance.</p>
         </article>
         <article className="border border-rsp-border bg-white/55 p-5">
           <h3 className="font-heading text-2xl font-normal text-rsp-text">Manage billing</h3>
