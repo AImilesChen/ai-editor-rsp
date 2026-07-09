@@ -956,7 +956,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           onChange={(event) => setPrompt(event.target.value)}
           disabled={controlsLocked}
           placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[84px] p-4 text-sm leading-6" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+          className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[104px] p-4 text-sm leading-6" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
         />
         {isHeadshotMode && (
           <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-white/58">
@@ -975,11 +975,6 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </button>
             ))}
           </div>
-        )}
-        {isHeadshotMode && uploadedImage && (
-          <p className="mt-2 rounded-2xl border border-[#86EFAC]/16 bg-[#102014]/30 px-3 py-2 text-xs leading-5 text-[#C8FADC]/78">
-            Face crop is automatic. Outfit, background, and lighting change around the same person.
-          </p>
         )}
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
