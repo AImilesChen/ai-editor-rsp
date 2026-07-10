@@ -1030,18 +1030,18 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-4 rounded-[20px] border border-[#86EFAC]/16 bg-[linear-gradient(180deg,rgba(134,239,172,0.075),rgba(255,255,255,0.02))] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]"}`}>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/72">{isHero ? "Choose image size" : "Output ratio"}</p>
+        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-3 rounded-2xl border border-white/10 bg-white/[0.025] px-2.5 py-2"}`}>
+          <div className="mb-1.5 flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/58">{isHero ? "Choose image size" : "Size"}</p>
             {!isHero && (
-              <div className="rounded-full border border-[#86EFAC]/22 bg-[#102014]/52 px-3 py-1.5 text-right">
-                <p className="text-[11px] font-semibold text-white/88">{currentQuote.sizeLabel} <span className="text-[#86EFAC]">· {currentQuote.creditsCharged} credits</span></p>
-              </div>
+              <p className="shrink-0 text-[11px] font-semibold text-white/62">
+                {currentQuote.sizeLabel} <span className="text-[#86EFAC]">· {currentQuote.creditsCharged} credits</span>
+              </p>
             )}
           </div>
-          <div className={`${isHero ? "grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "grid-cols-4 gap-1.5 rounded-xl border border-white/8 bg-black/12 p-1.5"} grid`}>
+          <div className={`${isHero ? "grid grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "flex flex-wrap gap-1.5"}`}>
             {visibleRatios.map((item) => (
-              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-lg border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.24)]" : "border-white/10 bg-black/12 text-white/62 hover:border-white/22 hover:bg-white/[0.04] hover:text-white"}`}>
+              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-full border px-2.5 ${isHero ? "py-1.5 text-xs" : "py-1.5 text-[11px]"} text-center font-semibold leading-none transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.18)]" : "border-white/10 bg-black/12 text-white/52 hover:border-white/22 hover:bg-white/[0.04] hover:text-white"}`}>
                 <span className="block">{ratio === item.ratio ? `✓ ${item.label}` : item.label}</span>
               </button>
             ))}
@@ -1104,7 +1104,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </p>
       </aside>
 
-      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
+      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : mode === "text" ? "flex h-full min-h-[720px] flex-col p-4 md:p-6" : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
         <div className={`${isHero || editorOnly ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
@@ -1140,16 +1140,20 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         </div>}
 
-        <div className={`${isHero ? "mt-2" : "mt-6 flex flex-1 flex-col"} mx-auto w-full max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
+        <div className={`${isHero ? "mt-2" : mode === "text" ? "mt-4 flex flex-1 flex-col" : "mt-6 flex flex-1 flex-col"} mx-auto w-full max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
-            <div className={`relative ${isHero ? "aspect-[16/6.8]" : "min-h-[400px] flex-1"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
+            <div className={`relative ${isHero ? "aspect-[16/6.8]" : "min-h-[560px] flex-1"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
               <img src={generatedImage || previewImage} alt="Generated image preview" className={`h-full w-full object-cover transition ${generatedImage ? "brightness-105 contrast-105 saturate-110" : "scale-[1.02] opacity-55 brightness-90 saturate-90"}`} draggable={false} />
               <div className={`absolute inset-0 ${generatedImage ? "bg-gradient-to-t from-black/30 via-transparent to-black/12" : "bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.14),rgba(0,0,0,0.46)_54%,rgba(0,0,0,0.68))]"}`} />
-              <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Preview reference"}</span>
+              <div className="absolute left-4 right-4 top-4 flex flex-wrap items-center justify-between gap-2">
+                <span className="rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Preview reference"}</span>
+                {!isHero && <span className="rounded-full border border-[#86EFAC]/24 bg-[#102014]/70 px-3 py-1.5 text-xs font-bold text-[#C8FADC] backdrop-blur-sm">{currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits</span>}
+              </div>
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-[360px] p-4" : "max-w-lg p-5"} rounded-[26px] border border-white/14 bg-black/52 shadow-[0_22px_70px_rgba(0,0,0,0.38)] backdrop-blur-md`}><div className="mx-auto mb-3 h-1 w-12 rounded-full bg-[#86EFAC]/70" /><p className={`${isHero ? "text-[1.35rem]" : "text-2xl"} font-heading font-normal leading-tight tracking-[-0.03em] text-white`}>Start with a prompt, then generate</p><p className="mt-2 text-sm leading-6 text-white/70">Choose a ready prompt or write your own. Refine the look, then create.</p></div></div>}
+              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-[360px] p-4" : "max-w-lg p-5"} rounded-[26px] border border-white/14 bg-black/52 shadow-[0_22px_70px_rgba(0,0,0,0.38)] backdrop-blur-md`}><div className="mx-auto mb-3 h-1 w-12 rounded-full bg-[#86EFAC]/70" /><p className={`${isHero ? "text-[1.35rem]" : "text-2xl"} font-heading font-normal leading-tight tracking-[-0.03em] text-white`}>Start with a prompt, then generate</p><p className="mt-2 text-sm leading-6 text-white/70">Choose a prompt, set size, then generate. Result actions appear here.</p></div></div>}
+              {!generatedImage && !isHero && state !== "processing" && state !== "failed" && <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-black/46 px-4 py-3 text-xs text-white/58 backdrop-blur-sm"><span><strong className="text-white/84">Output workspace</strong> · Preview, download, and edit actions unlock after generation.</span><span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-bold uppercase tracking-[0.08em] text-white/46">Ready area</span></div>}
             </div>
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
@@ -1272,7 +1276,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
           </div>
         )}
-        {!generatedImage && (!editorOnly || Boolean(uploadedImage) || controlsLocked) && (
+        {!generatedImage && mode !== "text" && (!editorOnly || Boolean(uploadedImage) || controlsLocked) && (
           <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
