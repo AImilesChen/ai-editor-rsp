@@ -134,7 +134,7 @@ function isRefundEvent(eventType: string) {
 
 function extractIdentity(event: unknown) {
   const candidates: unknown[] = [];
-  collectFields(event, ["metadata", "customer", "user", "data", "object", "checkout", "subscription"], candidates);
+  collectFields(event, ["metadata", "customer", "user", "data", "object", "checkout", "subscription", "parent", "subscription_details", "payment_intent", "charge"], candidates);
   for (const candidate of candidates) {
     if (!candidate || typeof candidate !== "object") continue;
     const record = candidate as Record<string, unknown>;
@@ -154,7 +154,7 @@ function extractIdentity(event: unknown) {
 
 function extractBillingIds(event: unknown) {
   const candidates: unknown[] = [];
-  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction", "last_transaction", "lastTransaction", "invoice", "payment", "refund", "order", "product", "items"], candidates);
+  collectFields(event, ["data", "object", "checkout", "subscription", "customer", "transaction", "last_transaction", "lastTransaction", "invoice", "payment", "payment_intent", "charge", "refund", "order", "product", "items", "lines", "parent", "subscription_details"], candidates);
   let subscriptionId: string | null = null;
   let customerId: string | null = null;
   let checkoutId: string | null = null;
@@ -170,14 +170,29 @@ function extractBillingIds(event: unknown) {
     const objectType = stringValue(record.object)?.toLowerCase() || null;
     subscriptionId ||= stringValue(record.subscription_id || record.subscriptionId || record.subscription);
     customerId ||= stringValue(record.customer_id || record.customerId || record.customer);
-    checkoutId ||= stringValue(record.checkout_id || record.checkoutId || record.checkout);
-    transactionId ||= stringValue(record.transaction_id || record.transactionId || record.last_transaction_id || record.lastTransactionId || record.transaction || record.payment_id || record.paymentId);
+    checkoutId ||= stringValue(record.checkout_id || record.checkoutId || record.checkout || record.checkout_session || record.checkoutSession);
+    transactionId ||= stringValue(
+      record.transaction_id
+      || record.transactionId
+      || record.last_transaction_id
+      || record.lastTransactionId
+      || record.transaction
+      || record.payment_id
+      || record.paymentId
+      || record.payment_intent
+      || record.paymentIntent
+      || record.charge_id
+      || record.chargeId
+      || record.charge
+      || record.balance_transaction
+      || record.balanceTransaction
+    );
     invoiceId ||= stringValue(record.invoice_id || record.invoiceId || record.invoice);
     refundId ||= stringValue(record.refund_id || record.refundId || record.refund);
     if (objectType === "subscription") subscriptionId ||= stringValue(record.id);
     if (objectType === "customer") customerId ||= stringValue(record.id);
-    if (objectType === "checkout") checkoutId ||= stringValue(record.id);
-    if (objectType === "order" || objectType === "transaction" || objectType === "payment") transactionId ||= stringValue(record.id);
+    if (objectType === "checkout" || objectType === "checkout.session") checkoutId ||= stringValue(record.id);
+    if (objectType === "order" || objectType === "transaction" || objectType === "payment" || objectType === "payment_intent" || objectType === "charge") transactionId ||= stringValue(record.id);
     if (objectType === "invoice") invoiceId ||= stringValue(record.id);
     if (objectType === "refund") refundId ||= stringValue(record.id);
     if (objectType !== "product") {

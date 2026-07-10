@@ -849,7 +849,7 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
     .bind(input.plan, after, input.customerId || null, now, userId)
     .run();
   await upsertSubscription(db, userId, input.plan, "active", input.subscriptionId, input.customerId, now);
-  await upsertPayment(db, userId, input, now);
+  if (hasStripePaymentReference(input)) await upsertPayment(db, userId, input, now);
   await insertCreditLedger(db, userId, "stripe_credit_grant", cycleSourceId, input.credits, after, input.eventType, { eventId: input.eventId, plan: input.plan, subscriptionId: input.subscriptionId, customerId: input.customerId });
   await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "processed", null, true);
   return { persisted: true, duplicate: false, account: await readD1Account(db, userId) };
@@ -1211,8 +1211,12 @@ function toCamelCase(value: string) {
   return value.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
+function hasStripePaymentReference(input: CreditGrantInput) {
+  return Boolean(input.transactionId || input.checkoutId || input.invoiceId);
+}
+
 async function upsertPayment(db: D1Database, userId: string, input: CreditGrantInput, now = Date.now()) {
-  const paymentId = input.transactionId || input.checkoutId || `${input.eventId}_payment`;
+  const paymentId = input.transactionId || input.checkoutId || input.invoiceId || `${input.eventId}_payment`;
   await db.prepare(`INSERT INTO payments (id, user_id, subscription_id, stripe_checkout_id, stripe_transaction_id, stripe_invoice_id, plan, status, currency, amount_cents, raw_event_id, paid_at, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
