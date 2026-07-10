@@ -765,8 +765,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const brushStrokeCount = maskStrokes.filter((stroke) => stroke.source === "brush").length + (currentStroke.length > 0 ? 1 : 0);
 
   return (
-    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
-      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-none" : "h-full p-4 md:p-5"}`}>
+    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "h-full p-4 xl:max-h-none" : "h-full p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>{editorOnly ? "STEP 1 · UPLOAD" : "AI Image Editor"}</p>
@@ -1106,7 +1106,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </p>
       </aside>
 
-      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : mode === "text" ? "flex h-full min-h-[720px] flex-col p-4 md:p-6" : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
+      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "flex h-full min-h-[760px] flex-col p-3 md:p-5 xl:p-6" : "flex h-full min-h-[620px] flex-col p-3 md:p-5 xl:p-6") : mode === "text" ? "flex h-full min-h-[720px] flex-col p-4 md:p-6" : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
         <div className={`${isHero || editorOnly ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
@@ -1142,9 +1142,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         </div>}
 
-        <div className={`${isHero ? "mt-2" : mode === "text" ? "mt-4 flex flex-1 flex-col" : "mt-6 flex flex-1 flex-col"} mx-auto w-full max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
+        <div className={`${isHero ? "mt-2 flex flex-1 flex-col" : mode === "text" ? "mt-4 flex flex-1 flex-col" : "mt-6 flex flex-1 flex-col"} mx-auto w-full max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
-            <div className={`relative ${isHero ? "aspect-[16/6.8]" : "min-h-[560px] flex-1"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
+            <div className={`relative ${isHero ? "min-h-[420px] flex-1" : "min-h-[560px] flex-1"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
               <img src={generatedImage || previewImage} alt="Generated image preview" className={`h-full w-full object-cover transition ${generatedImage ? "brightness-105 contrast-105 saturate-110" : "scale-[1.02] opacity-55 brightness-90 saturate-90"}`} draggable={false} />
               <div className={`absolute inset-0 ${generatedImage ? "bg-gradient-to-t from-black/30 via-transparent to-black/12" : "bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.14),rgba(0,0,0,0.46)_54%,rgba(0,0,0,0.68))]"}`} />
               <div className="absolute left-4 right-4 top-4 flex flex-wrap items-center justify-between gap-2">
@@ -1278,8 +1278,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
           </div>
         )}
-        {!generatedImage && mode !== "text" && (!editorOnly || Boolean(uploadedImage) || controlsLocked) && (
-          <div className={`${isHero ? "mt-3 p-3" : "mt-4 p-4"} mx-auto grid max-w-5xl gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
+        {!generatedImage && (mode === "text" || !editorOnly || Boolean(uploadedImage) || controlsLocked) && (
+          <div className={`${isHero ? "mt-3 w-full max-w-[1280px] p-3" : "mt-4 max-w-5xl p-4"} mx-auto grid gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
               <div>
