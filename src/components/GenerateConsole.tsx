@@ -763,6 +763,50 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
   const hasMaskSelection = maskStrokes.length > 0 || currentStroke.length > 0;
   const brushStrokeCount = maskStrokes.filter((stroke) => stroke.source === "brush").length + (currentStroke.length > 0 ? 1 : 0);
+  const useUnifiedHeadshotBar = isHero && isHeadshotMode;
+  const generationActionControl = (editorOnly || isHeadshotOnly) && needsUpload ? (
+    isUploading ? (
+      <div className="rounded-full bg-[#86EFAC]/65 px-5 py-3 text-center text-base font-bold text-[#102014]">
+        Preparing photo…
+      </div>
+    ) : (
+      <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
+        Upload photo to start
+      </label>
+    )
+  ) : authenticated ? (
+    <>
+      <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
+        {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : !promptReady ? (mode === "edit" ? "Describe what to remove" : "Write or choose a prompt") : !imageAuthorizationReady ? "Confirm photo permission" : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
+      </button>
+      {(uploadedImage || generatedImage) && (
+        <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
+          View generation history
+        </a>
+      )}
+    </>
+  ) : (
+    <a href={mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
+  );
+  const generationSupportText = !authenticated
+    ? "3 free credits after sign-in. No payment required. Credits are used only when you generate or edit an image."
+    : needsUpload
+      ? isHeadshotOnly
+        ? "Upload a face photo first to start the professional headshot flow."
+        : lockedMode === "edit"
+          ? "Upload a photo first. This page is for editing uploaded images, not text-to-image generation."
+          : "Upload a reference image first, or switch to Create from Text."
+      : !creditsLoaded
+        ? "Syncing your latest credit balance…"
+        : effectiveCreditsRemaining < currentQuote.creditsCharged
+          ? `This request needs ${currentQuote.creditsCharged} credits. You have ${effectiveCreditsRemaining} credits.`
+          : isHeadshotMode
+            ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
+            : mode === "edit"
+              ? !promptReady
+                ? `Add at least ${minimumPromptLength} characters, for example: remove people.`
+                : `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
+              : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`;
 
   return (
     <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
@@ -1050,60 +1094,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         </div>}
 
-        <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
+        {!useUnifiedHeadshotBar && <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
           {isHeadshotMode && (
             <p className="rounded-2xl border border-[#86EFAC]/16 bg-[#102014]/35 px-3 py-2 text-center text-xs font-semibold text-[#C8FADC]">
               Current output: {currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits
             </p>
           )}
-          {authenticated && editorOnly && needsUpload ? (
-            isUploading ? (
-              <div className="rounded-full bg-[#86EFAC]/65 px-5 py-3 text-center text-base font-bold text-[#102014]">
-                Preparing photo…
-              </div>
-            ) : (
-              <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
-                Upload photo to start
-              </label>
-            )
-          ) : authenticated ? (
-            <>
-              <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
-                {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : !promptReady ? (mode === "edit" ? "Describe what to remove" : "Write or choose a prompt") : !imageAuthorizationReady ? "Confirm photo permission" : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
-              </button>
-              {(uploadedImage || generatedImage) && (
-                <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
-                  View generation history
-                </a>
-              )}
-            </>
-          ) : (
-            <a href={mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
-          )}
+          {generationActionControl}
           {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
-        </div>
+        </div>}
 
-        <p className="mt-3 text-xs leading-5 text-white/55">
-          {!authenticated
-            ? "3 free credits after sign-in. No payment required. Credits are used only when you generate or edit an image."
-            : needsUpload
-              ? isHeadshotOnly
-                ? "Upload a face photo first to start the professional headshot flow."
-                : lockedMode === "edit"
-                  ? "Upload a photo first. This page is for editing uploaded images, not text-to-image generation."
-                  : "Upload a reference image first, or switch to Create from Text."
-              : !creditsLoaded
-                ? "Syncing your latest credit balance…"
-                : effectiveCreditsRemaining < currentQuote.creditsCharged
-                ? `This request needs ${currentQuote.creditsCharged} credits. You have ${effectiveCreditsRemaining} credits.`
-                : isHeadshotMode
-                  ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
-                  : mode === "edit"
-                    ? !promptReady
-                      ? `Add at least ${minimumPromptLength} characters, for example: remove people.`
-                      : `Reference edit uses ${currentQuote.creditsCharged} credits. The uploaded image is treated as the visual anchor.`
-                  : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`}
-        </p>
+        {!useUnifiedHeadshotBar && <p className="mt-3 text-xs leading-5 text-white/55">{generationSupportText}</p>}
       </aside>
 
       <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "flex h-full min-h-[760px] flex-col p-3 md:p-5 xl:p-6" : "flex h-full min-h-[620px] flex-col p-3 md:p-5 xl:p-6") : mode === "text" ? "flex h-full min-h-[720px] flex-col p-4 md:p-6" : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
@@ -1218,10 +1219,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                   <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,8,6,0.92)_0%,rgba(16,12,8,0.74)_24%,rgba(16,12,8,0.14)_52%,rgba(16,12,8,0.02)_100%)]" />
                   <span className="absolute left-5 top-5 rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#C8FADC] shadow-lg backdrop-blur-sm">Example result</span>
                   <div className="absolute bottom-5 left-5 max-w-[300px] text-left md:bottom-7 md:left-7">
-                    <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">Clean professional headshot</p>
-                    <p className="mt-3 max-w-[280px] text-sm leading-6 text-white/70">Upload your photo to generate the same polished business profile style.</p>
+                    <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">Professional business headshot</p>
+                    <p className="mt-3 max-w-[280px] text-sm leading-6 text-white/70">Upload your photo to create a polished profile image.</p>
                     <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold text-white/78">
-                      <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">Profile-ready</span>
                       <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">Resume</span>
                       <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">Business profile</span>
                     </div>
@@ -1283,21 +1283,27 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
               <div>
-                <p className="text-sm font-bold text-white/86">Output tray</p>
-                <p className="mt-0.5 text-xs text-white/48">Actions unlock when a result is ready.</p>
+                <p className="text-sm font-bold text-white/86">{isHeadshotMode ? "Result actions" : "Output tray"}</p>
+                <p className="mt-0.5 text-xs text-white/48">{isHeadshotMode ? "Upload and generate to unlock preview, download, and editing." : "Actions unlock when a result is ready."}</p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">
-              {["Preview", "Download", "Edit again"].map((action) => (
-                <span key={action} className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-black/16 px-3 py-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/22" />
-                  {action}
-                </span>
-              ))}
-            </div>
+            {isHeadshotMode ? (
+              <span className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-black/16 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-white/42">
+                <span aria-hidden="true">○</span> Locked until generated
+              </span>
+            ) : (
+              <div className="grid grid-cols-3 gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">
+                {["Preview", "Download", "Edit again"].map((action) => (
+                  <span key={action} className="flex items-center justify-center gap-1.5 rounded-full border border-white/10 bg-black/16 px-3 py-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/22" />
+                    {action}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
-        {showHeadshotSteps && (
+        {showHeadshotSteps && !useUnifiedHeadshotBar && (
           <div className={`${isHero ? "mt-3" : "mt-4"} mx-auto grid max-w-5xl gap-3 lg:grid-cols-[0.9fr_1.1fr]`}>
             <div className={`${isHero ? "p-3" : "p-4"} rounded-2xl border border-[#86EFAC]/14 bg-[#102014]/20`}>
               <p className="text-sm font-bold text-[#C8FADC]">Simple headshot workflow</p>
@@ -1323,6 +1329,24 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
       </section>
+      {useUnifiedHeadshotBar && (
+        <div className="border-t border-white/10 bg-[linear-gradient(90deg,#1E1711_0%,#15110C_45%,#0F0C09_100%)] xl:col-span-2">
+          <div className="grid gap-4 px-4 py-4 md:px-5 xl:grid-cols-[430px_minmax(0,1fr)] xl:items-center xl:gap-0 xl:px-0 xl:py-0">
+            <div className="xl:border-r xl:border-white/10 xl:px-5 xl:py-4">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/36">Selected output</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 px-3 py-1.5 text-xs font-bold text-[#C8FADC]">{currentQuote.sizeLabel}</span>
+                <span className="text-sm font-bold text-white">{currentQuote.creditsCharged} credits</span>
+              </div>
+              <p className="mt-2 max-w-sm text-xs leading-5 text-white/52">{generationSupportText}</p>
+            </div>
+            <div className="flex flex-col gap-2 xl:px-6 xl:py-4">
+              {generationActionControl}
+              {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
