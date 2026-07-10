@@ -18,7 +18,7 @@ const promptCategoryLinks = [
     label: "Professional",
     items: [
       { href: "/prompts/ai-headshot", label: "AI Headshot" },
-      { href: "/prompts/linkedin-profile-photo", label: "LinkedIn Profile" },
+      { href: "/prompts/linkedin-profile-photo", label: "Profile Photo" },
     ],
   },
   {

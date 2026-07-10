@@ -22,19 +22,19 @@ export const promptPages: PromptPage[] = [
     slug: "ai-headshot",
     title: "AI Headshot Prompts for Professional Profile Photos",
     metaDescription:
-      "Create polished AI headshots for LinkedIn, resumes, websites, and personal branding with ready-to-use professional headshot prompts.",
+      "Create polished AI headshots for resumes, websites, team pages, and personal branding with ready-to-use professional headshot prompts.",
     h1: "AI Headshot Prompts for Professional Profile Photos",
     category: "Professional",
     categoryLabel: "Professional",
     sampleImage: "/images/prompt-cases/ai-headshot-case.webp",
     sampleImageAlt: "AI-generated case image for AI Headshot Prompts for Professional Profile Photos",
     heroText:
-      "Create clean, realistic AI headshots for LinkedIn, resumes, team pages, and personal branding. Start with a ready-made prompt, then adjust outfit, background, and lighting to fit your role.",
+      "Create clean, realistic AI headshots for resumes, team pages, founder bios, and personal branding. Start with a ready-made prompt, then adjust outfit, background, and lighting to fit your role.",
     ctaText: "Use an AI headshot prompt",
     whatItIs:
       "AI headshot prompts help turn a simple portrait idea into a polished profile image. They usually describe the subject, outfit, background, lighting, camera angle, and overall tone.",
     bestFor: [
-      "LinkedIn profile photos",
+      "Professional profile photos",
       "Resume and portfolio headshots",
       "Startup founder pages",
       "Freelancer profiles",
@@ -50,11 +50,11 @@ export const promptPages: PromptPage[] = [
         sampleImageAlt: "AI-generated case image for Professional startup founder headshot",
       },
       {
-        title: "LinkedIn corporate headshot",
+        title: "Corporate profile headshot",
         prompt:
-          "A polished LinkedIn profile photo of an adult professional, wearing a navy blazer and light shirt, subtle smile, blurred modern office background, soft natural window light, realistic skin texture, professional business photography, clean composition",
+          "A polished professional profile photo of an adult professional, wearing a navy blazer and light shirt, subtle smile, blurred modern office background, soft natural window light, realistic skin texture, professional business photography, clean composition",
         sampleImage: "/images/prompt-cases/examples/ai-headshot-linkedin-corporate-headshot.webp",
-        sampleImageAlt: "AI-generated case image for LinkedIn corporate headshot",
+        sampleImageAlt: "AI-generated case image for corporate profile headshot",
       },
       {
         title: "Creative freelancer headshot",
@@ -93,14 +93,14 @@ export const promptPages: PromptPage[] = [
     ],
     faqs: [
       {
-        question: "Can I use AI headshots for LinkedIn?",
+        question: "Can I use AI headshots for professional profiles?",
         answer:
           "Yes, if the image represents you honestly and follows platform rules.",
       },
       {
-        question: "Are AI headshots the same as passport photos?",
+        question: "Are AI headshots for formal documents?",
         answer:
-          "No. Do not use AI-generated images for government ID or legal documents.",
+          "No. Use these images for professional profile contexts only, not legal, government, or identity documents.",
       },
       {
         question: "Should I upload my own photo?",
@@ -109,26 +109,26 @@ export const promptPages: PromptPage[] = [
       },
     ],
     related: [
-      { slug: "linkedin-profile-photo", title: "LinkedIn Profile Photo Prompts" },
+      { slug: "linkedin-profile-photo", title: "Professional Profile Photo Prompts" },
       { slug: "cinematic-portrait", title: "Cinematic Portrait Prompts" },
       { slug: "social-media-avatar", title: "Social Media Avatar Prompts" },
     ],
   },
   {
     slug: "linkedin-profile-photo",
-    title: "LinkedIn Profile Photo Prompts for Professional AI Headshots",
+    title: "Professional Profile Photo Prompts for AI Headshots",
     metaDescription:
-      "Use ready-to-copy LinkedIn profile photo prompts to create professional, realistic, and approachable AI headshots.",
-    h1: "LinkedIn Profile Photo Prompts",
+      "Use ready-to-copy professional profile photo prompts to create realistic and approachable AI headshots.",
+    h1: "Professional Profile Photo Prompts",
     category: "Professional",
     categoryLabel: "Professional",
     sampleImage: "/images/prompt-cases/linkedin-profile-photo-case.webp",
-    sampleImageAlt: "AI-generated case image for LinkedIn Profile Photo Prompts",
+    sampleImageAlt: "AI-generated case image for Professional Profile Photo Prompts",
     heroText:
-      "A strong LinkedIn photo should feel professional, clear, and approachable. These prompts help you create profile-ready AI portraits for founders, freelancers, job seekers, and remote professionals.",
-    ctaText: "Create a LinkedIn-style photo",
+      "A strong professional profile photo should feel clear, credible, and approachable. These prompts help you create profile-ready AI portraits for founders, freelancers, job seekers, and remote professionals.",
+    ctaText: "Create a profile-ready photo",
     whatItIs:
-      "LinkedIn profile photo prompts focus on clarity, trust, and professionalism. The best prompts avoid heavy filters and keep the person, lighting, and background realistic.",
+      "Professional profile photo prompts focus on clarity, trust, and professionalism. The best prompts avoid heavy filters and keep the person, lighting, and background realistic.",
     bestFor: [
       "Job seekers",
       "Founders",
@@ -139,18 +139,18 @@ export const promptPages: PromptPage[] = [
     ],
     prompts: [
       {
-        title: "Classic LinkedIn headshot",
+        title: "Classic professional headshot",
         prompt:
-          "A realistic LinkedIn profile photo of an adult professional, shoulders-up framing, wearing a clean blazer, soft smile, neutral grey background, natural studio lighting, sharp eyes, professional photography style, trustworthy and approachable mood",
+          "A realistic professional profile photo of an adult professional, shoulders-up framing, wearing a clean blazer, soft smile, neutral grey background, natural studio lighting, sharp eyes, professional photography style, trustworthy and approachable mood",
         sampleImage: "/images/prompt-cases/examples/linkedin-profile-photo-classic-linkedin-headshot.webp",
-        sampleImageAlt: "AI-generated case image for Classic LinkedIn headshot",
+        sampleImageAlt: "AI-generated case image for Classic professional headshot",
       },
       {
-        title: "Tech founder LinkedIn photo",
+        title: "Tech founder profile photo",
         prompt:
-          "A modern LinkedIn profile portrait of an adult tech founder, smart casual outfit, clean startup office background softly blurred, confident but friendly expression, natural daylight, realistic skin texture, professional editorial photo",
+          "A modern professional profile portrait of an adult tech founder, smart casual outfit, clean startup office background softly blurred, confident but friendly expression, natural daylight, realistic skin texture, professional editorial photo",
         sampleImage: "/images/prompt-cases/examples/linkedin-profile-photo-tech-founder-linkedin-photo.webp",
-        sampleImageAlt: "AI-generated case image for Tech founder LinkedIn photo",
+        sampleImageAlt: "AI-generated case image for Tech founder profile photo",
       },
       {
         title: "Consultant profile image",
@@ -160,25 +160,25 @@ export const promptPages: PromptPage[] = [
         sampleImageAlt: "AI-generated case image for Consultant profile image",
       },
       {
-        title: "Creative professional LinkedIn photo",
+        title: "Creative professional profile photo",
         prompt:
           "A realistic profile photo of an adult creative professional, black turtleneck, warm studio background, relaxed confident expression, soft side lighting, modern editorial portrait, clean high-resolution photography",
         sampleImage: "/images/prompt-cases/examples/linkedin-profile-photo-creative-professional-linkedin-photo.webp",
-        sampleImageAlt: "AI-generated case image for Creative professional LinkedIn photo",
+        sampleImageAlt: "AI-generated case image for Creative professional profile photo",
       },
       {
         title: "Remote professional photo",
         prompt:
-          "A friendly LinkedIn-style portrait of an adult remote professional, simple home office background, natural window light, neat casual outfit, approachable expression, realistic photo style, shallow depth of field",
+          "A friendly professional profile portrait of an adult remote professional, simple home office background, natural window light, neat casual outfit, approachable expression, realistic photo style, shallow depth of field",
         sampleImage: "/images/prompt-cases/examples/linkedin-profile-photo-remote-professional-photo.webp",
         sampleImageAlt: "AI-generated case image for Remote professional photo",
       },
       {
-        title: "Executive LinkedIn portrait",
+        title: "Executive profile portrait",
         prompt:
-          "An executive LinkedIn profile photo of an adult leader, dark suit, subtle smile, premium office background, cinematic softbox lighting, realistic professional portrait, crisp details, balanced composition",
+          "An executive professional profile photo of an adult leader, dark suit, subtle smile, premium office background, cinematic softbox lighting, realistic professional portrait, crisp details, balanced composition",
         sampleImage: "/images/prompt-cases/examples/linkedin-profile-photo-executive-linkedin-portrait.webp",
-        sampleImageAlt: "AI-generated case image for Executive LinkedIn portrait",
+        sampleImageAlt: "AI-generated case image for Executive profile portrait",
       },
     ],
     tips: [
@@ -189,7 +189,7 @@ export const promptPages: PromptPage[] = [
     ],
     faqs: [
       {
-        question: "What makes a good LinkedIn profile photo?",
+        question: "What makes a good professional profile photo?",
         answer:
           "Clear face, good lighting, professional outfit, simple background, and natural expression.",
       },

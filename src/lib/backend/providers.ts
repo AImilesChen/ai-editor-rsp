@@ -133,7 +133,7 @@ export function buildFalRequestBody(input: GenerateRequest) {
       ? [
           "The uploaded image is the mandatory identity anchor. Keep the exact same adult person as the source photo.",
           "Preserve recognizable face identity, facial structure, age, skin tone, hairstyle/hairline, expression, and natural facial details. Identity preservation has higher priority than changing outfit, background, or composition.",
-          "Treat the submitted reference as a headshot-preprocessed crop, not as a composition to preserve. Produce a tight shoulders-up LinkedIn/business headshot with the face large, centered, and clearly recognizable.",
+          "Treat the submitted reference as a headshot-preprocessed crop, not as a composition to preserve. Produce a tight shoulders-up professional business headshot with the face large, centered, and clearly recognizable.",
           "Transform presentation details into a realistic professional profile photo: clean blazer or requested professional outfit, no crossbody bag, no visible hands, no lower body, polished grooming, plain neutral grey studio background, no trees, no street, no outdoor park, eye-level camera angle, natural skin texture, sharp eyes, trustworthy business portrait.",
           "Do not invent a new person, do not change ethnicity, do not change facial geometry, do not over-beautify into a different face, and do not keep hats/sunglasses/casual fashion when the user asks for professional attire.",
         ].join(" ")

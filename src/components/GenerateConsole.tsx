@@ -6,7 +6,7 @@ import { promptCards as libraryPromptCards } from "@/lib/rsp-content";
 import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
 const editTasks = [
-  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional LinkedIn headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
+  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional business headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
   { label: "Remove people", prompt: "Remove only the people inside the painted area. Keep every unpainted person, object, and background detail unchanged." },
   { label: "Remove objects", prompt: "Remove only the unwanted object inside the painted area. Keep all unpainted objects, people, and background details unchanged." },
   { label: "Clean background clutter", prompt: "Clean up only the clutter inside the painted area. Keep the main subject and all unpainted background details unchanged." },
@@ -804,7 +804,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             <div className="grid gap-2 sm:grid-cols-2">
               <button type="button" onClick={() => applyTask(editTasks[0])} className={`rounded-xl border ${uploadedImage ? "px-3 py-2" : "p-3"} text-left transition ${task === editTasks[0].label ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
                 <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Professional Headshot</span>{task === editTasks[0].label && <span className="text-[#86EFAC]">✓</span>}</span>
-                {!uploadedImage && <span className="mt-1 block text-xs leading-5 text-white/58">For LinkedIn, resume, and business profile photos.</span>}
+                {!uploadedImage && <span className="mt-1 block text-xs leading-5 text-white/58">For resumes, team bios, and business profile photos.</span>}
               </button>
               <button type="button" onClick={clearPromptChoices} className={`rounded-xl border ${uploadedImage ? "px-3 py-2" : "p-3"} text-left transition ${!task && !prompt ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-black/20 hover:border-white/25"}`}>
                 <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>Custom Edit</span>{!task && !prompt && <span className="text-[#86EFAC]">✓</span>}</span>
@@ -869,7 +869,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 />
                 <span className="min-w-0">
                   <span className="block font-semibold">I own or have permission to use this adult photo.</span>
-                  <span className="mt-0.5 block text-white/50">No minors, celebrities, strangers, IDs, NSFW, face-swap, impersonation, or deception.</span>
+                  <span className="mt-0.5 block text-white/50">No minors, celebrities, strangers, IDs, NSFW, identity swap, impersonation, or deception.</span>
                 </span>
               </label>
             )}
@@ -1219,7 +1219,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                     <p className="font-heading text-3xl font-normal leading-[0.98] tracking-[-0.045em] text-white md:text-4xl">Clean professional headshot</p>
                     <p className="mt-3 max-w-[280px] text-sm leading-6 text-white/70">Upload your photo to generate the same polished business profile style.</p>
                     <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold text-white/78">
-                      <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">LinkedIn</span>
+                      <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">Profile-ready</span>
                       <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">Resume</span>
                       <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 backdrop-blur-sm">Business profile</span>
                     </div>

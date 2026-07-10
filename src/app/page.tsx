@@ -25,7 +25,7 @@ const creationUseCases = [
   },
   {
     title: "Professional AI headshot generator",
-    body: "Create a business-ready headshot for LinkedIn, resumes, team bios, founder profiles, and consultant pages from a clear face photo you have permission to edit.",
+    body: "Create a business-ready headshot for resumes, team bios, founder profiles, consultant pages, and professional profiles from a clear face photo you have permission to edit.",
   },
 ];
 
@@ -65,7 +65,7 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-screen-2xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="eyebrow">Need a professional headshot?</p>
-              <p className="mt-2 text-sm leading-6 text-rsp-muted">Upload a face photo and create a polished AI headshot for LinkedIn, resumes, company bios, and business profiles.</p>
+              <p className="mt-2 text-sm leading-6 text-rsp-muted">Upload a face photo and create a polished AI headshot for resumes, company bios, consultant pages, and business profiles.</p>
             </div>
             <Link href="/ai-headshot-generator" className="rsp-button-secondary shrink-0 px-5 py-3 text-sm">Open AI Headshot →</Link>
           </div>

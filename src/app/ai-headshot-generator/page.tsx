@@ -6,12 +6,12 @@ import GenerateConsole from "@/components/GenerateConsole";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Professional Headshot Generator — AI LinkedIn Photo Tool",
-  description: "Upload a photo and create a polished AI professional headshot for LinkedIn, resumes, business profiles, company bios, and corporate portraits.",
+  title: "Professional Headshot Generator — AI Business Portrait Tool",
+  description: "Upload a photo and create a polished AI professional headshot for resumes, business profiles, company bios, and corporate portraits.",
   alternates: { canonical: `${SITE_URL}/ai-headshot-generator` },
   openGraph: {
     title: "Professional Headshot Generator — AI Editor RSP",
-    description: "Create a business-ready AI headshot from your photo for LinkedIn, resumes, and professional profiles.",
+    description: "Create a business-ready AI headshot from your photo for resumes, company bios, and professional profiles.",
     url: `${SITE_URL}/ai-headshot-generator`,
     type: "website",
   },
@@ -19,11 +19,11 @@ export const metadata: Metadata = {
 
 const headshotPrompts = [
   {
-    title: "LinkedIn professional headshot",
+    title: "Professional profile headshot",
     description: "A polished profile photo with confident expression, clean business outfit, soft studio lighting, and neutral office background.",
-    keyword: "LinkedIn headshot generator",
+    keyword: "professional headshot generator",
     image: "/images/headshot-examples/linkedin-professional-headshot.webp",
-    imageAlt: "LinkedIn professional AI headshot example generated from a casual profile photo",
+    imageAlt: "Professional AI headshot example generated from a casual profile photo",
   },
   {
     title: "Corporate team profile photo",
@@ -63,7 +63,7 @@ const headshotPrompts = [
 ];
 
 const useCases = [
-  ["LinkedIn profile photo", "Create a clean AI LinkedIn headshot that looks professional without booking a studio session."],
+  ["Professional profile photo", "Create a clean business headshot that looks professional without booking a studio session."],
   ["Resume or CV photo", "Turn a casual face photo into a more formal resume headshot for job applications and portfolios."],
   ["Company bio portrait", "Make consistent business profile photos for team pages, founder bios, and About pages."],
   ["Sales and consultant profiles", "Use a polished corporate headshot for client-facing profiles, proposals, and online directories."],
@@ -71,8 +71,8 @@ const useCases = [
 
 const faqs = [
   {
-    question: "Can I create a LinkedIn headshot from a casual photo?",
-    answer: "Yes. Upload a clear face photo, and the professional headshot generator can create a cleaner LinkedIn-style portrait with business outfit, neutral background, and polished lighting.",
+    question: "Can I create a professional headshot from a casual photo?",
+    answer: "Yes. Upload a clear face photo, and the professional headshot generator can create a cleaner business portrait with professional outfit, neutral background, and polished lighting.",
   },
   {
     question: "Does the AI preserve my face and identity?",
@@ -87,7 +87,7 @@ const faqs = [
     answer: "Yes. The optional instructions box lets you ask for details like a navy blazer, white shirt, studio background, office background, softer lighting, or a more executive look.",
   },
   {
-    question: "What size is best for LinkedIn headshots?",
+    question: "What size is best for professional headshots?",
     answer: "Portrait 3:4 is the recommended default for a professional headshot. Square 1:1 can also work well for profile avatars, but portrait framing usually gives more room for shoulders and outfit.",
   },
   {
@@ -96,7 +96,7 @@ const faqs = [
   },
   {
     question: "Can I use the generated headshot for business profiles?",
-    answer: "Yes, you can use the result for LinkedIn, resumes, company bios, consultant profiles, founder pages, and other professional profile contexts, as long as you have permission to edit the uploaded photo.",
+    answer: "Yes, you can use the result for resumes, company bios, consultant profiles, founder pages, and other professional profile contexts, as long as you have permission to edit the uploaded photo.",
   },
   {
     question: "Is my uploaded photo private?",
@@ -128,7 +128,7 @@ const softwareJsonLd = {
   applicationCategory: "MultimediaApplication",
   operatingSystem: "Web",
   url: `${SITE_URL}/ai-headshot-generator`,
-  description: "AI professional headshot generator for LinkedIn photos, resume headshots, business portraits, and corporate profile pictures.",
+  description: "AI professional headshot generator for resume headshots, business portraits, company bios, and corporate profile pictures.",
   offers: {
     "@type": "Offer",
     priceCurrency: "USD",
@@ -152,7 +152,7 @@ export default function ImageEditorPage() {
                 Upload a photo. Create a professional headshot.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-rsp-muted md:text-base">
-                Turn a casual face photo into a polished AI headshot for LinkedIn, resumes, company bios, consultant profiles, and business portraits.
+                Turn a casual face photo into a polished AI headshot for resumes, company bios, consultant profiles, and business portraits.
               </p>
             </div>
 
@@ -174,7 +174,7 @@ export default function ImageEditorPage() {
                 Popular AI headshot styles for work profiles
               </h2>
               <p className="mt-3 text-base leading-7 text-rsp-muted">
-                Start with the default professional headshot prompt, or use these ideas when you want a more specific LinkedIn photo, corporate portrait, resume photo, or business profile picture.
+                Start with the default professional headshot prompt, or use these ideas when you want a more specific corporate portrait, resume photo, or business profile picture.
               </p>
             </div>
 
@@ -241,11 +241,11 @@ export default function ImageEditorPage() {
                   Make profile photos that match the place they will be used.
                 </h2>
                 <p className="mt-4 text-base leading-7 text-rsp-muted">
-                  A LinkedIn headshot, resume photo, company bio portrait, and consultant profile do not need the same crop or background. Use clear instructions for outfit, background, lighting, and final use case so the generated headshot feels appropriate for the platform.
+                  A resume photo, company bio portrait, and consultant profile do not need the same crop or background. Use clear instructions for outfit, background, lighting, and final use case so the generated headshot feels appropriate.
                 </p>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                {["LinkedIn and job search", "Company team pages", "Founder and consultant bios"].map((item) => (
+                {["Job search profiles", "Company team pages", "Founder and consultant bios"].map((item) => (
                   <article key={item} className="rounded-[24px] border border-rsp-border bg-[#FBF7F0] p-5">
                     <h3 className="text-base font-bold text-rsp-text">{item}</h3>
                     <p className="mt-2 text-sm leading-6 text-rsp-muted">Generate a professional headshot with realistic lighting, clean framing, and business-focused styling.</p>
