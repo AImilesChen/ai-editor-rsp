@@ -24,6 +24,7 @@ const headshotPrompts = [
     keyword: "professional headshot generator",
     image: "/images/headshot-examples/linkedin-professional-headshot.webp",
     imageAlt: "Professional AI headshot example generated from a casual profile photo",
+    stylePrompt: "Create a clean professional profile headshot with a confident natural expression, simple dark blazer or smart jacket, neutral gray office background, soft studio lighting, realistic skin texture, eye-level camera, shoulders-up crop.",
   },
   {
     title: "Corporate team profile photo",
@@ -31,6 +32,7 @@ const headshotPrompts = [
     keyword: "corporate headshot generator",
     image: "/images/headshot-examples/corporate-team-profile-photo.webp",
     imageAlt: "Corporate AI headshot example for a company team profile photo",
+    stylePrompt: "Create a consistent corporate team profile photo with natural skin tone, tidy professional blazer, bright warm neutral background, friendly trustworthy expression, even studio lighting, company bio style, shoulders-up framing.",
   },
   {
     title: "Resume and CV headshot",
@@ -38,6 +40,7 @@ const headshotPrompts = [
     keyword: "AI resume photo generator",
     image: "/images/headshot-examples/resume-cv-headshot.webp",
     imageAlt: "AI resume photo generator example with a clean professional headshot",
+    stylePrompt: "Create a clean resume and CV headshot with a crisp white shirt, no blazer unless needed, light gray or white background, calm approachable expression, bright natural lighting, front-facing shoulders-up crop, minimal distractions.",
   },
   {
     title: "Founder or consultant portrait",
@@ -45,6 +48,7 @@ const headshotPrompts = [
     keyword: "business portrait generator",
     image: "/images/headshot-examples/founder-consultant-portrait.webp",
     imageAlt: "Business portrait generator example for a founder or consultant profile",
+    stylePrompt: "Create a founder or consultant portrait with smart casual business styling, subtle premium background depth, approachable smile, confident presence, soft directional studio lighting, realistic high-end editorial photography, shoulders-up crop.",
   },
   {
     title: "White background profile photo",
@@ -52,6 +56,7 @@ const headshotPrompts = [
     keyword: "professional profile picture maker",
     image: "/images/headshot-examples/white-background-profile-photo.webp",
     imageAlt: "Professional profile picture maker example with a clean light background",
+    stylePrompt: "Create a simple high-contrast professional profile photo on a pure white or very light gray background, neat business-casual outfit, clean front-facing pose, bright even lighting, sharp facial details, directory-ready crop.",
   },
   {
     title: "Studio business headshot",
@@ -59,6 +64,7 @@ const headshotPrompts = [
     keyword: "AI professional photo generator",
     image: "/images/headshot-examples/studio-business-headshot.webp",
     imageAlt: "AI professional photo generator studio business headshot example",
+    stylePrompt: "Create a modern studio business headshot with polished professional styling, balanced key and fill lighting, smooth warm neutral backdrop, sharp eyes, realistic facial details, refined portrait retouching, shoulders-up composition.",
   },
 ];
 
@@ -199,9 +205,9 @@ export default function ImageEditorPage() {
                       <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-rsp-terracotta">{item.keyword}</p>
                       <h3 className="mt-3 text-xl font-semibold tracking-[-0.02em] text-rsp-text">{item.title}</h3>
                       <p className="mt-3 flex-1 text-sm leading-6 text-rsp-muted">{item.description}</p>
-                      <Link href="#headshot-upload" className="mt-5 inline-flex w-fit rounded-full border border-rsp-border px-4 py-2 text-sm font-bold text-rsp-text no-underline transition hover:border-rsp-terracotta hover:text-rsp-terracotta">
+                      <a href={`/ai-headshot-generator?stylePrompt=${encodeURIComponent(item.stylePrompt)}#headshot-upload`} className="mt-5 inline-flex w-fit rounded-full border border-rsp-border px-4 py-2 text-sm font-bold text-rsp-text no-underline transition hover:border-rsp-terracotta hover:text-rsp-terracotta">
                         Use this style ↑
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </article>

@@ -6,7 +6,7 @@ import { promptCards as libraryPromptCards } from "@/lib/rsp-content";
 import { GENERATION_RATIOS, quoteGenerationCredits } from "@/lib/generation-pricing";
 
 const editTasks = [
-  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional business headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up business portrait with the face and upper torso as the main subject. Dress the person in a clean navy blazer and light shirt unless the user requests another professional outfit. Use a plain neutral grey studio background, natural skin texture, soft studio lighting, eye-level camera angle, sharp facial details, polished corporate portrait style, professional and trustworthy. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling." },
+  { label: "Professional headshot", prompt: "Turn the uploaded photo into a realistic professional headshot. Preserve the same person's face, identity, age, facial structure, and natural expression. Reframe to a shoulders-up portrait with the face and upper torso as the main subject. Use clean professional styling, a simple background, natural skin texture, soft flattering light, eye-level camera angle, sharp facial details, and a trustworthy profile-ready finish. Follow any user-requested outfit, background, lighting, or profile context instead of forcing a blazer. Remove outdoor scenery, crossbody bags, hats, sunglasses, and casual streetwear styling unless the user specifically asks to keep them." },
   { label: "Remove people", prompt: "Remove only the people inside the painted area. Keep every unpainted person, object, and background detail unchanged." },
   { label: "Remove objects", prompt: "Remove only the unwanted object inside the painted area. Keep all unpainted objects, people, and background details unchanged." },
   { label: "Clean background clutter", prompt: "Clean up only the clutter inside the painted area. Keep the main subject and all unpainted background details unchanged." },
@@ -397,15 +397,17 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     const searchParams = new URLSearchParams(window.location.search);
     const promptParam = searchParams.get("prompt");
     const presetParam = searchParams.get("preset");
-    if (!promptParam && presetParam !== "headshot") return;
+    const headshotStyleParam = searchParams.get("stylePrompt");
+    if (!promptParam && !headshotStyleParam && presetParam !== "headshot") return;
     const matchedPrompt = promptParam ? libraryPromptCards.find((item) => item.slug === promptParam) : null;
 
     if (lockedMode === "edit") {
       const headshotTask = editTasks[0];
       setMode("edit");
       if (isHeadshotOnly || presetParam === "headshot") {
+        const incomingHeadshotPrompt = headshotStyleParam || (promptParam && !matchedPrompt ? promptParam : "");
         setTask(headshotTask.label);
-        setPrompt("");
+        setPrompt(incomingHeadshotPrompt);
         setRatio("3:4");
         setEditScope("selected");
         clearMask();
