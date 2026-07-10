@@ -763,8 +763,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const brushStrokeCount = maskStrokes.filter((stroke) => stroke.source === "brush").length + (currentStroke.length > 0 ? 1 : 0);
 
   return (
-    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-start gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
-      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-none" : "p-4 md:p-5"}`}>
+    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-start gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+      <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "p-4 xl:max-h-none" : "h-full p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
             <p className={`${isHero ? "sr-only" : "font-mono text-[10px] uppercase tracking-[0.22em] text-[#D4A574]"}`}>{editorOnly ? "STEP 1 · UPLOAD" : "AI Image Editor"}</p>
@@ -1030,28 +1030,22 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-4 rounded-[24px] border border-[#86EFAC]/18 bg-[linear-gradient(180deg,rgba(134,239,172,0.09),rgba(255,255,255,0.026))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"}`}>
-          <div className="mb-2.5 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/72">{isHero ? "Choose image size" : "Output ratio"}</p>
-              {!isHero && <p className="mt-1 text-[11px] text-white/42">Pick the canvas before generating.</p>}
-            </div>
+        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-4 rounded-[20px] border border-[#86EFAC]/16 bg-[linear-gradient(180deg,rgba(134,239,172,0.075),rgba(255,255,255,0.02))] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]"}`}>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/72">{isHero ? "Choose image size" : "Output ratio"}</p>
             {!isHero && (
-              <div className="rounded-2xl border border-[#86EFAC]/24 bg-[#102014]/62 px-3 py-2 text-right">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#86EFAC]">Current output</p>
-                <p className="mt-0.5 text-xs font-semibold text-white">{currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits</p>
+              <div className="rounded-full border border-[#86EFAC]/22 bg-[#102014]/52 px-3 py-1.5 text-right">
+                <p className="text-[11px] font-semibold text-white/88">{currentQuote.sizeLabel} <span className="text-[#86EFAC]">· {currentQuote.creditsCharged} credits</span></p>
               </div>
             )}
           </div>
-          <div className={`${isHero ? "grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "grid-cols-3 gap-2 sm:grid-cols-4"} grid`}>
+          <div className={`${isHero ? "grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "grid-cols-4 gap-1.5 rounded-xl border border-white/8 bg-black/12 p-1.5"} grid`}>
             {visibleRatios.map((item) => (
-              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-3 text-sm"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-black/16 text-white/62 hover:border-white/22 hover:bg-white/[0.04] hover:text-white"}`}>
+              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-lg border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.24)]" : "border-white/10 bg-black/12 text-white/62 hover:border-white/22 hover:bg-white/[0.04] hover:text-white"}`}>
                 <span className="block">{ratio === item.ratio ? `✓ ${item.label}` : item.label}</span>
-                {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-72">{item.textCredits} cr</span>}
               </button>
             ))}
           </div>
-          {!isHero && <p className="mt-2 text-xs leading-5 text-white/46">Square and landscape sizes may use more credits because the image API bills by rounded megapixels.</p>}
         </div>}
 
         <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
@@ -1110,7 +1104,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </p>
       </aside>
 
-      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : "min-h-[520px] p-4 md:p-6"}`}>
+      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "min-h-[760px] p-3 md:p-5 xl:p-6" : "min-h-[500px] p-3 md:p-5 xl:p-6") : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
         <div className={`${isHero || editorOnly ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
@@ -1146,9 +1140,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         </div>}
 
-        <div className={`${isHero ? "mt-2" : "mt-6"} mx-auto max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
+        <div className={`${isHero ? "mt-2" : "mt-6 flex flex-1 flex-col"} mx-auto w-full max-w-[1280px] overflow-hidden rounded-[28px] border border-white/10 bg-black/35 p-2 md:p-3 shadow-2xl`}>
           {mode === "text" ? (
-            <div className={`relative ${isHero ? "aspect-[16/6.8]" : "aspect-[16/8.5]"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
+            <div className={`relative ${isHero ? "aspect-[16/6.8]" : "min-h-[400px] flex-1"} overflow-hidden rounded-[22px] bg-[#241B13]`}>
               <img src={generatedImage || previewImage} alt="Generated image preview" className={`h-full w-full object-cover transition ${generatedImage ? "brightness-105 contrast-105 saturate-110" : "scale-[1.02] opacity-55 brightness-90 saturate-90"}`} draggable={false} />
               <div className={`absolute inset-0 ${generatedImage ? "bg-gradient-to-t from-black/30 via-transparent to-black/12" : "bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.14),rgba(0,0,0,0.46)_54%,rgba(0,0,0,0.68))]"}`} />
               <span className="absolute left-4 top-4 rounded-full bg-black/55 px-4 py-1.5 text-sm font-semibold text-white">{generatedImage ? "Generated" : "Preview reference"}</span>
