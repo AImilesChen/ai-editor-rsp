@@ -15,7 +15,7 @@ export default function GeneratePage() {
     <>
       <Header />
       <main className="rsp-container pb-10 pt-28 md:pb-12 md:pt-32">
-        <GenerateConsole />
+        <GenerateConsole defaultMode="text" />
       </main>
       <Footer />
     </>

@@ -297,7 +297,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedLighting, setSelectedLighting] = useState<string | null>(null);
   const [selectedShot, setSelectedShot] = useState<string | null>(null);
-  const [ratio, setRatio] = useState(initialMode === "text" ? "" : defaultPreset === "headshot" ? "3:4" : "auto");
+  const [ratio, setRatio] = useState(initialMode === "text" ? "4:5" : defaultPreset === "headshot" ? "3:4" : "auto");
   const [state, setState] = useState<"idle" | "processing" | "ready" | "failed">("idle");
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -777,16 +777,16 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           )}
         </div>
 
-        {!lockedMode && <div className={`${isHero ? "mb-3" : "mb-4"}`}>
-          <p className={`${isHero ? "sr-only" : "mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70"}`}>Mode</p>
-          <div className={`grid gap-2 ${isHero ? "grid-cols-2 rounded-2xl border border-white/10 bg-black/20 p-1" : ""}`}>
-            <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "p-3 text-left"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
-              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>{isHero ? "Edit image" : "Edit uploaded image"}</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
-              {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Upload a reference, keep the subject and composition, then change only what you describe.</span>}
+        {!lockedMode && <div className={`${isHero ? "mb-3" : "mb-3 rounded-2xl border border-white/10 bg-black/18 p-1.5"}`}>
+          <p className={`${isHero ? "sr-only" : "sr-only"}`}>Mode</p>
+          <div className={`grid gap-1.5 ${isHero ? "grid-cols-2 rounded-2xl border border-white/10 bg-black/20 p-1" : "grid-cols-2"}`}>
+            <button type="button" onClick={() => switchMode("edit")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "px-3 py-2 text-center"} transition ${mode === "edit" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.035] hover:border-white/20"}`}>
+              <span className="flex items-center justify-center gap-2 text-sm font-semibold text-white"><span>{isHero ? "Edit image" : "Edit image"}</span>{mode === "edit" && <span className="text-[#86EFAC]">✓</span>}</span>
+              {!isHero && <span className="mt-0.5 block truncate text-[11px] text-white/46">Upload reference</span>}
             </button>
-            <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "p-3 text-left"} transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
-              <span className="flex items-center justify-between gap-2 text-sm font-semibold text-white"><span>{isHero ? "Use prompt" : "Create from prompt"}</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
-              {!isHero && <span className="mt-1 block text-xs leading-5 text-white/58">Generate a new image from text only. No uploaded reference or before/after comparison.</span>}
+            <button type="button" onClick={() => switchMode("text")} className={`rounded-xl border ${isHero ? "px-3 py-2 text-center" : "px-3 py-2 text-center"} transition ${mode === "text" ? "border-[#86EFAC] bg-[#1F3325]" : "border-white/10 bg-white/[0.035] hover:border-white/20"}`}>
+              <span className="flex items-center justify-center gap-2 text-sm font-semibold text-white"><span>{isHero ? "Use prompt" : "Create from prompt"}</span>{mode === "text" && <span className="text-[#86EFAC]">✓</span>}</span>
+              {!isHero && <span className="mt-0.5 block truncate text-[11px] text-white/46">Text only</span>}
             </button>
           </div>
         </div>}
@@ -943,17 +943,25 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/70" htmlFor="prompt">{editorOnly ? "Step 2 · Choose cleanup" : isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Describe your image") : mode === "edit" ? "Describe the edit" : "Prompt"}</label>
+          <label className={`block ${mode === "text" && !isHero ? "text-sm" : "text-xs"} font-semibold uppercase tracking-[0.16em] text-white/70`} htmlFor="prompt">{editorOnly ? "Step 2 · Choose cleanup" : isHero ? (mode === "edit" ? (task === "Professional headshot" ? "Optional headshot instructions" : "Describe the edit") : "Describe your image") : mode === "edit" ? "Describe the edit" : "Main prompt"}</label>
           {!hidePromptLibraryLink && !(isHero && lockedMode === "edit") && <a href="/prompts" className="text-xs font-bold text-[#86EFAC] no-underline transition hover:text-[#A7F3D0]">Browse prompt library →</a>}
         </div>
-        <textarea
-          id="prompt"
-          value={prompt}
-          onChange={(event) => setPrompt(event.target.value)}
-          disabled={controlsLocked}
-          placeholder={promptPlaceholder}
-          className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border border-white/14 bg-[#100C08] text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
-        />
+        <div className={`${mode === "text" && !isHero ? "rounded-[24px] border border-[#86EFAC]/18 bg-[#102014]/18 p-2 shadow-[0_0_0_1px_rgba(134,239,172,0.05),0_18px_44px_rgba(0,0,0,0.16)]" : ""}`}>
+          {mode === "text" && !isHero && (
+            <div className="mb-2 flex items-center justify-between gap-2 px-1 text-[11px] font-semibold text-[#C8FADC]/78">
+              <span>Write the exact image you want. Add style, subject, background, and mood.</span>
+              <span className="shrink-0 rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/10 px-2 py-1 text-[#C8FADC]">Prompt first</span>
+            </div>
+          )}
+          <textarea
+            id="prompt"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            disabled={controlsLocked}
+            placeholder={promptPlaceholder}
+            className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && !isHero ? "border-[#86EFAC]/30 bg-[#0D0A07]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+          />
+        </div>
         {isHeadshotMode && (
           <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-white/58">
             {[
@@ -1022,17 +1030,28 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
 
-        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-5"}`}>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/72">{isHero ? "Choose image size" : "Ratio"}</p>
-          <div className={`${isHero ? "grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "grid-cols-4 gap-2"} grid`}>
+        {mode === "text" && <div className={`${isHero ? "mt-4" : "mt-4 rounded-[24px] border border-[#86EFAC]/18 bg-[linear-gradient(180deg,rgba(134,239,172,0.09),rgba(255,255,255,0.026))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"}`}>
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/72">{isHero ? "Choose image size" : "Output ratio"}</p>
+              {!isHero && <p className="mt-1 text-[11px] text-white/42">Pick the canvas before generating.</p>}
+            </div>
+            {!isHero && (
+              <div className="rounded-2xl border border-[#86EFAC]/24 bg-[#102014]/62 px-3 py-2 text-right">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#86EFAC]">Current output</p>
+                <p className="mt-0.5 text-xs font-semibold text-white">{currentQuote.sizeLabel} · {currentQuote.creditsCharged} credits</p>
+              </div>
+            )}
+          </div>
+          <div className={`${isHero ? "grid-cols-4 gap-1.5 rounded-2xl border border-white/10 bg-black/14 p-1.5 sm:grid-cols-7" : "grid-cols-3 gap-2 sm:grid-cols-4"} grid`}>
             {visibleRatios.map((item) => (
-              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-2 text-xs"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-transparent bg-black/12 text-white/60 hover:border-white/18 hover:bg-white/[0.04] hover:text-white"}`}>
+              <button type="button" key={item.ratio} onClick={() => setRatio(item.ratio)} className={`rounded-xl border px-2 ${isHero ? "py-1.5 text-xs" : "py-3 text-sm"} text-center font-semibold transition ${ratio === item.ratio ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-black/16 text-white/62 hover:border-white/22 hover:bg-white/[0.04] hover:text-white"}`}>
                 <span className="block">{ratio === item.ratio ? `✓ ${item.label}` : item.label}</span>
-                {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-75">{item.textCredits} cr</span>}
+                {!isHero && <span className="mt-1 block font-mono text-[10px] opacity-72">{item.textCredits} cr</span>}
               </button>
             ))}
           </div>
-          {!isHero && <p className="mt-2 text-xs leading-5 text-white/50">Auto keeps the source feel for reference edits. Square and landscape sizes use more credits because the image API bills by rounded megapixels.</p>}
+          {!isHero && <p className="mt-2 text-xs leading-5 text-white/46">Square and landscape sizes may use more credits because the image API bills by rounded megapixels.</p>}
         </div>}
 
         <div className={`${isHero ? "sticky bottom-0 z-10 -mx-4 mt-4 border-t border-white/10 bg-[#1E1711]/96 px-4 py-3 shadow-[0_-18px_32px_rgba(0,0,0,0.24)] backdrop-blur" : "mt-5 flex flex-col gap-2"} flex flex-col gap-2`}>
