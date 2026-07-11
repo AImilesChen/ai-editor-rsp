@@ -68,6 +68,20 @@ export default function CookieConsentBanner() {
     setIsVisible(false);
   };
 
+  if (!isManaging) {
+    return (
+      <div className="fixed bottom-3 right-3 z-[100] sm:bottom-5 sm:right-5" role="region" aria-label="Cookie consent">
+        <button
+          type="button"
+          onClick={() => setIsManaging(true)}
+          className="min-h-11 rounded-full border border-[#d6a35c] bg-[#fff8eb] px-5 py-2.5 text-sm font-bold text-rsp-text shadow-[0_12px_36px_rgba(72,42,14,0.22)] ring-1 ring-[#f0c989] transition hover:bg-[#fff3de] focus:outline-none focus:ring-2 focus:ring-[#b86b20]"
+        >
+          Cookie choices
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={`fixed bottom-0 z-[100] px-3 pb-3 ${isManaging ? "inset-x-0 sm:bottom-5 sm:px-5" : "inset-x-0 sm:bottom-5 sm:left-auto sm:right-5 sm:w-[430px] sm:px-0"}`} role="region" aria-label="Cookie consent">
       <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb] shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989] ${isManaging ? "max-w-4xl p-4" : "w-full p-3"}`}>
