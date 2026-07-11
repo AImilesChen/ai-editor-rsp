@@ -69,10 +69,10 @@ export default function CookieConsentBanner() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:bottom-5 sm:px-5" role="region" aria-label="Cookie consent">
-      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb] shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989] ${isManaging ? "max-w-4xl p-4" : "max-w-[min(920px,calc(100vw-24px))] p-3"}`}>
-        <div className={`grid gap-3 ${isManaging ? "" : "sm:flex sm:items-center sm:justify-between sm:gap-4"}`}>
-          <div className={isManaging ? "" : "min-w-0 sm:max-w-[430px]"}>
+    <div className={`fixed bottom-0 z-[100] px-3 pb-3 ${isManaging ? "inset-x-0 sm:bottom-5 sm:px-5" : "inset-x-0 sm:bottom-5 sm:left-auto sm:right-5 sm:w-[430px] sm:px-0"}`} role="region" aria-label="Cookie consent">
+      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb] shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989] ${isManaging ? "max-w-4xl p-4" : "w-full p-3"}`}>
+        <div className="grid gap-3">
+          <div className={isManaging ? "" : "min-w-0"}>
             {isManaging ? (
               <>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a45f17]">Cookie choices</p>
@@ -116,7 +116,7 @@ export default function CookieConsentBanner() {
             ) : null}
           </div>
 
-          <div className={`grid gap-2 ${isManaging ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:w-[430px] sm:flex-none sm:grid-cols-3"}`}>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="min-h-11 rounded-full border border-[#d0a16a] bg-white px-3 py-2.5 text-sm font-bold text-rsp-text shadow-sm transition hover:bg-[#fff3de] focus:outline-none focus:ring-2 focus:ring-[#b86b20]">
               Reject non-essential
             </button>
