@@ -839,9 +839,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </div>}
 
         {isHeadshotOnly && (
-          <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-[#86EFAC]/18 bg-[#102014]/28 px-3 py-2 text-xs text-[#C8FADC]">
-            <p className="font-semibold uppercase tracking-[0.14em]">Headshot mode</p>
-            <p className="text-right text-white/54">Face photo → business portrait</p>
+          <div className="mb-3 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/35 p-3 text-xs leading-5 text-[#C8FADC]">
+            <p className="font-semibold uppercase tracking-[0.16em]">Professional headshot only</p>
+            <p className="mt-1 text-white/58">Upload a face photo, keep 3:4 portrait framing, and generate a business-ready profile image.</p>
           </div>
         )}
 
@@ -863,37 +863,21 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         {mode === "edit" && (
           <>
-            <label className={`${isHeadshotOnly ? `mb-4 block ${uploadedImage ? "min-h-[188px] p-3" : "min-h-[176px] p-4"}` : isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-[24px] border border-dashed border-[#D4A574]/45 bg-[linear-gradient(180deg,#2A2118_0%,#211912_100%)] transition hover:border-[#D4A574]`} htmlFor="upload-image">
+            <label className={`${isHeadshotOnly ? "mb-4 block min-h-[176px] p-4" : isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-[24px] border border-dashed border-[#D4A574]/45 bg-[linear-gradient(180deg,#2A2118_0%,#211912_100%)] transition hover:border-[#D4A574]`} htmlFor="upload-image">
               {isHeadshotOnly ? (
-                uploadedImage ? (
-                  <span className="grid min-h-[164px] grid-cols-[118px_minmax(0,1fr)] items-center gap-3 text-left">
-                    <span className="flex h-40 w-[118px] items-center justify-center overflow-hidden rounded-[20px] border border-white/12 bg-[#F3E8DA]/10 p-1.5 shadow-[0_12px_34px_rgba(0,0,0,0.22)]">
-                      <img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-lg font-bold tracking-[-0.01em] text-white">Photo ready</span>
-                      <span className="mt-1 block truncate text-sm text-white/56">{uploadedName}</span>
-                      <span className="mt-3 inline-flex rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-[#102014]">Change photo</span>
-                      <span className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/48">
-                        <span className="rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-[#C8FADC]">Private</span>
-                        <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">3:4 crop</span>
-                        <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Same person</span>
-                      </span>
-                    </span>
+                <span className="flex h-full min-h-[144px] flex-col items-center justify-center text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4A574]/40 bg-[#D4A574]/12 text-xl text-[#F4DFC8]">↑</span>
+                  <span className="mt-3 block text-lg font-bold tracking-[-0.01em] text-white">{uploadedName ? "Photo uploaded" : isUploading ? "Preparing photo…" : "Upload your face photo"}</span>
+                  <span className="mt-1 block max-w-[300px] text-sm leading-5 text-white/58">{isUploading ? "Opening and optimizing your photo for the editor…" : uploadedName || "Drag here or browse · PNG/JPG/WebP · 5 MB max"}</span>
+                  <span className="mt-2 rounded-full border border-[#86EFAC]/20 bg-[#86EFAC]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#C8FADC]">Private upload</span>
+                  <span className="mt-3 inline-flex rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-[#102014]">Browse photo</span>
+                  <span className="mt-3 flex flex-wrap justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/46">
+                    <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Front-facing</span>
+                    <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Good lighting</span>
+                    <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">No sunglasses</span>
                   </span>
-                ) : (
-                  <span className="flex h-full min-h-[144px] flex-col items-center justify-center text-center">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4A574]/40 bg-[#D4A574]/12 text-xl text-[#F4DFC8]">↑</span>
-                    <span className="mt-3 block text-lg font-bold tracking-[-0.01em] text-white">{isUploading ? "Preparing photo…" : "Upload your face photo"}</span>
-                    <span className="mt-1 block max-w-[300px] text-sm leading-5 text-white/58">{isUploading ? "Optimizing your photo…" : "Drag here or browse · PNG/JPG/WebP · 5 MB max"}</span>
-                    <span className="mt-3 inline-flex rounded-full bg-[#86EFAC] px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-[#102014]">Browse photo</span>
-                    <span className="mt-3 flex flex-wrap justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.07em] text-white/46">
-                      <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Front-facing</span>
-                      <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">Good lighting</span>
-                      <span className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1">No sunglasses</span>
-                    </span>
-                  </span>
-                )
+                  {uploadedImage && <span className="mt-3 flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-[#F3E8DA]/10 p-1"><img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" /></span>}
+                </span>
               ) : (
                 <>
                   <span className={`${isHero ? "h-9 w-9 shrink-0" : "mb-3 h-10 w-10"} flex items-center justify-center rounded-full border border-[#D4A574]/35 bg-[#D4A574]/10 text-lg text-[#F4DFC8]`}>↑</span>
@@ -914,9 +898,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                   onChange={(event) => setAuthorizedImageUse(event.target.checked)}
                   className="mt-1 h-4 w-4 shrink-0 accent-[#86EFAC]"
                 />
-                <span className="min-w-0">
-                  <span className="block font-semibold">I own or have permission to use this adult photo.</span>
-                  <span className="mt-0.5 block text-white/50">No minors, celebrities, strangers, IDs, NSFW, identity swap, impersonation, or deception.</span>
+                <span>
+                  I own this photo or have permission from every recognizable person. No minors, public figures, celebrities, strangers, IDs, NSFW, face-swap, impersonation, or deceptive use.
                 </span>
               </label>
             )}
@@ -1006,26 +989,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             onChange={(event) => setPrompt(event.target.value)}
             disabled={controlsLocked}
             placeholder={promptPlaceholder}
-            className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : compactPromptBuilder && mode === "text" ? "min-h-[188px] p-5 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && (!isHero || compactPromptBuilder) ? "border-[#86EFAC]/52 bg-[#0D0A07] shadow-[0_0_0_1px_rgba(134,239,172,0.11),0_16px_36px_rgba(0,0,0,0.18)]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/52 transition focus:border-[#86EFAC]/75 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+            className={`${isHero ? (isHeadshotOnly ? "min-h-[112px] p-4 text-sm leading-6" : compactPromptBuilder && mode === "text" ? "min-h-[188px] p-5 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && (!isHero || compactPromptBuilder) ? "border-[#86EFAC]/52 bg-[#0D0A07] shadow-[0_0_0_1px_rgba(134,239,172,0.11),0_16px_36px_rgba(0,0,0,0.18)]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/52 transition focus:border-[#86EFAC]/75 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
           />
         </div>
-        {isHeadshotMode && (
-          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-white/58">
-            {[
-              "Blazer",
-              "Neutral background",
-              "Studio lighting",
-            ].map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                onClick={() => setPrompt((current) => current.includes(suggestion) ? current : `${current}${current ? ", " : ""}${suggestion}`)}
-                className="rounded-full border border-white/10 bg-black/16 px-2.5 py-1 transition hover:border-[#86EFAC]/35 hover:text-[#C8FADC]"
-              >
-                + {suggestion}
-              </button>
-            ))}
-          </div>
+        {isHeadshotMode && uploadedImage && (
+          <p className="mt-2 rounded-2xl border border-[#86EFAC]/20 bg-[#102014]/45 px-3 py-2 text-xs leading-5 text-[#C8FADC]">
+            Headshot preprocessing is on: we first crop toward the face and upper torso, then change outfit, background, and lighting around the same person.
+          </p>
         )}
 
         {(!isHero || mode === "text") && <div className="mt-3 flex flex-wrap gap-2">
