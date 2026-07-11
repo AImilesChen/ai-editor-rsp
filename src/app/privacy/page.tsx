@@ -68,7 +68,7 @@ export default function PrivacyPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Retention</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>Authentication cookies are time-limited and can be cleared by logging out or clearing browser cookies.</li>
-              <li>Uploaded and generated images are processed to provide the requested result and may be stored temporarily for delivery, security, and support. No image-retention period is guaranteed unless it is explicitly shown in the product at the time of use; download results you want to keep.</li>
+              <li>Uploaded images are processed for the requested edit. Generated results are stored as private account assets in Cloudflare R2 so signed-in users can access their generation history. No fixed automatic deletion period is currently promised; you may request deletion through support, subject to security, billing-dispute, and legal retention requirements.</li>
               <li>Payment, invoice, refund, tax, fraud, and support records may be retained as needed for compliance, dispute handling, and legal obligations.</li>
               <li>Safety and abuse-prevention records may be retained to enforce our Content Policy and protect the service.</li>
             </ul>

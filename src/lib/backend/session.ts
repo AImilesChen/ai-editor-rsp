@@ -51,7 +51,10 @@ async function hmac(message: string, secret: string) {
 }
 
 function sessionSecret() {
-  return process.env.SESSION_SECRET || "dev-only-ai-editor-rsp-session-secret";
+  const secret = process.env.SESSION_SECRET || process.env.AUTH_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV !== "production") return "dev-only-ai-editor-rsp-session-secret";
+  throw new Error("SESSION_SECRET or AUTH_SECRET must be configured in production");
 }
 
 function newSession(): SessionPayload {

@@ -29,9 +29,10 @@ export default function CookiePolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Cookies We Use</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li><strong>rsp_session:</strong> essential session cookie used for session integrity, generation status, safety limits, and credit-safe failures. The one-time free credit grant is attached to an account after sign-in.</li>
-              <li><strong>rsp_auth:</strong> essential authentication cookie used after Google or email magic-link login to identify your account, plan, and credits state.</li>
+              <li><strong>rsp_session:</strong> essential session cookie used for session integrity, generation status, safety limits, and credit-safe failures; retained for up to 30 days.</li>
+              <li><strong>rsp_auth:</strong> essential authentication cookie used after Google or email magic-link login to identify your account, plan, and credits state; retained for up to 30 days.</li>
               <li><strong>rsp_oauth_state:</strong> short-lived OAuth security cookie used to protect the Google login flow from cross-site request forgery.</li>
+              <li><strong>rsp_oauth_next:</strong> short-lived essential cookie that preserves the intended in-site destination during Google login and expires with the OAuth flow.</li>
               <li><strong>Security cookies:</strong> infrastructure services may set security or performance cookies to protect the site, route traffic, and prevent abuse.</li>
             </ul>
 

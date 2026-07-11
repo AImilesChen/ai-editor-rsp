@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { submitFalGeneration } from "@/lib/backend/providers";
 import { getAuthUser } from "@/lib/backend/auth";
-import { accountForPublicUser, debitCreditForUser } from "@/lib/backend/billing-store";
+import { accountForPublicUser, debitCreditForUser, refundCreditForUser } from "@/lib/backend/billing-store";
 import { getSession, isSafetyLimited, recordSafetyStrike, setSessionCookie } from "@/lib/backend/session";
 import { checkPromptSafety, logSafetyEvent, promptHash, rewritePromptForSoftSafety } from "@/lib/backend/safety";
 import { moderatePromptWithStripe } from "@/lib/backend/stripe";
-import { createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
+import { checkGenerationCapacity, createGenerationJob, markGenerationFailed, markGenerationSubmitted } from "@/lib/backend/generation-store";
 import { recordModerationEvent, updateModerationEventOutcome } from "@/lib/backend/moderation-store";
 import { quoteGenerationCredits } from "@/lib/generation-pricing";
 
@@ -24,8 +24,17 @@ type Body = {
   authorizedImageUse?: boolean;
 };
 
-function isSupportedImageReference(value: string) {
-  return value.startsWith("data:image/") || value.startsWith("https://");
+function validateImage(value: string, maxBytes: number) {
+  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  if (!match) return false;
+  try {
+    const bytes = Uint8Array.from(atob(match[2]), (char) => char.charCodeAt(0));
+    if (bytes.byteLength > maxBytes) return false;
+    const png = bytes.length >= 8 && [137,80,78,71,13,10,26,10].every((b, i) => bytes[i] === b);
+    const jpeg = bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+    const webp = bytes.length >= 12 && String.fromCharCode(...bytes.slice(0,4)) === "RIFF" && String.fromCharCode(...bytes.slice(8,12)) === "WEBP";
+    return match[1] === "image/png" ? png : match[1] === "image/jpeg" ? jpeg : webp;
+  } catch { return false; }
 }
 
 function normalizeEditRegion(region: Body["editRegion"]) {
@@ -58,12 +67,12 @@ export async function POST(request: NextRequest) {
     await setSessionCookie(response, session);
     return response;
   }
-  if (body.imageDataUrl && !isSupportedImageReference(body.imageDataUrl)) {
+  if (body.imageDataUrl && !validateImage(body.imageDataUrl, 5 * 1024 * 1024)) {
     const response = NextResponse.json({ ok: false, error: "Uploaded image must be PNG, JPG, WebP, or a secure generated image URL.", code: "INVALID_IMAGE" }, { status: 400 });
     await setSessionCookie(response, session);
     return response;
   }
-  if (body.maskDataUrl && !isSupportedImageReference(body.maskDataUrl)) {
+  if (body.maskDataUrl && !validateImage(body.maskDataUrl, 2 * 1024 * 1024)) {
     const response = NextResponse.json({ ok: false, error: "Mask image must be a PNG, JPG, WebP, or secure generated image URL.", code: "INVALID_MASK" }, { status: 400 });
     await setSessionCookie(response, session);
     return response;
@@ -205,28 +214,34 @@ export async function POST(request: NextRequest) {
   }
   const generationPrompt = rewritePromptForSoftSafety(prompt, safety);
 
+  const capacity = await checkGenerationCapacity(user.id, billingAccount.plan);
+  if (!capacity.ok) return NextResponse.json({ ok: false, error: capacity.code === "GENERATION_STORE_UNAVAILABLE" ? "Generation is temporarily unavailable." : `Your plan allows ${capacity.limit} concurrent request${capacity.limit === 1 ? "" : "s"}.`, code: capacity.code }, { status: capacity.code === "GENERATION_STORE_UNAVAILABLE" ? 503 : 429 });
+
   const jobId = `gen_${Date.now()}_${crypto.randomUUID()}`;
-  if (user) await createGenerationJob({ jobId, user, prompt: generationPrompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
+  const created = await createGenerationJob({ jobId, user, prompt: generationPrompt, style: body.style, ratio: quote.ratio, creditsQuoted: quote.creditsCharged, pricing: quote });
+  if (!created.persisted) {
+    const limited = "code" in created && created.code === "GENERATION_LIMIT_REACHED";
+    return NextResponse.json({ ok: false, error: limited ? `Your plan allows ${created.limit} concurrent request${created.limit === 1 ? "" : "s"}.` : "Generation is temporarily unavailable.", code: limited ? created.code : "GENERATION_STORE_UNAVAILABLE" }, { status: limited ? 429 : 503 });
+  }
+  const debit = await debitCreditForUser(user, quote.creditsCharged, jobId);
+  if (debit.insufficient || !debit.persisted) {
+    await markGenerationFailed({ jobId, userId: user.id, code: "CREDITS_EXHAUSTED", message: "Credits could not be reserved." });
+    return NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
+  }
   await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, creditDecision: "not_charged", modelCalled: false });
 
   const providerRatio = body.ratio === "auto" ? "auto" : quote.ratio;
   const result = await submitFalGeneration({ prompt: generationPrompt, style: body.style, ratio: providerRatio, imageDataUrl: body.imageDataUrl, maskDataUrl: body.maskDataUrl, editRegion });
   await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, providerRequestId: result.ok ? result.requestId : null, modelCalled: true, creditDecision: "not_charged", errorMessage: result.ok ? null : result.error });
   if (!result.ok) {
-    if (user) await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
+    await refundCreditForUser(user, quote.creditsCharged, jobId);
+    await markGenerationFailed({ jobId, userId: user.id, code: "PROVIDER_SUBMIT_FAILED", message: result.error, raw: result });
     const response = NextResponse.json({ ok: false, error: result.error, provider: result.provider || "fal.ai" }, { status: result.status });
     await setSessionCookie(response, session);
     return response;
   }
 
-  const debit = user ? await debitCreditForUser(user, quote.creditsCharged, jobId) : { creditsRemaining: Math.max(0, session.creditsRemaining - quote.creditsCharged), insufficient: false };
-  if (debit.insufficient) {
-    await updateModerationEventOutcome({ externalId: moderationExternalId, generationJobId: jobId, providerRequestId: result.requestId, creditDecision: "not_charged", modelCalled: true, errorMessage: "credits_exhausted_after_provider_submission" });
-    if (user) await markGenerationFailed({ jobId, userId: user.id, code: "CREDITS_EXHAUSTED", message: "No credits remaining after provider submission." });
-    const response = NextResponse.json({ ok: false, error: "No credits remaining.", code: "CREDITS_EXHAUSTED" }, { status: 402 });
-    await setSessionCookie(response, session);
-    return response;
-  }
+
   if (user) {
     await markGenerationSubmitted({
       jobId,

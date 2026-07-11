@@ -45,7 +45,7 @@ const resultExamples = [
   },
 ];
 
-const trustItems = ["No card required for free credits", "Secure hosted checkout", "Cancel anytime", "7-day refund if mostly unused"];
+const trustItems = ["No card required for free credits", "Prices include applicable taxes", "Cancel anytime", "7-day refund review when paid-credit usage is 20% or less"];
 
 const pricingIntentCards = [
   {

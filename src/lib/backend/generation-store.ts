@@ -32,10 +32,14 @@ export async function createGenerationJob(input: CreateGenerationJobInput) {
   const db = await billingDb();
   if (!db) return { persisted: false, reason: "No D1 DB binding" };
   const now = Date.now();
-  await db.prepare(`INSERT INTO generation_jobs (id, user_id, status, prompt, quality_tier, image_size, credits_quoted, credits_charged, provider, safety_status, provider_metadata_json, created_at, updated_at)
-    VALUES (?, ?, 'created', ?, 'standard', ?, ?, 0, 'fal.ai', 'prompt_allowed', ?, ?, ?)`)
-    .bind(input.jobId, input.user.id, input.prompt, input.ratio || null, input.creditsQuoted || 1, JSON.stringify({ style: input.style || null, pricing: input.pricing || null }), now, now)
+  const limit = input.user.plan === "studio" ? 5 : input.user.plan === "creator" ? 3 : 1;
+  const created = await db.prepare(`INSERT INTO generation_jobs (id, user_id, status, prompt, quality_tier, image_size, credits_quoted, credits_charged, provider, safety_status, provider_metadata_json, created_at, updated_at)
+    SELECT ?, ?, 'created', ?, 'standard', ?, ?, 0, 'fal.ai', 'prompt_allowed', ?, ?, ?
+    WHERE (SELECT COUNT(*) FROM generation_jobs WHERE user_id = ? AND created_at >= ? AND status IN ('created','submitted','processing')) < ?
+      AND (SELECT COUNT(*) FROM generation_jobs WHERE user_id = ? AND created_at >= ?) < ?`)
+    .bind(input.jobId, input.user.id, input.prompt, input.ratio || null, input.creditsQuoted || 1, JSON.stringify({ style: input.style || null, pricing: input.pricing || null }), now, now, input.user.id, now - 30 * 60_000, limit, input.user.id, now - 60_000, limit)
     .run();
+  if (!created.meta?.changes) return { persisted: false, reason: "Generation concurrency or rate limit reached", code: "GENERATION_LIMIT_REACHED", limit };
   return { persisted: true };
 }
 
@@ -63,11 +67,31 @@ export async function markGenerationFailed(input: { jobId: string; userId?: stri
 
 export async function getGenerationCreditChargeByRequestId(requestId: string) {
   const db = await billingDb();
-  if (!db) return 1;
+  if (!db) return 0;
   const row = await db.prepare("SELECT credits_charged, credits_quoted FROM generation_jobs WHERE provider_request_id = ? ORDER BY created_at DESC LIMIT 1")
     .bind(requestId)
     .first<{ credits_charged: number; credits_quoted: number }>();
-  return Math.max(1, row?.credits_charged || row?.credits_quoted || 1);
+  return row ? Math.max(0, row.credits_charged || row.credits_quoted || 0) : 0;
+}
+
+export async function getOwnedGenerationByRequestId(requestId: string, userId: string) {
+  const db = await billingDb();
+  if (!db) return { ok: false as const, unavailable: true as const };
+  const row = await db.prepare("SELECT id, user_id, provider_model, credits_charged, credits_quoted FROM generation_jobs WHERE provider_request_id = ? AND user_id = ? LIMIT 1")
+    .bind(requestId, userId).first<{ id: string; user_id: string; provider_model: string | null; credits_charged: number; credits_quoted: number }>();
+  return row ? { ok: true as const, row } : { ok: false as const, unavailable: false as const };
+}
+
+export async function checkGenerationCapacity(userId: string, plan: AuthUser["plan"]) {
+  const db = await billingDb();
+  if (!db) return { ok: false as const, code: "GENERATION_STORE_UNAVAILABLE" };
+  const limit = plan === "studio" ? 5 : plan === "creator" ? 3 : 1;
+  const since = Date.now() - 60_000;
+  const activeSince = Date.now() - 30 * 60_000;
+  const row = await db.prepare("SELECT SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) recent, SUM(CASE WHEN created_at >= ? AND status IN ('created','submitted','processing') THEN 1 ELSE 0 END) active FROM generation_jobs WHERE user_id = ?")
+    .bind(since, activeSince, userId).first<{ recent: number; active: number }>();
+  if (Number(row?.recent || 0) >= limit || Number(row?.active || 0) >= limit) return { ok: false as const, code: "GENERATION_LIMIT_REACHED", limit };
+  return { ok: true as const, limit };
 }
 
 export async function getGenerationProviderModelByRequestId(requestId: string) {
@@ -143,10 +167,8 @@ export async function getImageAssetForRequest(input: { assetId: string; user?: A
   const row = await db.prepare("SELECT id, user_id, r2_object_key, content_type FROM image_assets WHERE id = ? AND deleted_at IS NULL")
     .bind(input.assetId)
     .first<{ id: string; user_id: string; r2_object_key: string; content_type: string }>();
-  if (!row) return null;
-  // Current product displays generated images directly in the browser; keep the
-  // object URL unguessable via asset UUID + private R2, but do not require a
-  // signed cookie for the <img> tag. Ownership remains available for future gallery APIs.
+  if (!row || !input.user || input.user.id !== row.user_id) return null;
+
   const object = await bucket.get(row.r2_object_key);
   if (!object) return null;
   return { object, contentType: row.content_type || object.httpMetadata?.contentType || "image/jpeg" };

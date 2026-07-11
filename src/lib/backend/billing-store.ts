@@ -438,17 +438,35 @@ export async function debitCreditForUser(user: AuthUser, amount = 1, sourceId?: 
 }
 
 export async function refundCreditForUser(user: AuthUser, amount = 1, sourceId?: string) {
+  if (!sourceId || amount <= 0) return { persisted: false, creditsRemaining: user.creditsRemaining, reason: "A positive amount and owned source id are required" };
   const db = await billingDb();
   if (db) {
     const account = await ensureD1BillingAccount(db, user);
-    const nextBalance = account.creditsRemaining + amount;
     const now = Date.now();
-    const actualSourceId = sourceId || `refund_${crypto.randomUUID()}`;
-    await db.prepare("UPDATE users SET credits_remaining = ?, updated_at = ? WHERE id = ?")
-      .bind(nextBalance, now, user.id)
-      .run();
-    await insertCreditLedger(db, user.id, "generation_refund", actualSourceId, amount, nextBalance, "Generation safety refund", { amount })
-    return { persisted: true, creditsRemaining: nextBalance };
+    const ledgerId = `generation_refund_${sourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+    try {
+      const results = await db.batch([
+        db.prepare(`UPDATE users SET credits_remaining = credits_remaining + ?, updated_at = ?
+          WHERE id = ?
+            AND EXISTS (SELECT 1 FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND source_id = ?)
+            AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_refund' AND source_id = ?)`)
+          .bind(amount, now, user.id, user.id, sourceId, user.id, sourceId),
+        db.prepare(`INSERT INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at)
+          SELECT ?, id, 'generation_refund', ?, ?, credits_remaining, 'Generation safety refund', ?, ? FROM users WHERE id = ? AND updated_at = ?`)
+          .bind(ledgerId, sourceId, amount, JSON.stringify({ amount }), now, user.id, now),
+      ]);
+      if (!results[0]?.meta?.changes || !results[1]?.meta?.changes) {
+        const fresh = await readD1Account(db, user.id);
+        const existing = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_refund' AND source_id = ? LIMIT 1").bind(user.id, sourceId).first<{ id: string }>();
+        return { persisted: Boolean(existing), creditsRemaining: fresh?.creditsRemaining ?? account.creditsRemaining, duplicate: Boolean(existing), reason: existing ? undefined : "No matching debit" };
+      }
+      const fresh = await readD1Account(db, user.id);
+      return { persisted: true, creditsRemaining: fresh?.creditsRemaining ?? account.creditsRemaining + amount };
+    } catch {
+      const fresh = await readD1Account(db, user.id);
+      const existing = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_refund' AND source_id = ? LIMIT 1").bind(user.id, sourceId).first<{ id: string }>();
+      return { persisted: Boolean(existing), creditsRemaining: fresh?.creditsRemaining ?? account.creditsRemaining, duplicate: Boolean(existing), reason: existing ? undefined : "Refund transaction failed" };
+    }
   }
 
   const kv = await billingKv();
@@ -866,11 +884,24 @@ async function debitCreditForUserD1(db: D1Database, user: AuthUser, amount: numb
   const nextBalance = account.creditsRemaining - amount;
   const now = Date.now();
   const actualSourceId = sourceId || `generation_${crypto.randomUUID()}`;
-  await db.prepare("UPDATE users SET credits_remaining = ?, updated_at = ? WHERE id = ? AND credits_remaining >= ?")
-    .bind(nextBalance, now, user.id, amount)
-    .run();
-  await insertCreditLedger(db, user.id, "generation_debit", actualSourceId, -amount, nextBalance, "AI image generation", { amount });
-  return { persisted: true, creditsRemaining: nextBalance, insufficient: false };
+  const ledgerId = `generation_debit_${actualSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  try {
+    const results = await db.batch([
+      db.prepare("UPDATE users SET credits_remaining = credits_remaining - ?, updated_at = ? WHERE id = ? AND credits_remaining >= ? AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND source_id = ?)")
+        .bind(amount, now, user.id, amount, user.id, actualSourceId),
+      db.prepare(`INSERT INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at)
+        SELECT ?, id, 'generation_debit', ?, ?, credits_remaining, 'AI image generation', ?, ? FROM users WHERE id = ? AND updated_at = ?`)
+        .bind(ledgerId, actualSourceId, -amount, JSON.stringify({ amount }), now, user.id, now),
+    ]);
+    const fresh = await readD1Account(db, user.id);
+    if (!results[0]?.meta?.changes || !results[1]?.meta?.changes) {
+      return { persisted: true, creditsRemaining: fresh?.creditsRemaining ?? 0, insufficient: true };
+    }
+    return { persisted: true, creditsRemaining: fresh?.creditsRemaining ?? nextBalance, insufficient: false };
+  } catch {
+    const fresh = await readD1Account(db, user.id);
+    return { persisted: false, creditsRemaining: fresh?.creditsRemaining ?? account.creditsRemaining, insufficient: true };
+  }
 }
 
 async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStateInput) {

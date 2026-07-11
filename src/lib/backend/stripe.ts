@@ -378,13 +378,6 @@ export function planFromStripePayload(payload: unknown): BillingPlan | null {
   const records: Record<string, unknown>[] = [];
   collectRecords(payload, records, 0);
   for (const record of records) {
-    const metadata = record.metadata;
-    if (metadata && typeof metadata === "object") {
-      const plan = (metadata as Record<string, unknown>).plan;
-      if (isBillingPlan(plan)) return plan;
-    }
-    const plan = record.plan;
-    if (isBillingPlan(plan)) return plan;
     const priceId = stringValue(record.price || record.price_id || record.priceId || record.id);
     const matched = planFromPriceId(priceId);
     if (matched) return matched;

@@ -152,7 +152,7 @@ function prepareUploadedPhoto(src: string) {
     const aspect = sourceWidth / sourceHeight;
     const maxSide = 1536;
     const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
-    if (scale >= 1 && src.length < 2_800_000) return { dataUrl: src, aspect };
+    if (src.startsWith("data:") && scale >= 1 && src.length < 2_800_000) return { dataUrl: src, aspect };
 
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(sourceWidth * scale));
@@ -709,13 +709,14 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
     setRegionStart(null);
   };
 
-  const editGeneratedResult = () => {
+  const editGeneratedResult = async () => {
     if (!generatedImage) return;
+    const prepared = await prepareUploadedPhoto(generatedImage);
     setMode("edit");
-    setUploadedImage(generatedImage);
+    setUploadedImage(prepared.dataUrl);
     setHeadshotReferenceImage(null);
     setAuthorizedImageUse(true);
-    prepareUploadedPhoto(generatedImage).then((prepared) => setUploadedAspect(prepared.aspect)).catch(() => setUploadedAspect(4 / 3));
+    setUploadedAspect(prepared.aspect);
     setUploadedName("Generated result");
     setGeneratedImage(null);
     setEditScope("selected");

@@ -13,6 +13,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   const user = await getAuthUser(request);
+  if (!user) return NextResponse.json({ ok: false, error: "Authentication required." }, { status: 401 });
   const asset = await getImageAssetForRequest({ assetId, user });
   if (!asset) return NextResponse.json({ ok: false, error: "Asset not found." }, { status: 404 });
 

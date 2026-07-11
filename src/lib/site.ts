@@ -37,7 +37,7 @@ export const pricingPlans = [
     featured: true,
     audience: "Best for creators who generate images every week.",
     estimate: "Better value for regular creators.",
-    features: ["240 credits/month", "More room for prompt testing and variations", "Use text-to-image and uploaded-image editing", "Priority queue"],
+    features: ["240 credits/month", "More room for prompt testing and variations", "Use text-to-image and uploaded-image editing"],
   },
   {
     name: "Studio",
@@ -45,10 +45,10 @@ export const pricingPlans = [
     cadence: "/mo",
     quota: "500 credits/month",
     cta: "Choose Studio",
-    badge: "Fastest queue",
+    badge: "Studio",
     audience: "For heavier image workflows and frequent creative testing.",
     estimate: "Designed for larger batches and more experiments.",
-    features: ["500 credits/month", "Use credits across generation and editing", "5 concurrent image requests", "Fastest queue"],
+    features: ["500 credits/month", "Use credits across generation and editing", "5 concurrent image requests"],
   },
 ];
 

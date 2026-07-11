@@ -40,7 +40,10 @@ function timingSafeEqual(a: string, b: string) {
 }
 
 function authSecret() {
-  return process.env.AUTH_SECRET || process.env.SESSION_SECRET || "dev-only-ai-editor-rsp-auth-secret";
+  const secret = process.env.AUTH_SECRET || process.env.SESSION_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV !== "production") return "dev-only-ai-editor-rsp-auth-secret";
+  throw new Error("AUTH_SECRET or SESSION_SECRET must be configured in production");
 }
 
 async function hmac(message: string, secret = authSecret()) {

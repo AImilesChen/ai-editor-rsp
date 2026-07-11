@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   const ids = extractBillingIds(event);
   let persistence: unknown = { persisted: false, reason: "record_only" };
 
-  if (plan && credits > 0 && (eventType === "checkout.completed" || eventType === "subscription.active" || eventType === "subscription.paid")) {
+  if (plan && credits > 0 && eventType === "subscription.paid" && (ids.amountCents || 0) > 0 && ids.invoiceId) {
     persistence = await grantCreditsFromStripe({
       eventId,
       eventType,
