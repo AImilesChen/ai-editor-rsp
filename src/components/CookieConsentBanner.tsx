@@ -113,7 +113,7 @@ export default function CookieConsentBanner() {
                     <input type="checkbox" checked={analytics} onChange={(event) => setAnalytics(event.target.checked)} className="mt-1 h-4 w-4 accent-[#b86b20]" />
                     <span>
                       <span className="block font-semibold text-rsp-text">Analytics</span>
-                      <span className="mt-1 block text-xs leading-5 text-[#6f5a42]">GA4, Microsoft Clarity, Plausible, or similar analytics when configured.</span>
+                      <span className="mt-1 block text-xs leading-5 text-[#6f5a42]">GA4, Microsoft Clarity, and Plausible for traffic that has granted analytics consent.</span>
                     </span>
                   </div>
                 </label>
