@@ -80,7 +80,7 @@ function refundUnavailableMessage(user: User | null) {
   if (["NO_PAID_PLAN", "ALREADY_REFUNDED", "REFUND_ALREADY_PENDING"].includes(refundStatus.code)) return null;
   if (refundStatus.code === "REFUND_WINDOW_EXPIRED") {
     const days = refundStatus.daysSinceLatestPayment;
-    return `Self-service refund is no longer available${typeof days === "number" ? ` because this payment is ${days} days old` : ""}. Refund requests are available within ${refundStatus.refundWindowDays} days of payment. You can still cancel the future renewal.`;
+    return `A refund request is no longer eligible${typeof days === "number" ? ` because this payment is ${days} days old` : ""}. Requests are available within ${refundStatus.refundWindowDays} days of payment. You can still cancel the future renewal.`;
   }
   return `${refundStatus.message} You can still cancel the future renewal or contact support if there is a billing issue.`;
 }

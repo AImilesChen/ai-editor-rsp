@@ -34,11 +34,12 @@ export async function generateMetadata({
       path: "/templates",
     });
   }
-  return createMetadata({
+  const metadata = createMetadata({
     title: `${template.title} — CapCut Template`,
     description: `Use the ${template.song_name} CapCut template. ${template.category} song template for TikTok, Reels, and Shorts.`,
     path: `/templates/${template.slug}`,
   });
+  return template.slug.startsWith("p1-") ? { ...metadata, robots: { index: false, follow: true } } : metadata;
 }
 
 export default async function TemplatesPage({

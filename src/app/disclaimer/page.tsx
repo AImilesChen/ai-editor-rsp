@@ -63,15 +63,6 @@ export default function DisclaimerPage() {
               platform&apos;s terms of service.
             </p>
 
-            <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">
-              Affiliate Disclosure
-            </h2>
-            <p className="mb-4">
-              Some links on this site may be affiliate links. This means we may
-              earn a small commission if you click through and make a purchase
-              or use a service. This comes at no additional cost to you and
-              helps support the maintenance of this free resource.
-            </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">
               Copyright and Trademarks

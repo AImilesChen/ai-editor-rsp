@@ -102,7 +102,7 @@ const faqs = [
   },
   {
     question: "Can I use the generated headshot for business profiles?",
-    answer: "Yes, you can use the result for resumes, company bios, consultant profiles, founder pages, and other professional profile contexts, as long as you have permission to edit the uploaded photo.",
+    answer: "You may use the result for professional profile contexts if you have permission to edit the uploaded photo and the use complies with applicable law, third-party rights, and the selected AI model's terms. You are responsible for reviewing the result before publication.",
   },
   {
     question: "Is my uploaded photo private?",

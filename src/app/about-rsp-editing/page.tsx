@@ -110,10 +110,7 @@ export default function AboutPage() {
               CapCut templates link to the CapCut platform — we do
                 not host template files
               </li>
-              <li>
-                Some links may be affiliate links, which help support this site
-                at no extra cost to you
-              </li>
+
             </ul>
           </div>
 

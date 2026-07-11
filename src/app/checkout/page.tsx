@@ -78,7 +78,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
                   <p><strong className="text-rsp-text">Success:</strong> You will land on a subscription complete page. Do not start another checkout after payment succeeds.</p>
                   <p><strong className="text-rsp-text">Cancel:</strong> Checkout canceled. No payment was taken.</p>
                   <p><strong className="text-rsp-text">Failed:</strong> Payment failed. Please try another payment method or contact support.</p>
-                  <p><strong className="text-rsp-text">Refund:</strong> Self-service refunds available within 7 days if no more than 20% of paid credits have been used.</p>
+                  <p><strong className="text-rsp-text">Refund:</strong> Eligible requests may be submitted within 7 days if no more than 20% of paid credits have been used; completion requires review and Stripe confirmation.</p>
                 </div>
                 <Link href="/pricing" className="mt-6 inline-block text-rsp-secondary no-underline">Back to pricing →</Link>
               </aside>

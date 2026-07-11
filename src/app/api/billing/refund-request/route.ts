@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     const clientErrorReasons = new Set([
       "No paid plan on this account",
       "This account has already been refunded",
-      "Self-service refund requests are available within 7 days of payment.",
-      "Self-service refund requests are available only when no more than 20% of paid credits have been used.",
+      "Refund requests are available within 7 days of payment.",
+      "Refund requests are available only when no more than 20% of paid credits have been used.",
     ]);
     const status = clientErrorReasons.has(refundResult.reason || "") || refundResult.code ? 400 : 503;
     return NextResponse.json({ ok: false, code: refundResult.code || "REFUND_REQUEST_UNAVAILABLE", message: refundResult.reason }, { status });

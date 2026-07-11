@@ -547,7 +547,7 @@ export async function selfServiceRefundStatusForUser(user: AuthUser): Promise<Pu
   return {
     canRequest: eligibility.eligible,
     code: eligibility.eligible ? "ELIGIBLE" : eligibility.code || "NOT_ELIGIBLE",
-    message: eligibility.eligible ? "Self-service refund review is available." : eligibility.message || "This payment is not eligible for self-service refund review.",
+    message: eligibility.eligible ? "Refund review is available." : eligibility.message || "This payment is not eligible for refund review.",
     refundWindowDays: SELF_SERVICE_REFUND_WINDOW_DAYS,
     daysSinceLatestPayment,
     paidCreditsUsagePercent: eligibility.paidCreditsUsagePercent,
@@ -1001,10 +1001,10 @@ async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Prom
   if (!payment.amount_cents || Number(payment.amount_cents) <= 0) return { ...base, code: "PAYMENT_AMOUNT_UNVERIFIED", message: "Payment amount is not verified yet. Please contact support for manual review." };
   const paymentAt = Number(payment.paid_at || payment.created_at || 0);
   const ageDays = paymentAt > 0 ? (Date.now() - paymentAt) / (1000 * 60 * 60 * 24) : Number.POSITIVE_INFINITY;
-  if (ageDays > SELF_SERVICE_REFUND_WINDOW_DAYS) return { ...base, code: "REFUND_WINDOW_EXPIRED", message: "Self-service refund requests are available within 7 days of payment." };
+  if (ageDays > SELF_SERVICE_REFUND_WINDOW_DAYS) return { ...base, code: "REFUND_WINDOW_EXPIRED", message: "Refund requests are available within 7 days of payment." };
   if (balance.paidGranted <= 0) return { ...base, code: "NO_PAID_CREDITS", message: "No paid credits were found for this billing period." };
   if (balance.paidCreditsConsumedFirst > balance.paidGranted * SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE) {
-    return { ...base, code: "PAID_CREDITS_OVER_20_PERCENT_USED", message: "Self-service refund requests are available only when no more than 20% of paid credits have been used." };
+    return { ...base, code: "PAID_CREDITS_OVER_20_PERCENT_USED", message: "Refund requests are available only when no more than 20% of paid credits have been used." };
   }
   return { ...base, eligible: true };
 }

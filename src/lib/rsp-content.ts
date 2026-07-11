@@ -131,5 +131,5 @@ export const faqItems = [
   { q: "Do I need a card to start?", a: "No. You can sign in and use your free credits before choosing a paid plan." },
   { q: "Can I use uploaded images for editing?", a: "Yes. Upload a PNG, JPG, or WebP image, describe the edit, compare before and after, then download the result." },
   { q: "Can I use generated images commercially?", a: "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use." },
-  { q: "How are payments handled?", a: "Paid plans use secure hosted checkout after sign-in. AI Editor RSP does not store your payment details. Eligible refunds can be requested from Account → Billing." },
+  { q: "How are payments handled?", a: "Paid plans use Stripe-hosted checkout after sign-in. Stripe receives card details; AI Editor RSP stores billing identifiers and status records, not full card numbers. Eligible refund requests can be submitted from Account → Billing and complete only after review and Stripe confirmation." },
 ];

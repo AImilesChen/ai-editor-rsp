@@ -28,7 +28,7 @@ export default function PrivacyPage() {
               AI Editor RSP (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) provides prompt-assisted AI image generation, account access, and credits-based generation plans. This Privacy Policy explains what information we collect, why we use it, which third-party services process it, and how you can contact us.
             </p>
             <p className="mb-6 text-sm text-neutral-500">
-              This policy is a user-facing compliance summary, not legal advice. Payments are processed by third-party payment providers when you choose a paid plan.
+              This policy is a user-facing compliance summary, not legal advice. Payments are processed by Stripe when you choose a paid plan.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Information We Collect</h2>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
               <li><strong>Google OAuth:</strong> sign-in with your Google account when you choose Google login.</li>
               <li><strong>Resend:</strong> email magic links and transactional email delivery.</li>
               <li><strong>AI model and safety providers:</strong> fal.ai processes prompts, uploaded input images, and generation requests for the model routes disclosed on our <a className="text-brand-500 underline" href="/ai-models">AI Models Used</a> page. We run automated safety checks and abuse-prevention rules before generation to block prohibited, unsafe, unauthorized, impersonation, document-fraud, adult, or minors-related requests.</li>
-              <li><strong>Payment providers:</strong> payment, tax, invoice, subscription, refund, chargeback, and account review processing when billing is used.</li>
+              <li><strong>Stripe:</strong> secure checkout, payment, tax, invoice, subscription, refund, chargeback, and account review processing when billing is used. Stripe receives payment-card information; we retain billing identifiers and status records but do not receive or store full card numbers.</li>
               <li><strong>External creator tools:</strong> links to platforms such as CapCut, ChatGPT, Gemini, Bing Image Creator, or similar services are governed by those services&apos; own policies.</li>
             </ul>
 
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Retention</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
               <li>Authentication cookies are time-limited and can be cleared by logging out or clearing browser cookies.</li>
-              <li>Generated image retention depends on your plan and current product settings. Public plan copy describes up to 90-day image retention for paid plans.</li>
+              <li>Uploaded and generated images are processed to provide the requested result and may be stored temporarily for delivery, security, and support. No image-retention period is guaranteed unless it is explicitly shown in the product at the time of use; download results you want to keep.</li>
               <li>Payment, invoice, refund, tax, fraud, and support records may be retained as needed for compliance, dispute handling, and legal obligations.</li>
               <li>Safety and abuse-prevention records may be retained to enforce our Content Policy and protect the service.</li>
             </ul>

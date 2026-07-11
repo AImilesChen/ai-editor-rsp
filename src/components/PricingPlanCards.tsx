@@ -28,13 +28,6 @@ type AuthResponse = {
 
 const endedPlanStatuses = new Set(["canceled", "expired", "refunded", "disputed"]);
 const refundPendingStatuses = new Set(["refund_requested"]);
-const planRanks: Record<string, number> = {
-  free: 0,
-  starter: 1,
-  creator: 2,
-  studio: 3,
-};
-
 function normalize(value?: string | null) {
   return (value || "").trim().toLowerCase();
 }
@@ -42,10 +35,6 @@ function normalize(value?: string | null) {
 function isPaidPlan(plan?: string | null) {
   const value = normalize(plan);
   return Boolean(value && value !== "free");
-}
-
-function getPlanRank(plan?: string | null) {
-  return planRanks[normalize(plan)] ?? -1;
 }
 
 function getActivePaidPlan(data: AuthResponse | null) {
@@ -128,25 +117,15 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
         {plans.map((plan) => {
           const planSlug = normalize(plan.name);
           const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
-          const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
+
           const selectedUpgradePlan = activePaidPlan && selectedPlanSlug !== activePaidPlan ? selectedPlanSlug : null;
           const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
           const isFeatured = isSelected;
           const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
-          const cardAction = canSelectPlans || isCurrent || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
           return (
             <article
               key={plan.name}
-              onClick={cardAction}
-              onKeyDown={cardAction ? (event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  cardAction();
-                }
-              } : undefined}
-              role={cardAction ? "button" : undefined}
-              tabIndex={cardAction ? 0 : undefined}
-              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.01] hover:border-rsp-primary/45 hover:shadow-[0_20px_55px_rgba(138,78,24,0.12)] active:scale-[0.995]" : ""} ${isFeatured ? "scale-[1.015] border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
+              className={`relative flex min-h-[430px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm transition ${isFeatured ? "scale-[1.015] border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_28px_70px_rgba(138,78,24,0.18)]" : "border-rsp-border"}`}
             >
               {isFeatured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-rsp-primary px-4 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-rsp-on-primary shadow-[0_10px_20px_rgba(184,107,32,0.22)]">{isCurrent ? "Current plan" : "Selected plan"}</div>}
               <div className="flex min-h-[190px] flex-col">
@@ -160,7 +139,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
                 {plan.features.map((feature) => <li key={feature} className="flex gap-2"><span className="text-rsp-secondary">✓</span><span>{feature}</span></li>)}
               </ul>
               <div className="mt-auto">
-                <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : plan.name === "Free" ? "free" : "standard"} compact isSelected={isSelected} selectionEnabled={canSelectPlans} onSelect={() => setSelectedPlanName(plan.name)} />
+                <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : plan.name === "Free" ? "free" : "standard"} compact isSelected={isSelected} selectionEnabled={canSelectPlans} />
               </div>
             </article>
           );
@@ -174,26 +153,16 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
       {plans.map((plan) => {
         const planSlug = normalize(plan.name);
         const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
-        const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
+
         const selectedUpgradePlan = activePaidPlan && selectedPlanSlug !== activePaidPlan ? selectedPlanSlug : null;
         const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
         const isFeatured = isSelected;
         const isFree = plan.name === "Free";
         const eyebrow = activePaidPlan && plan.featured && !isCurrent ? "Regular use" : plan.badge;
-        const cardAction = canSelectPlans || isCurrent || upgradesCurrentPlan ? () => setSelectedPlanName(plan.name) : undefined;
         return (
           <article
             key={plan.name}
-            onClick={cardAction}
-            onKeyDown={cardAction ? (event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                cardAction();
-              }
-            } : undefined}
-            role={cardAction ? "button" : undefined}
-            tabIndex={cardAction ? 0 : undefined}
-            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${cardAction ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.01] hover:border-rsp-primary/45 hover:shadow-[0_22px_60px_rgba(138,78,24,0.12)] active:scale-[0.995]" : ""} ${
+            className={`relative flex min-h-[500px] flex-col rounded-[30px] border bg-white/82 p-6 shadow-sm backdrop-blur transition ${
               isFeatured
                 ? "scale-[1.015] border-2 border-rsp-primary bg-[#fff4e3] shadow-[0_30px_80px_rgba(138,78,24,0.22)] xl:-mt-4 xl:min-h-[544px]"
                 : "border-rsp-border"
@@ -213,7 +182,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
             <ul className="mt-5 flex-1 space-y-2.5 text-sm leading-6 text-rsp-muted">
               {plan.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2"><span className="text-rsp-secondary">+</span><span>{f}</span></li>)}
             </ul>
-            <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : isFree ? "free" : "standard"} isSelected={isSelected} selectionEnabled={canSelectPlans} onSelect={() => setSelectedPlanName(plan.name)} />
+            <PricingPlanAction planName={plan.name} cta={plan.cta} emphasis={isFeatured ? "featured" : isFree ? "free" : "standard"} isSelected={isSelected} selectionEnabled={canSelectPlans} />
           </article>
         );
       })}

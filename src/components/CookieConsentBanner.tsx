@@ -70,14 +70,18 @@ export default function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-3 sm:bottom-5 sm:px-5" role="region" aria-label="Cookie consent">
-      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb] p-4 shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989] ${isManaging ? "max-w-4xl" : "max-w-[min(920px,calc(100vw-24px))]"}`}>
+      <div className={`mx-auto rounded-[22px] border border-[#d6a35c] bg-[#fff8eb] shadow-[0_22px_70px_rgba(72,42,14,0.24)] ring-1 ring-[#f0c989] ${isManaging ? "max-w-4xl p-4" : "max-w-[min(920px,calc(100vw-24px))] p-3"}`}>
         <div className={`grid gap-3 ${isManaging ? "" : "sm:flex sm:items-center sm:justify-between sm:gap-4"}`}>
-          <div className={isManaging ? "" : "min-w-0 sm:max-w-[390px]"}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a45f17]">Cookie choices</p>
-            <h2 className="mt-1 text-base font-bold leading-5 text-rsp-text">Choose your cookie settings</h2>
-            <p className="mt-1 text-sm leading-5 text-[#5f4d39]">
-              We only load optional analytics or marketing cookies after you choose.
-            </p>
+          <div className={isManaging ? "" : "min-w-0 sm:max-w-[430px]"}>
+            {isManaging ? (
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a45f17]">Cookie choices</p>
+                <h2 className="mt-1 text-base font-bold leading-5 text-rsp-text">Choose your cookie settings</h2>
+                <p className="mt-1 text-sm leading-5 text-[#5f4d39]">We only load optional analytics or marketing cookies after you choose.</p>
+              </>
+            ) : (
+              <p className="text-sm leading-5 text-[#5f4d39]"><strong className="text-rsp-text">Cookie choices:</strong> optional analytics and marketing load only after you choose.</p>
+            )}
 
             {isManaging ? (
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -112,7 +116,7 @@ export default function CookieConsentBanner() {
             ) : null}
           </div>
 
-          <div className={`grid gap-2 ${isManaging ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:w-[480px] sm:flex-none sm:grid-cols-3"}`}>
+          <div className={`grid gap-2 ${isManaging ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:w-[430px] sm:flex-none sm:grid-cols-3"}`}>
             <button type="button" onClick={() => closeWith({ analytics: false, marketing: false })} className="min-h-11 rounded-full border border-[#d0a16a] bg-white px-3 py-2.5 text-sm font-bold text-rsp-text shadow-sm transition hover:bg-[#fff3de] focus:outline-none focus:ring-2 focus:ring-[#b86b20]">
               Reject non-essential
             </button>

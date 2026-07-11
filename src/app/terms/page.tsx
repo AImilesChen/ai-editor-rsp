@@ -26,7 +26,7 @@ export default function TermsPage() {
               By accessing or using AI Editor RSP, you agree to these Terms of Service. If you do not agree, do not use the site, account features, generation tools, or billing features.
             </p>
             <p className="mb-6 text-sm text-neutral-500">
-              Payments are processed by third-party payment providers when you choose a paid plan. Credits are added after payment confirmation.
+              Payments are processed by Stripe when you choose a paid plan. Credits are added after payment confirmation.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Service Description</h2>
@@ -51,12 +51,12 @@ export default function TermsPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Billing</h2>
             <p className="mb-4">
-              Payments, taxes, invoices, subscriptions, refunds, and chargebacks may be processed by a third-party payment provider. You must provide accurate billing information and comply with the payment provider&apos;s terms. We do not store full card numbers on our servers.
+              Payments, taxes, invoices, subscriptions, refunds, and chargebacks are processed through Stripe. You must provide accurate billing information and comply with Stripe&apos;s terms. Stripe receives payment-card information; we retain billing identifiers and status records but do not receive or store full card numbers.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Refunds and Failed Generations</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li>Self-service refunds are available within 7 days of purchase if no more than 20% of the granted paid credits have been used, unless applicable law requires otherwise.</li>
+              <li>You may submit a refund request from Account → Billing within 7 days of purchase if no more than 20% of the granted paid credits have been used, unless applicable law requires otherwise. Eligibility is reviewed and a refund is completed only after Stripe confirms it.</li>
               <li>If a prompt is blocked before generation, credits are not charged.</li>
               <li>If a generation request fails, times out, or returns no usable result due to a system issue, we may avoid charging or return the affected credit.</li>
               <li>Subjective dissatisfaction with AI output style, composition, or quality does not automatically qualify for a refund or extra credits.</li>

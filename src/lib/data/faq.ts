@@ -40,8 +40,4 @@ export const faqs: FAQItem[] = [
     question: "What is CapCut and how do I use templates?",
     answer: "CapCut is a free video editing app by ByteDance. To use a template, click 'Use Template' which opens CapCut. Then select your photos/videos and the app automatically applies the editing style, transitions, and effects.",
   },
-  {
-    question: "Why are some links marked as affiliate?",
-    answer: "Some CapCut template links may be affiliate links, meaning we may earn a small commission if you use them. This helps support the site at no extra cost to you. All affiliate links are clearly marked with a disclosure notice.",
-  },
 ];

@@ -38,10 +38,10 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Refund Eligibility</h2>
             <ul className="list-disc pl-5 space-y-2 mb-4">
-              <li>Self-service refund requests are eligible within 7 days of purchase.</li>
-              <li>Self-service refunds are available only if no more than 20% of the paid credits granted by that purchase or billing period have been used.</li>
+              <li>Refund requests may be submitted from Account → Billing within 7 days of purchase.</li>
+              <li>Eligibility requires that no more than 20% of the paid credits granted by that purchase or billing period have been used.</li>
               <li>For example, a 240-credit plan remains eligible only while 48 or fewer paid credits from that billing period have been used.</li>
-              <li>Accounts that have used more than 20% of paid credits, show heavy generation activity, or are outside the self-service window are not eligible for an automatic full refund through the product.</li>
+              <li>Accounts that have used more than 20% of paid credits, show heavy generation activity, or are outside the request window are not eligible for a full refund through the product.</li>
               <li>Refunds may be denied for abuse, fraud, policy violations, chargeback abuse, or attempts to bypass technical or safety limits.</li>
               <li>Applicable consumer protection law may provide additional rights in some regions.</li>
             </ul>
@@ -61,7 +61,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">How Refunds Are Processed</h2>
             <p className="mb-4">
-              Payments, taxes, invoices, refunds, and chargebacks may be processed by a third-party payment provider. Refund timing, supported countries, tax treatment, payment-method availability, and chargeback handling depend on that provider&apos;s current terms and the applicable payment network.
+              Payments, taxes, invoices, refunds, and chargebacks are processed through Stripe. Refund timing, supported countries, tax treatment, payment-method availability, and chargeback handling depend on Stripe&apos;s current terms and the applicable payment network.
             </p>
 
             <h2 className="font-heading text-xl font-bold text-neutral-900 mb-3">Request a Refund</h2>

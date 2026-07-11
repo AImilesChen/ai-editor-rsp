@@ -34,11 +34,12 @@ export async function generateMetadata({
       path: "/effects",
     });
   }
-  return createMetadata({
+  const metadata = createMetadata({
     title: `${effect.title} — AI Photo Effect`,
     description: effect.description.slice(0, 160),
     path: `/effects/${effect.slug}`,
   });
+  return effect.slug.startsWith("p1-") ? { ...metadata, robots: { index: false, follow: true } } : metadata;
 }
 
 export default async function EffectsPage({

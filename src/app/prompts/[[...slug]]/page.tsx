@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
       title: `${legacyPrompt.title} — AI Image Prompt`,
       description: legacyPrompt.prompt,
       alternates: { canonical: `${site.url}/prompts/${legacyPrompt.slug}` },
+      robots: legacyPrompt.slug.startsWith("p1-") ? { index: false, follow: true } : undefined,
       openGraph: {
         title: `${legacyPrompt.title} — AI Image Prompt`,
         description: legacyPrompt.prompt,

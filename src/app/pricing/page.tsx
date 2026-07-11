@@ -18,7 +18,7 @@ const pricingFaq = [
   ["What uses credits?", "Credits are used when you generate or edit an image. Portrait text-to-image starts at 1 credit, square or landscape text-to-image starts at 2 credits, and uploaded-image edits or professional headshots start at 4 credits."],
   ["When do monthly credits arrive?", "Paid plan credits are granted at the start of each billing period."],
   ["Do credits expire?", "Free credits remain valid while your account is active. Paid plan credits are valid for the current billing period and do not roll over."],
-  ["Can I get a refund?", "Self-service refunds are available within 7 days of purchase if no more than 20% of paid credits from that billing period have been used. A confirmed refund revokes paid-plan credits but preserves any unused one-time free signup credits."],
+  ["Can I get a refund?", "You may submit a refund request from Account → Billing within 7 days of purchase if no more than 20% of paid credits from that billing period have been used. Eligibility is reviewed, and a refund is completed only after Stripe confirms it. A confirmed refund revokes paid-plan credits but preserves any unused one-time free signup credits."],
   ["How do I manage or cancel billing?", "Use Account → Billing to manage payment details, invoices, cancellation, and refund requests."],
   ["What happens if I cancel?", "Cancellation stops the next automatic renewal only. It is not a refund request. Current-period access and remaining available credits follow the active plan rules, and monthly credits do not roll over after the billing period ends."],
   ["Can I use generated images commercially?", "Generated images may be used depending on your use case, the underlying AI model terms, and your own legal review. AI Editor RSP does not guarantee every output is free from third-party rights or suitable for every commercial use."],
@@ -169,7 +169,7 @@ export default function PricingPage() {
           </div>
 
           <div className="mx-auto mt-8 grid max-w-screen-2xl gap-3 md:grid-cols-3">
-            <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Payments are processed through a secure hosted checkout after sign-in. AI Editor RSP does not store your payment details.</div>
+            <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Secure checkout:</strong> Stripe processes card details through secure hosted checkout after sign-in. AI Editor RSP stores billing identifiers and status records, not full card numbers.</div>
             <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">Cancel anytime:</strong> Monthly credits are valid for the current billing period and do not roll over.</div>
             <div className="rounded-[24px] border border-rsp-border bg-white/65 p-5 text-sm leading-6 text-rsp-muted"><strong className="text-rsp-text">AI usage:</strong> {legalDisclaimer}</div>
           </div>
