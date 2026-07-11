@@ -809,7 +809,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`;
 
   return (
-    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]" : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? (compactPromptBuilder && mode === "text" ? "grid items-stretch gap-0 xl:grid-cols-[480px_minmax(0,1fr)]" : "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]") : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "h-full p-4 xl:max-h-none" : "h-full p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
@@ -1005,7 +1005,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             onChange={(event) => setPrompt(event.target.value)}
             disabled={controlsLocked}
             placeholder={promptPlaceholder}
-            className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && !isHero ? "border-[#86EFAC]/30 bg-[#0D0A07]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/40 transition focus:border-[#86EFAC]/70 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+            className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : compactPromptBuilder && mode === "text" ? "min-h-[188px] p-5 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && (!isHero || compactPromptBuilder) ? "border-[#86EFAC]/52 bg-[#0D0A07] shadow-[0_0_0_1px_rgba(134,239,172,0.11),0_16px_36px_rgba(0,0,0,0.18)]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/52 transition focus:border-[#86EFAC]/75 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
           />
         </div>
         {isHeadshotMode && (
@@ -1045,12 +1045,12 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 return (
                   <div key={group.label} className="rounded-2xl border border-white/[0.055] bg-[#100C08]/38 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#F4DFC8]/72">{group.label}</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#F4DFC8]/78">{group.label}</p>
                       {group.overflowOptions.length > 0 && (
                         <button
                           type="button"
                           onClick={() => setExpandedLookGroups((current) => ({ ...current, [group.kind]: !current[group.kind] }))}
-                          className="rounded-full border border-white/10 bg-white/[0.025] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white/46 transition hover:border-[#D4A574]/35 hover:bg-[#D4A574]/8 hover:text-[#F4DFC8]/82"
+                          className="rounded-full border border-white/10 bg-white/[0.025] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/50 transition hover:border-[#D4A574]/35 hover:bg-[#D4A574]/8 hover:text-[#F4DFC8]/82"
                           aria-expanded={isExpanded}
                         >
                           {isExpanded ? `Show fewer ${group.moreLabel} −` : `More ${group.moreLabel} +`}
@@ -1063,7 +1063,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                           type="button"
                           key={option}
                           onClick={() => applyPromptModifier(group.kind, option, group.value, group.setter)}
-                          className={`min-h-8 rounded-full border px-3 py-1.5 text-[11px] font-semibold leading-none transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-black/16 text-white/62 hover:border-[#D4A574]/38 hover:bg-white/[0.04] hover:text-white"}`}
+                          className={`min-h-9 rounded-full border px-3.5 py-2 text-xs font-semibold leading-none transition ${group.value === option ? "border-[#86EFAC] bg-[#86EFAC] text-[#102014] shadow-[0_0_0_1px_rgba(134,239,172,0.28)]" : "border-white/10 bg-black/16 text-white/66 hover:border-[#D4A574]/38 hover:bg-white/[0.04] hover:text-white"}`}
                         >
                           {group.value === option ? `✓ ${option}` : option}
                         </button>
@@ -1107,7 +1107,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         {!useUnifiedHeadshotBar && <p className="mt-3 text-xs leading-5 text-white/55">{generationSupportText}</p>}
       </aside>
 
-      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "flex h-full min-h-[760px] flex-col p-3 md:p-5 xl:p-6" : "flex h-full min-h-[620px] flex-col p-3 md:p-5 xl:p-6") : mode === "text" ? "flex h-full min-h-[720px] flex-col p-4 md:p-6" : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
+      <section className={`relative min-w-0 bg-[radial-gradient(circle_at_50%_0%,rgba(134,239,172,0.16),transparent_30%),linear-gradient(180deg,#15110C_0%,#0B0907_100%)] ${isHero ? (uploadedImage ? "flex h-full min-h-[760px] flex-col p-3 md:p-5 xl:p-6" : compactPromptBuilder && mode === "text" ? "flex h-full min-h-[550px] flex-col p-3 md:p-5 xl:p-6" : "flex h-full min-h-[620px] flex-col p-3 md:p-5 xl:p-6") : mode === "text" ? "flex h-full min-h-[720px] flex-col p-4 md:p-6" : "flex h-full min-h-[520px] flex-col p-4 md:p-6"}`}>
         <div className={`${isHero || editorOnly ? "hidden" : "mb-5"} flex items-center justify-between gap-3 text-xs text-white/55`}>
           <span className="ml-auto">{editorOnly ? "Photo edit workflow" : mode === "edit" ? "Edit workflow" : "Prompt workflow"} · {currentQuote.sizeLabel}</span>
         </div>
@@ -1128,7 +1128,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           {isHero ? (
             <div>
               <p className="sr-only">Reference-first AI Editor</p>
-              <PreviewHeadingTag className="mt-1 max-w-4xl font-heading text-[2.55rem] font-normal leading-[1.02] tracking-[-0.05em] text-white md:text-[3.45rem] xl:text-[3.75rem]">
+              <PreviewHeadingTag className={`mt-1 max-w-4xl font-heading font-normal leading-[1.02] tracking-[-0.05em] text-white ${compactPromptBuilder && mode === "text" ? "text-[2.15rem] md:text-[2.5rem] xl:text-[2.7rem]" : "text-[2.55rem] md:text-[3.45rem] xl:text-[3.75rem]"}`}>
                 {mode === "edit" ? "Edit uploaded images with AI" : compactPromptBuilder ? "Generate AI images with ready-made prompts" : "Create AI images from ready prompts"}
               </PreviewHeadingTag>
               <p className="mt-3 max-w-2xl text-base leading-7 text-white/76">{mode === "edit" ? "Upload a photo, describe the change you want, and compare the before-and-after result before downloading." : compactPromptBuilder ? "Pick a prompt, customize the style, lighting, shot, and size, then create a polished AI image in seconds." : "Pick a proven prompt, adjust the text if needed, and generate a polished image without starting from a blank page."}</p>
@@ -1155,7 +1155,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {state === "processing" && <div className="absolute inset-0 flex items-center justify-center bg-black/35"><div className="rounded-2xl border border-white/15 bg-black/70 px-5 py-3 text-sm font-semibold text-white">Generating image…</div></div>}
               {state === "failed" && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/70 p-4 text-center text-sm text-red-100">{error || "Generation failed. Please adjust the prompt and try again."}</div></div>}
               {state === "ready" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center bg-black/35 p-6"><div className="max-w-sm rounded-2xl border border-white/15 bg-black/70 p-4 text-center text-sm text-white">Job submitted. Request {jobId?.slice(0, 10)}…</div></div>}
-              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? "max-w-[360px] p-4" : "max-w-lg p-5"} rounded-[26px] border border-white/14 bg-black/52 shadow-[0_22px_70px_rgba(0,0,0,0.38)] backdrop-blur-md`}><div className="mx-auto mb-3 h-1 w-12 rounded-full bg-[#86EFAC]/70" /><p className={`${isHero ? "text-[1.35rem]" : "text-2xl"} font-heading font-normal leading-tight tracking-[-0.03em] text-white`}>Start with a prompt, then generate</p><p className="mt-2 text-sm leading-6 text-white/70">Choose a prompt, set size, then generate. Result actions appear here.</p></div></div>}
+              {state === "idle" && !generatedImage && <div className="absolute inset-0 flex items-center justify-center p-5 text-center"><div className={`${isHero ? (compactPromptBuilder ? "max-w-[300px] p-3.5" : "max-w-[360px] p-4") : "max-w-lg p-5"} rounded-[26px] border border-white/12 bg-black/46 shadow-[0_22px_70px_rgba(0,0,0,0.34)] backdrop-blur-md`}><div className="mx-auto mb-3 h-1 w-12 rounded-full bg-[#86EFAC]/62" /><p className={`${isHero ? (compactPromptBuilder ? "text-[1.15rem]" : "text-[1.35rem]") : "text-2xl"} font-heading font-normal leading-tight tracking-[-0.03em] text-white`}>Start with a prompt, then generate</p><p className={`${compactPromptBuilder && isHero ? "mt-2 text-xs leading-5" : "mt-2 text-sm leading-6"} text-white/66`}>Choose a prompt, set size, then generate. Result actions appear here.</p></div></div>}
               {!generatedImage && !isHero && state !== "processing" && state !== "failed" && <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-black/46 px-4 py-3 text-xs text-white/58 backdrop-blur-sm"><span><strong className="text-white/84">Output workspace</strong> · Preview, download, and edit actions unlock after generation.</span><span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-bold uppercase tracking-[0.08em] text-white/46">Ready area</span></div>}
             </div>
           ) : uploadedImage ? (
