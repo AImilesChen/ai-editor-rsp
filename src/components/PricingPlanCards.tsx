@@ -129,7 +129,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
           const planSlug = normalize(plan.name);
           const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
           const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
-          const cardSelectable = canSelectPlans || upgradesCurrentPlan;
+          const cardSelectable = canSelectPlans || isCurrent || upgradesCurrentPlan;
           const selectedUpgradePlan = activePaidPlan && selectedPlanSlug !== activePaidPlan ? selectedPlanSlug : null;
           const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
           const isFeatured = isSelected;
@@ -175,7 +175,7 @@ export default function PricingPlanCards({ plans, variant = "pricing" }: { plans
         const planSlug = normalize(plan.name);
         const isCurrent = Boolean(activePaidPlan && activePaidPlan === planSlug);
         const upgradesCurrentPlan = Boolean(activePaidPlan && getPlanRank(plan.name) > getPlanRank(activePaidPlan));
-        const cardSelectable = canSelectPlans || upgradesCurrentPlan;
+        const cardSelectable = canSelectPlans || isCurrent || upgradesCurrentPlan;
         const selectedUpgradePlan = activePaidPlan && selectedPlanSlug !== activePaidPlan ? selectedPlanSlug : null;
         const isSelected = selectedUpgradePlan ? planSlug === selectedUpgradePlan : Boolean(isCurrent || (!activePaidPlan && selectedPlanSlug === planSlug));
         const isFeatured = isSelected;
