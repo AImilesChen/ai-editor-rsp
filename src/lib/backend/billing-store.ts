@@ -140,6 +140,8 @@ type SubscriptionStateInput = {
 
 type RefundStateInput = Omit<SubscriptionStateInput, "status"> & {
   refundId?: string | null;
+  amountCents?: number | null;
+  currency?: string | null;
 };
 
 type KV = {
@@ -822,7 +824,7 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
 
   const current = await readD1Account(db, userId);
   const sameLockedSubscription = Boolean(current?.subscriptionId && input.subscriptionId && current.subscriptionId === input.subscriptionId);
-  if (current?.subscriptionStatus === "refund_requested" || current?.subscriptionStatus === "disputed" || (current?.subscriptionStatus === "refunded" && sameLockedSubscription)) {
+  if (current?.subscriptionStatus === "refund_requested" || current?.subscriptionStatus === "disputed" || (current?.subscriptionStatus === "refunded" && (!input.subscriptionId || sameLockedSubscription))) {
     await recordWebhookEvent(db, input.eventId, input.eventType, { ignored: "account_locked_for_refund", raw: input.rawEvent || input }, userId, "processed", null, true);
     return { persisted: true, duplicate: true, account: current };
   }
@@ -895,7 +897,10 @@ async function updateSubscriptionStateD1(db: D1Database, input: SubscriptionStat
   }
   if (current?.subscriptionStatus === "refunded" && input.status !== "refunded") {
     const sameSubscription = Boolean(current.subscriptionId && input.subscriptionId && current.subscriptionId === input.subscriptionId);
-    if (sameSubscription) accountStatus = "refunded";
+    if (!input.subscriptionId || sameSubscription) {
+      await recordWebhookEvent(db, input.eventId, input.eventType, { ignored: "stale_event_for_refunded_subscription", raw: input.rawEvent || input }, userId, "processed", null, true);
+      return { persisted: true, duplicate: true, account: current };
+    }
   }
   if (current) {
     await db.prepare("UPDATE users SET plan = COALESCE(?, plan), status = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
@@ -1010,20 +1015,49 @@ async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Prom
 }
 
 async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
-  const state = await updateSubscriptionStateD1(db, { ...input, status: "refunded" });
-  if (!state.persisted || !state.account) return state;
-  const account = state.account;
+  const userId = await resolveD1UserId(db, input);
+  if (!userId) {
+    await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, null, "failed", "Missing user_id/email/customer mapping", true);
+    return { persisted: false, reason: "Missing user_id/email/customer mapping" };
+  }
+  if (!input.refundId?.startsWith("re_")) {
+    await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "failed", "Missing canonical Stripe refund ID", true);
+    return { persisted: false, reason: "Missing canonical Stripe refund ID" };
+  }
+
+  const existingRevoke = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'refund_paid_credit_revoke' AND source_id = ?")
+    .bind(userId, input.refundId)
+    .first<{ id: string }>();
+
+  const account = await readD1Account(db, userId);
+  if (!account) return { persisted: false, reason: "Billing account not found" };
+  const refundRequest = await db.prepare("SELECT id, payment_id, subscription_id FROM refund_requests WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested', 'refunded') ORDER BY requested_at DESC LIMIT 1")
+    .bind(userId)
+    .first<{ id: string; payment_id: string | null; subscription_id: string | null }>();
   const now = Date.now();
-  const freeBalance = await calculateFreeCreditRefundBalanceD1(db, account.userId);
+  const freeBalance = await calculateFreeCreditRefundBalanceD1(db, userId);
   const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, account.creditsRemaining, freeBalance.freeCreditsRemaining));
   const revoked = Math.max(0, account.creditsRemaining - preservedFreeCredits);
-  await db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, account.userId).run();
-  await db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE user_id = ? AND status = 'paid'").bind(now, account.userId).run();
-  await db.prepare("UPDATE refund_requests SET status = 'refunded', stripe_refund_id = COALESCE(?, stripe_refund_id), resolved_at = ?, metadata_json = COALESCE(metadata_json, ?) WHERE user_id = ? AND status IN ('submitted', 'pending', 'refund_requested')")
-    .bind(input.refundId || null, now, JSON.stringify({ eventId: input.eventId }), account.userId)
+
+  await db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?")
+    .bind(preservedFreeCredits, now, userId)
     .run();
-  await insertCreditLedger(db, account.userId, "refund_paid_credit_revoke", input.eventId, -revoked, preservedFreeCredits, "Stripe refund confirmed; paid credits revoked and unused free signup credits preserved", { eventType: input.eventType, refundId: input.refundId, preservedFreeCredits, ...freeBalance });
-  return { ...state, account: { ...account, subscriptionStatus: "refunded" as const, creditsRemaining: preservedFreeCredits, updatedAt: now } };
+  if (refundRequest?.payment_id) {
+    await db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE id = ? AND user_id = ?")
+      .bind(now, refundRequest.payment_id, userId)
+      .run();
+  }
+  if (refundRequest?.id) {
+    await db.prepare("UPDATE refund_requests SET status = 'refunded', stripe_refund_id = ?, amount_cents = COALESCE(?, amount_cents), currency = COALESCE(?, currency), resolved_at = ?, metadata_json = json_patch(COALESCE(metadata_json, '{}'), ?) WHERE id = ?")
+      .bind(input.refundId, input.amountCents ?? null, input.currency || null, now, JSON.stringify({ stripeRefundEventId: input.eventId, stripeRefundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null }), refundRequest.id)
+      .run();
+  }
+  await db.prepare("UPDATE subscriptions SET status = 'refunded', canceled_at = COALESCE(canceled_at, ?), updated_at = ? WHERE user_id = ? AND status IN ('active', 'trialing', 'past_due', 'paused', 'scheduled_cancel', 'refund_requested')")
+    .bind(now, now, userId)
+    .run();
+  await insertCreditLedger(db, userId, "refund_paid_credit_revoke", input.refundId, -revoked, preservedFreeCredits, "Stripe refund confirmed; paid credits revoked and unused free signup credits preserved", { eventId: input.eventId, eventType: input.eventType, refundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null, preservedFreeCredits, ...freeBalance });
+  await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "processed", null, true);
+  return { persisted: true, duplicate: Boolean(existingRevoke), account: { ...account, plan: "free" as const, subscriptionStatus: "refunded" as const, creditsRemaining: preservedFreeCredits, updatedAt: now } };
 }
 
 async function calculateFreeCreditRefundBalanceD1(db: D1Database, userId: string): Promise<FreeCreditRefundBalance> {

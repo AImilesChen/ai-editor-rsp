@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
+    "test:stripe-refund": "node --experimental-strip-types scripts/test-stripe-refund-integrity.mjs",
     "lint": "eslint src/ --ext .ts,.tsx",
     "preview": "opennextjs-cloudflare build && node scripts/patch-open-next-worker.mjs && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && node scripts/patch-open-next-worker.mjs && opennextjs-cloudflare deploy",

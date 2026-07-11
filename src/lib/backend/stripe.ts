@@ -426,7 +426,7 @@ function normalizeStripeEventType(type: string) {
     case "customer.subscription.deleted": return "subscription.canceled";
     case "customer.subscription.paused": return "subscription.paused";
     case "invoice.payment_failed": return "subscription.past_due";
-    case "charge.refunded":
+    case "charge.refunded": return "refund.charge_summary";
     case "refund.created":
     case "refund.updated": return "refund.created";
     case "charge.dispute.created": return "dispute.created";
