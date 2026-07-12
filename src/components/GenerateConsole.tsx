@@ -780,7 +780,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
         {state === "processing" ? (mode === "edit" ? "Editing image…" : "Generating image…") : needsUpload ? "Upload photo to start" : !promptReady ? (mode === "edit" ? "Describe what to remove" : "Write or choose a prompt") : !imageAuthorizationReady ? "Confirm photo permission" : requiresManualMask && !editRegion ? "Paint area to clean" : mode === "edit" && task === "Professional headshot" ? `Create professional headshot — ${currentQuote.creditsCharged} credits` : mode === "edit" ? `Generate edit — ${currentQuote.creditsCharged} credits` : `Generate image — ${currentQuote.creditsCharged} credits`}
       </button>
-      {(uploadedImage || generatedImage) && (
+      {(uploadedImage || generatedImage) && !isHeadshotMode && (
         <a href="/account/history" className="rounded-full border border-[#86EFAC]/35 bg-[#86EFAC]/10 px-5 py-3 text-center text-sm font-bold text-[#C8FADC] no-underline transition hover:border-[#86EFAC]/70 hover:bg-[#86EFAC]/15">
           View generation history
         </a>
@@ -1162,18 +1162,18 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           ) : uploadedImage ? (
             <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
               <div
-                className={`${generatedImage ? "cursor-ew-resize" : editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(76vh,760px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
+                className={`${generatedImage ? "cursor-ew-resize" : !isHeadshotMode && editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(76vh,760px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
                 style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(76vh,760px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
-                role={generatedImage ? "slider" : editScope === "selected" ? "application" : undefined}
-                aria-label={generatedImage ? "Drag to compare before and after edit" : editScope === "selected" ? "Draw edit area on uploaded image" : undefined}
+                role={generatedImage ? "slider" : !isHeadshotMode && editScope === "selected" ? "application" : undefined}
+                aria-label={generatedImage ? "Drag to compare before and after edit" : !isHeadshotMode && editScope === "selected" ? "Draw edit area on uploaded image" : undefined}
                 aria-valuemin={generatedImage ? 12 : undefined}
                 aria-valuemax={generatedImage ? 88 : undefined}
                 aria-valuenow={generatedImage ? comparePosition : undefined}
                 tabIndex={generatedImage ? 0 : undefined}
-                onPointerDown={(event) => { if (generatedImage) startCompareDrag(event); else beginRegionSelect(event); }}
-                onPointerMove={(event) => { if (generatedImage && isDraggingCompare) updateComparePosition(event); else if (!generatedImage) updateRegionSelect(event); }}
-                onPointerUp={(event) => { if (generatedImage) stopCompareDrag(event); else endRegionSelect(event); }}
-                onPointerCancel={(event) => { if (generatedImage) stopCompareDrag(event); else endRegionSelect(event); }}
+                onPointerDown={(event) => { if (generatedImage) startCompareDrag(event); else if (!isHeadshotMode) beginRegionSelect(event); }}
+                onPointerMove={(event) => { if (generatedImage && isDraggingCompare) updateComparePosition(event); else if (!generatedImage && !isHeadshotMode) updateRegionSelect(event); }}
+                onPointerUp={(event) => { if (generatedImage) stopCompareDrag(event); else if (!isHeadshotMode) endRegionSelect(event); }}
+                onPointerCancel={(event) => { if (generatedImage) stopCompareDrag(event); else if (!isHeadshotMode) endRegionSelect(event); }}
                 onKeyDown={(event) => {
                   if (!generatedImage) return;
                   if (event.key === "ArrowLeft") setComparePosition((value) => Math.max(12, value - 4));
@@ -1188,18 +1188,18 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/6" />
                 {generatedImage && <><span className="absolute left-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">Before · uploaded photo</span><span className="absolute right-4 top-4 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white shadow-lg">{isHeadshotMode ? "After · professional headshot" : "After · generated result"}</span><span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/62 px-4 py-1.5 text-xs font-bold text-white/85 shadow-lg backdrop-blur-sm">Drag to compare before / after</span><div className="pointer-events-none absolute inset-y-0 w-px bg-white/80 shadow-[0_0_18px_rgba(255,255,255,0.55)]" style={{ left: `${comparePosition}%` }} /><div className="pointer-events-none absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-black/75 text-sm text-white shadow-xl" style={{ left: `${comparePosition}%` }}>↔</div></>}
-                {!generatedImage && maskStrokes.map((stroke) => (
+                {!isHeadshotMode && !generatedImage && maskStrokes.map((stroke) => (
                   stroke.points.map((point, index) => (
                     <span key={`${stroke.id}-${index}`} className="pointer-events-none absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#FF6B8A]/45 bg-[#FF4D6D]/32 shadow-[0_0_20px_rgba(255,77,109,0.24)]" style={{ left: `${point.x}%`, top: `${point.y}%` }} />
                   ))
                 ))}
-                {!generatedImage && currentStroke.map((point, index) => (
+                {!isHeadshotMode && !generatedImage && currentStroke.map((point, index) => (
                   <span key={`active-${Math.round(point.x * 10)}-${Math.round(point.y * 10)}-${index}`} className="pointer-events-none absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#FF6B8A]/45 bg-[#FF4D6D]/32 shadow-[0_0_20px_rgba(255,77,109,0.24)]" style={{ left: `${point.x}%`, top: `${point.y}%` }} />
                 ))}
-                {!generatedImage && editRegion && hasMaskSelection && (
+                {!isHeadshotMode && !generatedImage && editRegion && hasMaskSelection && (
                   <div className="pointer-events-none absolute rounded-[18px] border border-[#86EFAC]/75 bg-[#86EFAC]/6 shadow-[0_0_22px_rgba(134,239,172,0.24)]" style={{ left: `${editRegion.x}%`, top: `${editRegion.y}%`, width: `${editRegion.width}%`, height: `${editRegion.height}%` }} />
                 )}
-                {!generatedImage && (
+                {!isHeadshotMode && !generatedImage && (
                   <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/78">
                     <span className="rounded-full border border-white/12 bg-black/55 px-3 py-1.5 backdrop-blur-sm">{hasMaskSelection ? "Brush more if needed" : "Paint on the photo to mark what to clean"}</span>
                     {hasMaskSelection && <span className="rounded-full border border-[#86EFAC]/35 bg-[#102014]/75 px-3 py-1.5 text-[#C8FADC] backdrop-blur-sm">Mask ready</span>}
@@ -1279,7 +1279,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
           </div>
         )}
-        {!generatedImage && (mode === "text" || !editorOnly || Boolean(uploadedImage) || controlsLocked) && (
+        {!isHeadshotMode && !generatedImage && (mode === "text" || !editorOnly || Boolean(uploadedImage) || controlsLocked) && (
           <div className={`${isHero ? "mt-3 w-full max-w-[1280px] p-3" : "mt-4 max-w-5xl p-4"} mx-auto grid gap-3 rounded-[22px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(134,239,172,0.028)_55%,rgba(0,0,0,0.12))] text-xs text-white/64 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:grid-cols-[1fr_auto] sm:items-center`}>
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#86EFAC]/22 bg-[#86EFAC]/9 text-sm font-bold text-[#C8FADC] shadow-[0_0_24px_rgba(134,239,172,0.08)]">↳</span>
@@ -1330,7 +1330,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
       </section>
-      {useUnifiedHeadshotBar && (
+      {useUnifiedHeadshotBar && !needsUpload && (
         <div className="border-t border-white/10 bg-[linear-gradient(90deg,#1E1711_0%,#15110C_45%,#0F0C09_100%)] xl:col-span-2">
           <div className="grid gap-4 px-4 py-4 md:px-5 xl:grid-cols-[460px_minmax(0,1fr)] xl:items-center xl:gap-0 xl:px-0 xl:py-0">
             <div className="xl:border-r xl:border-white/10 xl:px-5 xl:py-4">
@@ -1343,7 +1343,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             </div>
             <div className="flex flex-col gap-2 xl:px-6 xl:py-4">
               {generationActionControl}
-              {uploadedImage && <button type="button" onClick={removePhoto} className="rounded-full border border-white/12 px-5 py-3 text-sm font-bold text-white/75 transition hover:border-white/30">Remove photo</button>}
+
             </div>
           </div>
         </div>
