@@ -79,6 +79,9 @@ export async function POST(request: NextRequest) {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "canceled", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.scheduled_cancel") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "scheduled_cancel", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "subscription.update") {
+    const status = extractSubscriptionUpdateStatus(event);
+    if (status) persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status, plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.past_due") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "past_due", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.expired") {
@@ -121,6 +124,24 @@ export async function POST(request: NextRequest) {
     billingIdsFound: ids,
     persistence,
   });
+}
+
+function extractSubscriptionUpdateStatus(event: unknown): "active" | "trialing" | "scheduled_cancel" | "past_due" | "paused" | "canceled" | "expired" | null {
+  if (!event || typeof event !== "object") return null;
+  const data = (event as Record<string, unknown>).data;
+  if (!data || typeof data !== "object") return null;
+  const object = (data as Record<string, unknown>).object;
+  if (!object || typeof object !== "object") return null;
+  const subscription = object as Record<string, unknown>;
+  if (subscription.cancel_at_period_end === true) return "scheduled_cancel";
+  const status = stringValue(subscription.status)?.toLowerCase();
+  if (status === "active") return "active";
+  if (status === "trialing") return "trialing";
+  if (status === "past_due" || status === "unpaid") return "past_due";
+  if (status === "paused") return "paused";
+  if (status === "canceled") return "canceled";
+  if (status === "incomplete_expired") return "expired";
+  return null;
 }
 
 function isRefundEvent(eventType: string) {

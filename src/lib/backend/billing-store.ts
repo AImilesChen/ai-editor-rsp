@@ -1,7 +1,7 @@
 import type { AuthUser } from "@/lib/backend/auth";
 import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/stripe";
-import { cancelStripeSubscription, stripeProductId, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
+import { cancelStripeSubscription, stripePriceId, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
 
 export type BillingAccount = {
@@ -620,12 +620,12 @@ export async function submitSubscriptionCancellationForUser(user: AuthUser) {
   if (!stripeResult.ok) return { ok: false, reason: stripeResult.message || "Stripe subscription cancellation failed", status: stripeResult.status };
 
   const now = Date.now();
-  const updated: BillingAccount = { ...account, subscriptionStatus: "canceled", updatedAt: now };
+  const updated: BillingAccount = { ...account, subscriptionStatus: "scheduled_cancel", updatedAt: now };
   const db = await billingDb();
   if (db) {
     await upsertUserFromAccount(db, updated);
-    await upsertSubscription(db, updated.userId, updated.plan === "free" ? "starter" : updated.plan, "canceled", updated.subscriptionId, updated.customerId, now);
-    await insertCreditLedger(db, updated.userId, "subscription_cancel", `cancel_${now}`, 0, updated.creditsRemaining, "subscription_cancel", { stripe: stripeResult.payload });
+    await upsertSubscription(db, updated.userId, updated.plan === "free" ? "starter" : updated.plan, "scheduled_cancel", updated.subscriptionId, updated.customerId, now);
+    await insertCreditLedger(db, updated.userId, "subscription_cancel", `cancel_${now}`, 0, updated.creditsRemaining, "subscription_cancel", { stripe: stripeResult.payload, cancelAtPeriodEnd: true });
   } else {
     const kv = await billingKv();
     if (!kv) return { ok: false, reason: "No D1 DB or BILLING_KV binding" };
@@ -654,10 +654,10 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
   if (!previewResult.ok) return previewResult;
 
   const { account, preview } = previewResult;
-  const productId = stripeProductId(targetPlan);
-  if (!productId) return { ok: false as const, code: "STRIPE_PRODUCT_NOT_CONFIGURED", message: "Target plan is not configured." };
+  const priceId = stripePriceId(targetPlan);
+  if (!priceId) return { ok: false as const, code: "STRIPE_PRICE_NOT_CONFIGURED", message: "Target plan is not configured." };
 
-  const stripeResult = await upgradeStripeSubscription(account.subscriptionId!, productId);
+  const stripeResult = await upgradeStripeSubscription(account.subscriptionId!, priceId);
   if (!stripeResult.ok) {
     return { ok: false as const, code: "STRIPE_UPGRADE_FAILED", message: stripeResult.message || "Stripe subscription upgrade failed.", status: stripeResult.status };
   }
@@ -948,9 +948,9 @@ async function submitRefundRequestD1(db: D1Database, user: AuthUser, reason?: st
   if (account.plan === "free") return { ok: false, reason: "No paid plan on this account" };
   if (account.subscriptionStatus === "refunded") return { ok: false, reason: "This account has already been refunded" };
   if (account.subscriptionStatus === "refund_requested" && account.lastRefundRequestId) {
-    const cancellation = await cancelActiveSubscriptionForRefundD1(db, account, user.id);
+    const cancellation = await scheduleSubscriptionCancellationForRefundD1(db, account, user.id);
     if (!cancellation.ok) return { ok: false, reason: cancellation.reason, code: cancellation.code, status: cancellation.status };
-    return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account: { ...account, subscriptionStatus: "refund_requested" as const }, subscriptionCanceled: cancellation.canceled };
+    return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account: { ...account, subscriptionStatus: "refund_requested" as const }, subscriptionCanceled: cancellation.scheduled };
   }
 
   const eligibility = await evaluateRefundEligibilityD1(db, user.id);
@@ -965,29 +965,29 @@ async function submitRefundRequestD1(db: D1Database, user: AuthUser, reason?: st
     .run();
   await db.prepare("UPDATE users SET status = 'refund_requested', updated_at = ? WHERE id = ?").bind(now, user.id).run();
 
-  const cancellation = await cancelActiveSubscriptionForRefundD1(db, { ...account, subscriptionStatus: "refund_requested" }, user.id);
+  const cancellation = await scheduleSubscriptionCancellationForRefundD1(db, { ...account, subscriptionStatus: "refund_requested" }, user.id);
   const refundPaymentId = extractCancellationTransactionId(cancellation) || initialRefundPaymentId;
   await db.prepare("UPDATE refund_requests SET payment_id = COALESCE(?, payment_id), metadata_json = ? WHERE id = ?")
     .bind(refundPaymentId || null, JSON.stringify({ email: user.email, plan: account.plan, subscriptionStatus: account.subscriptionStatus, eligibility, refundPaymentId, subscriptionCancellation: cancellation }), requestId)
     .run();
-  await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund; active subscription cancellation attempted before manual/provider refund", { reason: reason?.trim().slice(0, 1000) || null, eligibility, subscriptionCancellation: cancellation });
-  return { ok: true, duplicate: false, requestId, account: { ...account, subscriptionStatus: "refund_requested" as const, lastRefundRequestId: requestId, updatedAt: now }, subscriptionCanceled: cancellation.ok ? cancellation.canceled : false, cancellationError: cancellation.ok ? undefined : cancellation.reason };
+  await insertCreditLedger(db, user.id, "refund_request", requestId, 0, account.creditsRemaining, "User requested refund; future subscription renewal cancellation attempted before manual/provider refund", { reason: reason?.trim().slice(0, 1000) || null, eligibility, subscriptionCancellation: cancellation });
+  return { ok: true, duplicate: false, requestId, account: { ...account, subscriptionStatus: "refund_requested" as const, lastRefundRequestId: requestId, updatedAt: now }, subscriptionCanceled: cancellation.ok ? cancellation.scheduled : false, cancellationError: cancellation.ok ? undefined : cancellation.reason };
 }
 
-async function cancelActiveSubscriptionForRefundD1(db: D1Database, account: BillingAccount, userId: string) {
+async function scheduleSubscriptionCancellationForRefundD1(db: D1Database, account: BillingAccount, userId: string) {
   const activeStatuses = new Set(["active", "trialing", "past_due", "paused", "refund_requested"]);
   const subscription = await db.prepare("SELECT id, stripe_subscription_id, stripe_customer_id, status FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
     .bind(userId)
     .first<SubscriptionRow>();
   const subscriptionId = account.subscriptionId || subscription?.stripe_subscription_id;
   const currentStatus = account.subscriptionStatus || subscription?.status;
-  if (!subscriptionId || !activeStatuses.has(currentStatus || "")) return { ok: true as const, canceled: false, reason: "No active Stripe subscription to cancel" };
+  if (!subscriptionId || !activeStatuses.has(currentStatus || "")) return { ok: true as const, scheduled: false, reason: "No active Stripe subscription renewal to cancel" };
 
   const stripeResult = await cancelStripeSubscription(subscriptionId);
   if (!stripeResult.ok) {
     return {
       ok: false as const,
-      canceled: false,
+      scheduled: false,
       code: "STRIPE_SUBSCRIPTION_CANCEL_FAILED",
       status: stripeResult.status,
       reason: stripeResult.message || "Stripe subscription cancellation failed before refund request. Please use Manage billing or contact support.",
@@ -995,9 +995,9 @@ async function cancelActiveSubscriptionForRefundD1(db: D1Database, account: Bill
   }
 
   const now = Date.now();
-  await upsertSubscription(db, userId, account.plan === "free" ? "starter" : account.plan, "canceled", subscriptionId, account.customerId || subscription?.stripe_customer_id, now);
-  await insertCreditLedger(db, userId, "subscription_cancel_for_refund", `cancel_for_refund_${now}`, 0, account.creditsRemaining, "Active subscription canceled before refund request", { stripe: stripeResult.payload, subscriptionId });
-  return { ok: true as const, canceled: true, stripe: stripeResult.payload };
+  await upsertSubscription(db, userId, account.plan === "free" ? "starter" : account.plan, "scheduled_cancel", subscriptionId, account.customerId || subscription?.stripe_customer_id, now);
+  await insertCreditLedger(db, userId, "subscription_cancel_for_refund", `cancel_for_refund_${now}`, 0, account.creditsRemaining, "Future subscription renewal canceled before refund review", { stripe: stripeResult.payload, subscriptionId, cancelAtPeriodEnd: true });
+  return { ok: true as const, scheduled: true, stripe: stripeResult.payload };
 }
 
 function extractCancellationTransactionId(cancellation: { stripe?: unknown }) {

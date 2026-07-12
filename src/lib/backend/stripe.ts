@@ -46,17 +46,21 @@ export function stripeSecretKey() {
 }
 
 export function stripePriceId(plan: BillingPlan) {
+  let value: string | undefined;
   switch (plan) {
     case "starter":
-      return process.env.STRIPE_STARTER_PRICE_ID || process.env.STRIPE_STARTER_PRODUCT_ID;
+      value = process.env.STRIPE_STARTER_PRICE_ID;
+      break;
     case "creator":
-      return process.env.STRIPE_CREATOR_PRICE_ID || process.env.STRIPE_CREATOR_PRODUCT_ID;
+      value = process.env.STRIPE_CREATOR_PRICE_ID;
+      break;
     case "studio":
-      return process.env.STRIPE_STUDIO_PRICE_ID || process.env.STRIPE_STUDIO_PRODUCT_ID;
+      value = process.env.STRIPE_STUDIO_PRICE_ID;
+      break;
   }
+  const priceId = value?.trim();
+  return priceId?.startsWith("price_") ? priceId : undefined;
 }
-
-export const stripeProductId = stripePriceId;
 
 const LOCAL_BLOCK_PATTERNS = [
   /\b(nsfw|porn|porno|nude|naked|topless|erotic|explicit sex|genitals?|hentai|fetish)\b/i,
@@ -193,7 +197,10 @@ export async function createStripeCustomerPortal(customerId: string, returnUrl?:
 }
 
 export async function cancelStripeSubscription(subscriptionId: string) {
-  return stripeDeleteRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}`);
+  if (!subscriptionId.trim()) return { ok: false as const, status: 400, message: "Stripe subscription ID is required.", payload: null };
+  const form = new URLSearchParams();
+  form.set("cancel_at_period_end", "true");
+  return stripeFormRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}`, form);
 }
 
 export async function upgradeStripeSubscription(subscriptionId: string, priceId: string): Promise<
@@ -272,16 +279,6 @@ async function stripeFormRequest(path: string, form: URLSearchParams) {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: form.toString(),
-  });
-  return parseStripeResponse(response);
-}
-
-async function stripeDeleteRequest(path: string) {
-  const secret = stripeSecretKey();
-  if (!secret) return { ok: false as const, status: 503, message: "STRIPE_SECRET_KEY is not configured." };
-  const response = await fetch(`${stripeApiBase()}${path}`, {
-    method: "DELETE",
-    headers: { "Authorization": `Bearer ${secret}` },
   });
   return parseStripeResponse(response);
 }
@@ -414,6 +411,7 @@ function normalizeStripeEventType(type: string) {
     case "checkout.session.completed": return "checkout.completed";
     case "customer.subscription.created":
     case "customer.subscription.resumed": return "subscription.active";
+    case "customer.subscription.updated": return "subscription.update";
     case "invoice.paid":
     case "invoice.payment_succeeded": return "subscription.paid";
     case "customer.subscription.deleted": return "subscription.canceled";

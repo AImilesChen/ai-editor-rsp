@@ -42,6 +42,6 @@ export async function POST(request: NextRequest) {
     duplicate: refundResult.duplicate,
     status: refundResult.account?.subscriptionStatus,
     subscriptionCanceled: refundResult.subscriptionCanceled,
-    message: refundResult.duplicate ? "Refund request already submitted." : refundResult.subscriptionCanceled ? "Refund request submitted. Active subscription canceled before provider refund handling." : "Refund request submitted.",
+    message: refundResult.duplicate ? "Refund request already submitted." : refundResult.subscriptionCanceled ? "Refund request submitted. Future renewal canceled before provider refund handling." : "Refund request submitted.",
   });
 }
