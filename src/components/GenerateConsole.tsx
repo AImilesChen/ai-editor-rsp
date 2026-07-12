@@ -770,9 +770,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       <div className="rounded-full bg-[#86EFAC]/65 px-5 py-3 text-center text-base font-bold text-[#102014]">
         Preparing photo…
       </div>
+    ) : isHeadshotMode ? (
+      <button type="button" disabled className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] opacity-45 disabled:cursor-not-allowed">
+        Create professional headshot — {currentQuote.creditsCharged} credits
+      </button>
     ) : (
       <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
-        {isHeadshotMode ? "Upload a photo to continue" : "Upload photo to start"}
+        Upload photo to start
       </label>
     )
   ) : authenticated && isHeadshotMode && creditsLoaded && effectiveCreditsRemaining < currentQuote.creditsCharged ? (
