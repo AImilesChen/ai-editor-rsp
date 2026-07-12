@@ -319,6 +319,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const [maskStrokes, setMaskStrokes] = useState<MaskStroke[]>([]);
   const [currentStroke, setCurrentStroke] = useState<BrushPoint[]>([]);
   const [showMoreHeadshotRatios, setShowMoreHeadshotRatios] = useState(false);
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
   const [expandedLookGroups, setExpandedLookGroups] = useState<Record<PromptModifierKind, boolean>>({ style: false, lighting: false, shot: false });
 
   const editorOnlyTasks = editTasks.filter((item) => ["Remove people", "Remove objects", "Clean background clutter", "Remove text or marks"].includes(item.label));
@@ -782,9 +783,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       </label>
     )
   ) : hasInsufficientCredits ? (
-    <a href="/pricing" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] no-underline shadow-[0_10px_28px_rgba(134,239,172,0.16)] transition hover:bg-[#A7F3D0]">
+    <button type="button" onClick={() => setShowCreditsDialog(true)} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] shadow-[0_10px_28px_rgba(134,239,172,0.16)] transition hover:bg-[#A7F3D0]">
       Get credits to generate — {currentQuote.creditsCharged} required
-    </a>
+    </button>
   ) : authenticated ? (
     <>
       <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
@@ -820,6 +821,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`;
 
   return (
+    <>
     <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? (compactPromptBuilder && mode === "text" ? "grid items-stretch gap-0 xl:grid-cols-[480px_minmax(0,1fr)]" : isHeadshotMode ? "grid items-stretch gap-0 xl:grid-cols-[460px_minmax(0,1fr)]" : "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]") : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "h-full p-4 xl:max-h-none" : "h-full p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
@@ -1359,6 +1361,23 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         </div>
       )}
     </div>
+    {showCreditsDialog && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setShowCreditsDialog(false); }}>
+        <div role="dialog" aria-modal="true" aria-labelledby="credits-dialog-title" className="w-full max-w-md rounded-[28px] border border-white/12 bg-[#1E1711] p-6 text-white shadow-[0_28px_90px_rgba(0,0,0,0.55)]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#86EFAC]/25 bg-[#86EFAC]/10 text-xl text-[#C8FADC]">!</div>
+          <h3 id="credits-dialog-title" className="mt-5 font-heading text-3xl font-normal tracking-[-0.035em]">Not enough credits</h3>
+          <p className="mt-3 text-sm leading-6 text-white/68">
+            You have <strong className="text-white">{effectiveCreditsRemaining} credits</strong>. This request requires <strong className="text-white">{currentQuote.creditsCharged} credits</strong>.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-white/52">Get more credits or upgrade your plan to continue generating.</p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <button type="button" onClick={() => setShowCreditsDialog(false)} className="rounded-full border border-white/15 px-5 py-3 text-sm font-bold text-white transition hover:border-white/35">Stay here</button>
+            <a href="/pricing" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">View plans & credits</a>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
