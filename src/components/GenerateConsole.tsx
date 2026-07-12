@@ -1168,7 +1168,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               {!generatedImage && !isHero && state !== "processing" && state !== "failed" && <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-black/46 px-4 py-3 text-xs text-white/58 backdrop-blur-sm"><span><strong className="text-white/84">Output workspace</strong> · Preview, download, and edit actions unlock after generation.</span><span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-bold uppercase tracking-[0.08em] text-white/46">Ready area</span></div>}
             </div>
           ) : uploadedImage ? (
-            <div className={`relative flex ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
+            <div className={`relative flex ${isHeadshotMode ? "flex-1" : ""} ${isHero ? "min-h-[620px]" : "min-h-[320px]"} items-center justify-center overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.12),rgba(36,27,19,0.92)_48%,rgba(10,15,12,0.98))] p-3 md:p-4`}>
               <div
                 className={`${generatedImage ? "cursor-ew-resize" : !isHeadshotMode && editScope === "selected" ? "cursor-crosshair" : ""} relative max-h-[min(76vh,760px)] max-w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#F3E8DA]/10 shadow-[0_28px_80px_rgba(0,0,0,0.42)] touch-none select-none`}
                 style={{ aspectRatio: editPreviewAspect, height: editPreviewAspect < 1 ? "min(76vh,760px)" : "auto", width: editPreviewAspect >= 1 ? "100%" : "auto" }}
@@ -1219,7 +1219,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               </div>
             </div>
           ) : (
-            <div className={`relative ${isHero ? "min-h-[420px] md:min-h-[520px]" : "min-h-[320px]"} overflow-hidden rounded-[22px] border border-white/10 bg-[#DED4C7] shadow-[0_28px_90px_rgba(0,0,0,0.35)]`}>
+            <div className={`relative ${isHeadshotMode ? "flex-1" : ""} ${isHero ? "min-h-[420px] md:min-h-[520px]" : "min-h-[320px]"} overflow-hidden rounded-[22px] border border-white/10 bg-[#DED4C7] shadow-[0_28px_90px_rgba(0,0,0,0.35)]`}>
               {isUploading && <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm"><div className="max-w-sm rounded-2xl border border-[#86EFAC]/35 bg-[#102014]/85 p-4 text-center text-sm font-semibold text-[#C8FADC]">Preparing your photo… This should only take a few seconds.</div></div>}
               {state === "failed" && error && <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm"><div className="max-w-sm rounded-2xl border border-red-400/35 bg-red-950/80 p-4 text-center text-sm font-semibold text-red-100">{error}</div></div>}
               {isHeadshotMode ? (
