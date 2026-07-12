@@ -810,7 +810,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
               : `Text-to-image uses ${currentQuote.creditsCharged} credits for the selected size.`;
 
   return (
-    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? (compactPromptBuilder && mode === "text" ? "grid items-stretch gap-0 xl:grid-cols-[480px_minmax(0,1fr)]" : "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]") : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
+    <div className={`min-w-0 overflow-hidden rounded-[34px] border border-rsp-border bg-[#15110C] text-white shadow-[0_24px_80px_rgba(46,32,18,0.22)] ${isHero ? (compactPromptBuilder && mode === "text" ? "grid items-stretch gap-0 xl:grid-cols-[480px_minmax(0,1fr)]" : isHeadshotMode ? "grid items-stretch gap-0 xl:grid-cols-[460px_minmax(0,1fr)]" : "grid items-stretch gap-0 xl:grid-cols-[430px_minmax(0,1fr)]") : "grid items-stretch gap-0 lg:grid-cols-[460px_minmax(0,1fr)]"}`}>
       <aside className={`border-r border-white/10 bg-[#1E1711] ${isHero ? "h-full p-4 xl:max-h-none" : "h-full p-4 md:p-5"}`}>
         <div className={`${isHero ? "mb-3" : "mb-4"} flex items-center justify-between gap-3`}>
           <div>
@@ -863,11 +863,11 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
 
         {mode === "edit" && (
           <>
-            <label className={`${isHeadshotOnly ? `mb-4 block ${uploadedImage ? "min-h-[188px] p-3" : "min-h-[176px] p-4"}` : isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-[24px] border border-dashed border-[#D4A574]/45 bg-[linear-gradient(180deg,#2A2118_0%,#211912_100%)] transition hover:border-[#D4A574]`} htmlFor="upload-image">
+            <label className={`${isHeadshotOnly ? `mb-4 block ${uploadedImage ? "min-h-[244px] p-4" : "min-h-[224px] p-4"}` : isHero ? "mb-3 flex items-center gap-3 p-3" : "mb-4 block p-4"} cursor-pointer rounded-[24px] border border-dashed border-[#D4A574]/45 bg-[linear-gradient(180deg,#2A2118_0%,#211912_100%)] transition hover:border-[#D4A574]`} htmlFor="upload-image">
               {isHeadshotOnly ? (
                 uploadedImage ? (
-                  <span className="grid min-h-[164px] grid-cols-[118px_minmax(0,1fr)] items-center gap-3 text-left">
-                    <span className="flex h-40 w-[118px] items-center justify-center overflow-hidden rounded-[20px] border border-white/12 bg-[#F3E8DA]/10 p-1.5 shadow-[0_12px_34px_rgba(0,0,0,0.22)]">
+                  <span className="grid min-h-[212px] grid-cols-[148px_minmax(0,1fr)] items-center gap-4 text-left">
+                    <span className="flex h-[196px] w-[148px] items-center justify-center overflow-hidden rounded-[20px] border border-white/12 bg-[#F3E8DA]/10 p-1.5 shadow-[0_12px_34px_rgba(0,0,0,0.22)]">
                       <img src={uploadedImage} alt="Uploaded source preview" className="max-h-full max-w-full object-contain" />
                     </span>
                     <span className="min-w-0">
@@ -882,7 +882,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
                     </span>
                   </span>
                 ) : (
-                  <span className="flex h-full min-h-[144px] flex-col items-center justify-center text-center">
+                  <span className="flex h-full min-h-[192px] flex-col items-center justify-center text-center">
                     <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4A574]/40 bg-[#D4A574]/12 text-xl text-[#F4DFC8]">↑</span>
                     <span className="mt-3 block text-lg font-bold tracking-[-0.01em] text-white">{isUploading ? "Preparing photo…" : "Upload your face photo"}</span>
                     <span className="mt-1 block max-w-[300px] text-sm leading-5 text-white/58">{isUploading ? "Optimizing your photo…" : "Drag here or browse · PNG/JPG/WebP · 5 MB max"}</span>
@@ -1006,7 +1006,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
             onChange={(event) => setPrompt(event.target.value)}
             disabled={controlsLocked}
             placeholder={promptPlaceholder}
-            className={`${isHero ? (isHeadshotOnly ? "min-h-[132px] p-4 text-base leading-7" : compactPromptBuilder && mode === "text" ? "min-h-[188px] p-5 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && (!isHero || compactPromptBuilder) ? "border-[#86EFAC]/52 bg-[#0D0A07] shadow-[0_0_0_1px_rgba(134,239,172,0.11),0_16px_36px_rgba(0,0,0,0.18)]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/52 transition focus:border-[#86EFAC]/75 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
+            className={`${isHero ? (isHeadshotOnly ? "min-h-[156px] p-4 text-base leading-7" : compactPromptBuilder && mode === "text" ? "min-h-[188px] p-5 text-base leading-7" : "min-h-[132px] p-4 text-sm leading-6") : editorOnly ? "min-h-[156px] p-4 text-base leading-7" : mode === "text" ? "min-h-[224px] p-5 text-base leading-7" : "min-h-[176px] p-5 text-base leading-7"} w-full resize-none rounded-2xl border ${mode === "text" && (!isHero || compactPromptBuilder) ? "border-[#86EFAC]/52 bg-[#0D0A07] shadow-[0_0_0_1px_rgba(134,239,172,0.11),0_16px_36px_rgba(0,0,0,0.18)]" : "border-white/14 bg-[#100C08]"} text-white outline-none ring-[#86EFAC]/25 placeholder:text-white/52 transition focus:border-[#86EFAC]/75 focus:ring-4 disabled:cursor-not-allowed disabled:opacity-55`}
           />
         </div>
         {isHeadshotMode && (
@@ -1332,7 +1332,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       </section>
       {useUnifiedHeadshotBar && (
         <div className="border-t border-white/10 bg-[linear-gradient(90deg,#1E1711_0%,#15110C_45%,#0F0C09_100%)] xl:col-span-2">
-          <div className="grid gap-4 px-4 py-4 md:px-5 xl:grid-cols-[430px_minmax(0,1fr)] xl:items-center xl:gap-0 xl:px-0 xl:py-0">
+          <div className="grid gap-4 px-4 py-4 md:px-5 xl:grid-cols-[460px_minmax(0,1fr)] xl:items-center xl:gap-0 xl:px-0 xl:py-0">
             <div className="xl:border-r xl:border-white/10 xl:px-5 xl:py-4">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/36">Selected output</p>
               <div className="flex flex-wrap items-center gap-2">
