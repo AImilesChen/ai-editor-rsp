@@ -350,6 +350,8 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
   const effectiveCreditsRemaining = creditsRemaining ?? 0;
   const creditsLoaded = typeof creditsRemaining === "number";
   const canGenerate = Boolean(authenticated) && creditsLoaded && !isUploading && !needsUpload && imageAuthorizationReady && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing" && effectiveCreditsRemaining >= currentQuote.creditsCharged;
+  const readyExceptCredits = Boolean(authenticated) && creditsLoaded && !isUploading && !needsUpload && imageAuthorizationReady && (!requiresManualMask || Boolean(editRegion)) && promptReady && state !== "processing";
+  const hasInsufficientCredits = readyExceptCredits && effectiveCreditsRemaining < currentQuote.creditsCharged;
   const visiblePromptTasks = isHero && compactPromptBuilder ? activeTasks.slice(0, 5) : activeTasks;
   const compactOptionGroups = [
     { kind: "style" as const, label: "Style", options: styleOptions, value: selectedStyle, setter: setSelectedStyle, moreLabel: "styles" },
@@ -779,9 +781,9 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
         Upload photo to start
       </label>
     )
-  ) : authenticated && isHeadshotMode && creditsLoaded && effectiveCreditsRemaining < currentQuote.creditsCharged ? (
-    <a href="/pricing" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">
-      Get credits to generate — {currentQuote.creditsCharged} credits
+  ) : hasInsufficientCredits ? (
+    <a href="/pricing" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] no-underline shadow-[0_10px_28px_rgba(134,239,172,0.16)] transition hover:bg-[#A7F3D0]">
+      Get credits to generate — {currentQuote.creditsCharged} required
     </a>
   ) : authenticated ? (
     <>
@@ -808,7 +810,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       : !creditsLoaded
         ? "Syncing your latest credit balance…"
         : effectiveCreditsRemaining < currentQuote.creditsCharged
-          ? `This request needs ${currentQuote.creditsCharged} credits. You have ${effectiveCreditsRemaining} credits.`
+          ? `You have ${effectiveCreditsRemaining} credits · ${currentQuote.creditsCharged} required. Get credits or upgrade to continue.`
           : isHeadshotMode
             ? `Professional headshot uses ${currentQuote.creditsCharged} credits. We keep your face as the anchor while replacing outfit, background, and framing.`
             : mode === "edit"
