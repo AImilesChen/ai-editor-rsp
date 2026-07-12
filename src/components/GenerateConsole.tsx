@@ -772,9 +772,13 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       </div>
     ) : (
       <label htmlFor="upload-image" className="cursor-pointer rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0]">
-        Upload photo to start
+        {isHeadshotMode ? "Upload a photo to continue" : "Upload photo to start"}
       </label>
     )
+  ) : authenticated && isHeadshotMode && creditsLoaded && effectiveCreditsRemaining < currentQuote.creditsCharged ? (
+    <a href="/pricing" className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-base font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">
+      Get credits to generate — {currentQuote.creditsCharged} credits
+    </a>
   ) : authenticated ? (
     <>
       <button type="button" onClick={runGenerate} disabled={!canGenerate} className="rounded-full bg-[#86EFAC] px-5 py-3 text-base font-bold text-[#102014] transition hover:bg-[#A7F3D0] disabled:cursor-not-allowed disabled:opacity-45">
@@ -787,7 +791,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
       )}
     </>
   ) : (
-    <a href={mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? "Sign in and generate headshot" : "Sign in to edit free"}</a>
+    <a href={mode === "edit" ? `/login?next=${encodeURIComponent(editLoginPath)}` : "/login?next=/generate"} className="rounded-full bg-[#86EFAC] px-5 py-3 text-center text-sm font-bold text-[#102014] no-underline transition hover:bg-[#A7F3D0]">{mode === "text" ? "Sign in to generate free" : task === "Professional headshot" ? `Sign in to generate — ${currentQuote.creditsCharged} credits` : "Sign in to edit free"}</a>
   );
   const generationSupportText = !authenticated
     ? "3 free credits after sign-in. No payment required. Credits are used only when you generate or edit an image."
@@ -1330,7 +1334,7 @@ export default function GenerateConsole({ headingLevel = "h1", variant = "full",
           </div>
         )}
       </section>
-      {useUnifiedHeadshotBar && !needsUpload && (
+      {useUnifiedHeadshotBar && (
         <div className="border-t border-white/10 bg-[linear-gradient(90deg,#1E1711_0%,#15110C_45%,#0F0C09_100%)] xl:col-span-2">
           <div className="grid gap-4 px-4 py-4 md:px-5 xl:grid-cols-[460px_minmax(0,1fr)] xl:items-center xl:gap-0 xl:px-0 xl:py-0">
             <div className="xl:border-r xl:border-white/10 xl:px-5 xl:py-4">
