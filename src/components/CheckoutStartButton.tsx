@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type CheckoutResponse = { ok?: boolean; checkoutUrl?: string; code?: string; error?: string; missing?: string[] };
+type CheckoutResponse = { ok?: boolean; checkoutUrl?: string; redirectUrl?: string; code?: string; error?: string; missing?: string[]; retryable?: boolean; billingUrl?: string; action?: "created" | "resumed" | "already_paid" };
 type AuthResponse = {
   authenticated?: boolean;
   user?: { plan?: string; subscriptionStatus?: string } | null;
@@ -64,11 +64,12 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
       if (response.status === 409) {
         throw new Error(data.error || "You already have an active subscription. Manage it from Account → Billing.");
       }
-      if (!response.ok || !data.ok || !data.checkoutUrl) {
+      const redirectUrl = data.redirectUrl || data.checkoutUrl;
+      if (!response.ok || !data.ok || !redirectUrl) {
         const missing = data.missing?.length ? ` Missing: ${data.missing.join(", ")}.` : "";
         throw new Error(`${data.error || data.code || "Checkout is not available yet."}${missing}`);
       }
-      window.location.href = data.checkoutUrl;
+      window.location.assign(redirectUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout is not available yet.");
       setState("error");
@@ -109,9 +110,17 @@ export default function CheckoutStartButton({ plan }: { plan: string }) {
   return (
     <div className="mt-6">
       <button type="button" onClick={startCheckout} disabled={state === "loading"} className="rsp-button-primary w-full disabled:cursor-not-allowed disabled:opacity-60">
-        {state === "loading" ? "Opening secure checkout…" : "Continue to secure checkout"}
+        {state === "loading" ? "Resuming secure checkout…" : state === "error" ? "Try secure checkout again" : "Continue to secure checkout"}
       </button>
-      {error ? <p className="mt-3 text-sm leading-6 text-red-700">{error}</p> : null}
+      {error ? (
+        <div className="mt-3 border border-red-300 bg-red-50 p-4 text-sm leading-6 text-red-800">
+          <p>{error}</p>
+          <div className="mt-3 flex flex-wrap gap-4">
+            <Link href="/account/billing" className="font-semibold text-rsp-secondary underline">Go to billing</Link>
+            <Link href="/pricing" className="font-semibold text-rsp-secondary underline">Back to pricing</Link>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

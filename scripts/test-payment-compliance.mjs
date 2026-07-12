@@ -42,6 +42,22 @@ assert.match(stripe, /form\.set\("cancel_at_period_end", "true"\)/, "customer ca
 assert.doesNotMatch(stripe, /cancelStripeSubscription[\s\S]{0,300}stripeDeleteRequest/, "customer cancellation must not immediately delete the Stripe subscription");
 assert.match(billing, /subscriptionStatus: "scheduled_cancel"/, "local billing state must distinguish scheduled cancellation from immediate termination");
 assert.match(billing, /upsertSubscription\([\s\S]{0,180}"scheduled_cancel"/, "D1 subscription status must record scheduled cancellation");
-assert.match(footer, /independently operated online service/i, "public operator wording must match the confirmed individual operator model");
+assert.match(footer, /independently operated online service/);
+assert.match(stripe, /export async function retrieveStripeCheckoutSession/);
+assert.match(stripe, /\/checkout\/sessions\/\$\{encodeURIComponent\(checkoutId\)\}/);
+assert.match(billing, /recentPendingCheckoutForUser/);
+assert.match(billing, /markPendingCheckoutStatus/);
+assert.match(webhook, /cancel_at_period_end/);
+const checkoutRoute = await read("src/app/api/billing/checkout/route.ts");
+const checkoutButton = await read("src/components/CheckoutStartButton.tsx");
+assert.match(checkoutRoute, /action: "resumed"/);
+assert.match(checkoutRoute, /action: "already_paid"/);
+assert.match(checkoutRoute, /pendingToClose = \{ checkoutId: pending\.checkoutId, status: "expired" \}/);
+assert.match(checkoutRoute, /idempotencyKey/);
+assert.match(checkoutRoute, /if \(!stored\.persisted\)/);
+assert.match(stripe, /"Idempotency-Key"/);
+assert.match(stripe, /url\.hostname === "checkout\.stripe\.com"/);
+assert.match(checkoutButton, /data\.redirectUrl \|\| data\.checkoutUrl/);
+assert.doesNotMatch(checkoutRoute, /CHECKOUT_ALREADY_STARTED/);
 
 console.log("payment compliance regression checks: PASS");

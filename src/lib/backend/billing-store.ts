@@ -249,15 +249,22 @@ async function syncAccountToPendingRefund(userId: string) {
   return readD1Account(db, userId);
 }
 
-export async function hasRecentPendingCheckout(userId: string, windowMs = 30 * 60 * 1000) {
+export async function billingCheckoutAttemptSeed(userId: string) {
   const db = await billingDb();
-  if (!db) return false;
-  const since = Date.now() - windowMs;
-  const row = await db.prepare(`SELECT pending.id
+  if (!db) return "billing-db-unavailable";
+  const row = await db.prepare("SELECT MAX(updated_at) AS latest_update FROM payments WHERE user_id = ?")
+    .bind(userId)
+    .first<{ latest_update: number | null }>();
+  return String(row?.latest_update || 0);
+}
+
+export async function recentPendingCheckoutForUser(userId: string) {
+  const db = await billingDb();
+  if (!db) return null;
+  const row = await db.prepare(`SELECT pending.id, pending.stripe_checkout_id, pending.plan, pending.created_at
     FROM payments pending
     WHERE pending.user_id = ?
       AND pending.status = 'checkout_pending'
-      AND pending.created_at >= ?
       AND NOT EXISTS (
         SELECT 1
         FROM payments completed
@@ -268,9 +275,23 @@ export async function hasRecentPendingCheckout(userId: string, windowMs = 30 * 6
       )
     ORDER BY pending.created_at DESC
     LIMIT 1`)
-    .bind(userId, since)
-    .first<{ id: string }>();
-  return Boolean(row?.id);
+    .bind(userId)
+    .first<{ id: string; stripe_checkout_id: string | null; plan: string; created_at: number }>();
+  if (!row?.id) return null;
+  return {
+    checkoutId: row.stripe_checkout_id || row.id,
+    plan: row.plan,
+    createdAt: row.created_at,
+  };
+}
+
+export async function markPendingCheckoutStatus(checkoutId: string, status: "expired" | "canceled" | "paid") {
+  const db = await billingDb();
+  if (!db || !checkoutId) return { persisted: false };
+  const result = await db.prepare("UPDATE payments SET status = ?, updated_at = ? WHERE stripe_checkout_id = ? AND status = 'checkout_pending'")
+    .bind(status, Date.now(), checkoutId)
+    .run();
+  return { persisted: Boolean(result.meta?.changes) };
 }
 
 export async function recordPendingCheckoutForUser(input: { userId: string; plan: BillingPlan; checkoutId: string; amountCents?: number | null; currency?: string | null }) {

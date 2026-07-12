@@ -166,6 +166,7 @@ export async function createStripeCheckoutSession(input: {
   email: string;
   successUrl: string;
   cancelUrl: string;
+  idempotencyKey?: string;
 }) {
   const priceId = stripePriceId(input.plan);
   if (!priceId) return { ok: false as const, status: 503, message: "Selected Stripe price is not configured." };
@@ -184,7 +185,35 @@ export async function createStripeCheckoutSession(input: {
   form.set("subscription_data[metadata][user_id]", input.userId);
   form.set("subscription_data[metadata][email]", input.email);
   form.set("subscription_data[metadata][plan]", input.plan);
-  return stripeFormRequest("/checkout/sessions", form);
+  return stripeFormRequest("/checkout/sessions", form, input.idempotencyKey);
+}
+
+export async function retrieveStripeCheckoutSession(checkoutId: string) {
+  if (!checkoutId.startsWith("cs_")) {
+    return { ok: false as const, status: 400, message: "Invalid Stripe checkout session ID.", payload: null };
+  }
+  const result = await stripeGetRequest(`/checkout/sessions/${encodeURIComponent(checkoutId)}`);
+  if (!result.ok) return result;
+  const record = result.payload && typeof result.payload === "object" ? result.payload as Record<string, unknown> : {};
+  const status = typeof record.status === "string" ? record.status : null;
+  const paymentStatus = typeof record.payment_status === "string" ? record.payment_status : null;
+  const expiresAt = typeof record.expires_at === "number" ? record.expires_at : null;
+  return {
+    ok: true as const,
+    status: result.status,
+    checkoutStatus: status,
+    paymentStatus,
+    checkoutUrl: extractCheckoutUrl(result.payload),
+    expiresAt,
+    payload: result.payload,
+  };
+}
+
+export async function expireStripeCheckoutSession(checkoutId: string) {
+  if (!checkoutId.startsWith("cs_")) {
+    return { ok: false as const, status: 400, message: "Invalid Stripe checkout session ID.", payload: null };
+  }
+  return stripeFormRequest(`/checkout/sessions/${encodeURIComponent(checkoutId)}/expire`, new URLSearchParams());
 }
 
 export async function createStripeCustomerPortal(customerId: string, returnUrl?: string) {
@@ -269,7 +298,7 @@ export async function lookupStripeRefundStatus(input: { paymentId?: string | nul
   return { ok: Boolean(paths.length), refunded: false, error: lastError || (paths.length ? "No Stripe resource reported refunded." : "No Stripe resource id to inspect.") } satisfies StripeRefundLookupResult;
 }
 
-async function stripeFormRequest(path: string, form: URLSearchParams) {
+async function stripeFormRequest(path: string, form: URLSearchParams, idempotencyKey?: string) {
   const secret = stripeSecretKey();
   if (!secret) return { ok: false as const, status: 503, message: "STRIPE_SECRET_KEY is not configured." };
   const response = await fetch(`${stripeApiBase()}${path}`, {
@@ -277,6 +306,7 @@ async function stripeFormRequest(path: string, form: URLSearchParams) {
     headers: {
       "Authorization": `Bearer ${secret}`,
       "Content-Type": "application/x-www-form-urlencoded",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey.slice(0, 255) } : {}),
     },
     body: form.toString(),
   });
@@ -348,8 +378,14 @@ export function extractPortalUrl(payload: unknown): string | null {
 export function extractCheckoutUrl(payload: unknown): string | null {
   if (!payload || typeof payload !== "object") return null;
   const record = payload as Record<string, unknown>;
-  const url = record.url;
-  return typeof url === "string" && url.startsWith("https://") ? url : null;
+  const value = record.url;
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "checkout.stripe.com" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function extractSubscriptionItemId(payload: unknown): string | null {

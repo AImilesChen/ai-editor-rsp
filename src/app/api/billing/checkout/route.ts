@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/backend/auth";
-import { accountForPublicUser, hasRecentPendingCheckout, recordPendingCheckoutForUser } from "@/lib/backend/billing-store";
+import { accountForPublicUser, billingCheckoutAttemptSeed, markPendingCheckoutStatus, recentPendingCheckoutForUser, recordPendingCheckoutForUser } from "@/lib/backend/billing-store";
 import {
   createStripeCheckoutSession,
+  expireStripeCheckoutSession,
+  retrieveStripeCheckoutSession,
   stripeMode,
   extractCheckoutUrl,
   isBillingPlan,
@@ -45,14 +47,67 @@ export async function POST(request: NextRequest) {
     }, { status: 409 });
   }
 
-  if (await hasRecentPendingCheckout(user.id)) {
-    return NextResponse.json({
-      ok: false,
-      code: "CHECKOUT_ALREADY_STARTED",
-      error: "A checkout was already started recently. If you completed payment, go to Account → Billing instead of starting a second checkout.",
-      currentPlan: account.plan,
-      subscriptionStatus: account.subscriptionStatus,
-    }, { status: 409 });
+  let pendingToClose: { checkoutId: string; status: "expired" | "canceled" } | null = null;
+  const pending = await recentPendingCheckoutForUser(user.id);
+  if (pending) {
+    const previous = await retrieveStripeCheckoutSession(pending.checkoutId);
+    if (!previous.ok) {
+      return NextResponse.json({
+        ok: false,
+        code: "CHECKOUT_STATUS_UNAVAILABLE",
+        error: "We couldn’t check your previous checkout. Try again, or review your subscription in Account → Billing.",
+        retryable: true,
+        billingUrl: "/account/billing",
+      }, { status: 503 });
+    }
+
+    const completed = previous.paymentStatus === "paid" || previous.paymentStatus === "no_payment_required" || previous.checkoutStatus === "complete";
+    if (completed) {
+      return NextResponse.json({
+        ok: true,
+        action: "already_paid",
+        redirectUrl: "/account/billing?payment=confirmed",
+        plan: pending.plan,
+        mode: stripeMode(),
+      });
+    }
+
+    if (previous.checkoutStatus === "open" && pending.plan === plan && previous.checkoutUrl) {
+      return NextResponse.json({
+        ok: true,
+        action: "resumed",
+        checkoutUrl: previous.checkoutUrl,
+        redirectUrl: previous.checkoutUrl,
+        plan,
+        mode: stripeMode(),
+      });
+    }
+
+    if (previous.checkoutStatus === "open" && pending.plan !== plan) {
+      const expired = await expireStripeCheckoutSession(pending.checkoutId);
+      if (!expired.ok) {
+        return NextResponse.json({
+          ok: false,
+          code: "PREVIOUS_CHECKOUT_OPEN",
+          error: "Your previous checkout is still open. Try again, or return to the previous plan before starting a new checkout.",
+          retryable: true,
+          billingUrl: "/account/billing",
+        }, { status: 409 });
+      }
+      pendingToClose = { checkoutId: pending.checkoutId, status: "canceled" };
+    } else if (previous.checkoutStatus === "expired") {
+      pendingToClose = { checkoutId: pending.checkoutId, status: "expired" };
+    } else if (previous.checkoutStatus !== "open") {
+      pendingToClose = { checkoutId: pending.checkoutId, status: "canceled" };
+    } else {
+      return NextResponse.json({
+        ok: false,
+        code: "CHECKOUT_URL_UNAVAILABLE",
+        error: "Your secure checkout is temporarily unavailable. Try again, or review Account → Billing.",
+        retryable: true,
+        billingUrl: "/account/billing",
+      }, { status: 503 });
+    }
   }
 
   const missing = missingStripeConfig();
@@ -68,12 +123,15 @@ export async function POST(request: NextRequest) {
   const origin = originFromRequest(request);
   const successUrl = `${origin}/checkout?status=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${origin}/pricing?checkout=cancelled&plan=${plan}`;
+  const checkoutAttemptSeed = pendingToClose?.checkoutId || await billingCheckoutAttemptSeed(user.id);
+  const idempotencyKey = `checkout:${user.id}:${checkoutAttemptSeed}`.replace(/[^a-zA-Z0-9:_-]/g, "_");
   const session = await createStripeCheckoutSession({
     plan,
     userId: user.id,
     email: user.email,
     successUrl,
     cancelUrl,
+    idempotencyKey,
   });
 
   if (!session.ok) {
@@ -97,10 +155,43 @@ export async function POST(request: NextRequest) {
     }, { status: 502 });
   }
 
-  const checkoutId = extractCheckoutId(payload) || `checkout_${Date.now()}_${crypto.randomUUID()}`;
-  await recordPendingCheckoutForUser({ userId: user.id, plan, checkoutId });
+  const checkoutId = extractCheckoutId(payload);
+  if (!checkoutId) {
+    return NextResponse.json({
+      ok: false,
+      code: "STRIPE_CHECKOUT_ID_MISSING",
+      error: "Stripe checkout was created without a recoverable session ID. Try again or contact support.",
+      retryable: true,
+      billingUrl: "/account/billing",
+    }, { status: 502 });
+  }
 
-  return NextResponse.json({ ok: true, checkoutUrl, plan, mode: stripeMode() });
+  try {
+    const stored = await recordPendingCheckoutForUser({ userId: user.id, plan, checkoutId });
+    if (!stored.persisted) {
+      return NextResponse.json({
+        ok: false,
+        code: "CHECKOUT_SAVE_FAILED",
+        error: "Your secure checkout is ready, but we couldn’t save it safely. Try again to resume the same checkout.",
+        retryable: true,
+        billingUrl: "/account/billing",
+      }, { status: 503 });
+    }
+  } catch {
+    return NextResponse.json({
+      ok: false,
+      code: "CHECKOUT_SAVE_FAILED",
+      error: "Your secure checkout is ready, but we couldn’t save it safely. Try again to resume the same checkout.",
+      retryable: true,
+      billingUrl: "/account/billing",
+    }, { status: 503 });
+  }
+
+  if (pendingToClose) {
+    await markPendingCheckoutStatus(pendingToClose.checkoutId, pendingToClose.status);
+  }
+
+  return NextResponse.json({ ok: true, action: "created", checkoutUrl, redirectUrl: checkoutUrl, plan, mode: stripeMode() });
 }
 
 function extractCheckoutId(payload: unknown): string | null {
