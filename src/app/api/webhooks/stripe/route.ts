@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { grantCreditsFromStripe, markRefundedAccount, updateSubscriptionState } from "@/lib/backend/billing-store";
+import { grantCreditsFromStripe, markRefundedAccount, recordStripeWebhookEvent, updateSubscriptionState } from "@/lib/backend/billing-store";
 import { extractBillingIds as extractStripeBillingIds } from "@/lib/backend/stripe-webhook-fields";
 import {
   STRIPE_PLAN_CREDITS,
@@ -21,6 +21,7 @@ const BILLING_EVENTS = new Set([
   "subscription.paused",
   "subscription.update",
   "refund.created",
+  "refund.charge_summary",
   "refund.succeeded",
   "refund.completed",
   "payment.refunded",
@@ -29,6 +30,7 @@ const BILLING_EVENTS = new Set([
   "subscription.refunded",
   "dispute.created",
 ]);
+const RECORD_ONLY_EVENTS = new Set(["checkout.completed", "subscription.active"]);
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
@@ -91,6 +93,8 @@ export async function POST(request: NextRequest) {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "trialing", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
   } else if (eventType === "subscription.paused") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "paused", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (eventType === "refund.charge_summary" && !ids.refundId?.startsWith("re_")) {
+    persistence = await recordStripeWebhookEvent({ eventId, eventType, rawEvent: event, userId: identity.userId });
   } else if (isRefundEvent(eventType)) {
     persistence = await markRefundedAccount({
       eventId,
@@ -110,6 +114,8 @@ export async function POST(request: NextRequest) {
     });
   } else if (eventType === "dispute.created") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "disputed", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  } else if (RECORD_ONLY_EVENTS.has(eventType)) {
+    persistence = await recordStripeWebhookEvent({ eventId, eventType, rawEvent: event, userId: identity.userId });
   }
   } catch (error) {
     return NextResponse.json({ ok: false, code: "WEBHOOK_PERSISTENCE_FAILED", retryable: true, eventId, eventType, error: error instanceof Error ? error.message : "Billing persistence failed." }, { status: 503 });

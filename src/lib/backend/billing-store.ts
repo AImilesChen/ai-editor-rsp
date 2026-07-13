@@ -50,7 +50,7 @@ function publicBillingAccount(account: BillingAccount): BillingAccount {
       ...account,
       plan: "free",
       creditsHeld: undefined,
-      creditsRemaining: 0,
+      creditsRemaining: account.creditsRemaining,
     };
   }
   if (!creditLockedStatuses.has(account.subscriptionStatus)) return account;
@@ -383,49 +383,14 @@ export async function reconcileAllPendingStripeRefunds(limit = 20) {
 export async function grantCreditsFromStripe(input: CreditGrantInput) {
   const db = await billingDb();
   if (db) return grantCreditsFromStripeD1(db, input);
+  return { persisted: false, duplicate: false, reason: "D1 billing database is required for atomic Stripe credit grants" };
+}
 
-  const kv = await billingKv();
-  if (!kv) return { persisted: false, duplicate: false, reason: "No D1 DB or BILLING_KV binding" };
-  if (!input.eventId || !input.plan || input.credits <= 0) return { persisted: false, duplicate: false, reason: "Missing grant fields" };
-
-  const eventKeyName = eventKey(input.eventId);
-  const existingEvent = await kv.get(eventKeyName);
-  if (existingEvent) return { persisted: true, duplicate: true, account: null };
-
-  const userId = input.userId || (input.email ? await kv.get(emailKey(input.email)) : null);
-  if (!userId) {
-    await kv.put(eventKeyName, JSON.stringify({ ...eventRecord(input), persisted: false, reason: "Missing user_id/email mapping" }));
-    return { persisted: false, duplicate: false, reason: "Missing user_id/email mapping" };
-  }
-
-  const current = await readAccountByUserId(userId, kv);
-  const cycleKeyName = grantCycleKey(userId, input.subscriptionId || input.customerId || input.plan);
-  const existingCycleGrant = await kv.get(cycleKeyName);
-  if (existingCycleGrant) {
-    await kv.put(eventKeyName, JSON.stringify({ ...eventRecord(input), persisted: true, duplicateGrant: true, accountUserId: userId, at: Date.now() }));
-    return { persisted: true, duplicate: true, account: current };
-  }
-
-  const now = Date.now();
-  const account: BillingAccount = {
-    userId,
-    email: input.email || current?.email,
-    plan: input.plan,
-    creditsRemaining: (current?.creditsRemaining ?? DEFAULT_LIFETIME_CREDITS) + input.credits,
-    subscriptionStatus: "active",
-    subscriptionId: input.subscriptionId || current?.subscriptionId,
-    customerId: input.customerId || current?.customerId,
-    lastStripeEventId: input.eventId,
-    createdAt: current?.createdAt || now,
-    updatedAt: now,
-  };
-
-  await writeAccount(account, kv);
-  if (account.email) await kv.put(emailKey(account.email), userId);
-  await kv.put(eventKeyName, JSON.stringify({ ...eventRecord(input), persisted: true, accountUserId: userId, creditsGranted: input.credits, at: now }));
-  await kv.put(cycleKeyName, JSON.stringify({ eventId: input.eventId, userId, plan: input.plan, credits: input.credits, at: now }), { expirationTtl: 60 * 60 * 24 * 40 });
-  await kv.put(ledgerKey(userId, input.eventId), JSON.stringify({ type: "credit_grant", ...eventRecord(input), credits: input.credits, balanceAfter: account.creditsRemaining, at: now }));
-  return { persisted: true, duplicate: false, account };
+export async function recordStripeWebhookEvent(input: { eventId: string; eventType: string; rawEvent: unknown; userId?: string | null }) {
+  const db = await billingDb();
+  if (!db) return { persisted: false, reason: "D1 billing database is required for durable Stripe webhook acknowledgement" };
+  await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent, input.userId || null, "processed", null, true);
+  return { persisted: true };
 }
 
 export async function debitCreditForUser(user: AuthUser, amount = 1, sourceId?: string) {
@@ -1091,24 +1056,18 @@ async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
   const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, account.creditsRemaining, freeBalance.freeCreditsRemaining));
   const revoked = Math.max(0, account.creditsRemaining - preservedFreeCredits);
 
-  await db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?")
-    .bind(preservedFreeCredits, now, userId)
-    .run();
-  if (refundRequest?.payment_id) {
-    await db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE id = ? AND user_id = ?")
-      .bind(now, refundRequest.payment_id, userId)
-      .run();
-  }
-  if (refundRequest?.id) {
-    await db.prepare("UPDATE refund_requests SET status = 'refunded', stripe_refund_id = ?, amount_cents = COALESCE(?, amount_cents), currency = COALESCE(?, currency), resolved_at = ?, metadata_json = json_patch(COALESCE(metadata_json, '{}'), ?) WHERE id = ?")
-      .bind(input.refundId, input.amountCents ?? null, input.currency || null, now, JSON.stringify({ stripeRefundEventId: input.eventId, stripeRefundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null }), refundRequest.id)
-      .run();
-  }
-  await db.prepare("UPDATE subscriptions SET status = 'refunded', canceled_at = COALESCE(canceled_at, ?), updated_at = ? WHERE user_id = ? AND status IN ('active', 'trialing', 'past_due', 'paused', 'scheduled_cancel', 'refund_requested')")
-    .bind(now, now, userId)
-    .run();
-  await insertCreditLedger(db, userId, "refund_paid_credit_revoke", input.refundId, -revoked, preservedFreeCredits, "Stripe refund confirmed; paid credits revoked and unused free signup credits preserved", { eventId: input.eventId, eventType: input.eventType, refundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null, preservedFreeCredits, ...freeBalance });
-  await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "processed", null, true);
+  const ledgerId = `refund_paid_credit_revoke_${input.refundId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  const webhookId = `wh_${input.eventId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  await db.batch([
+    db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, userId),
+    ...(refundRequest?.payment_id ? [db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE id = ? AND user_id = ?").bind(now, refundRequest.payment_id, userId)] : []),
+    ...(refundRequest?.id ? [db.prepare("UPDATE refund_requests SET status = 'refunded', stripe_refund_id = ?, amount_cents = COALESCE(?, amount_cents), currency = COALESCE(?, currency), resolved_at = ?, metadata_json = json_patch(COALESCE(metadata_json, '{}'), ?) WHERE id = ?").bind(input.refundId, input.amountCents ?? null, input.currency || null, now, JSON.stringify({ stripeRefundEventId: input.eventId, stripeRefundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null }), refundRequest.id)] : []),
+    db.prepare("UPDATE subscriptions SET status = 'refunded', canceled_at = COALESCE(canceled_at, ?), updated_at = ? WHERE user_id = ? AND status IN ('active', 'trialing', 'past_due', 'paused', 'scheduled_cancel', 'refund_requested')").bind(now, now, userId),
+    db.prepare("INSERT OR IGNORE INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at) VALUES (?, ?, 'refund_paid_credit_revoke', ?, ?, ?, ?, ?, ?)").bind(ledgerId, userId, input.refundId, -revoked, preservedFreeCredits, "Stripe refund confirmed; paid credits revoked and unused free signup credits preserved", JSON.stringify({ eventId: input.eventId, eventType: input.eventType, refundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null, preservedFreeCredits, ...freeBalance }), now),
+    db.prepare(`INSERT INTO webhook_events (id, provider, event_type, provider_event_id, dedupe_key, related_user_id, payload_json, signature_verified, processed_status, processed_at, error_message, created_at)
+      VALUES (?, 'stripe', ?, ?, ?, ?, ?, 1, 'processed', ?, NULL, ?)
+      ON CONFLICT(dedupe_key) DO UPDATE SET related_user_id = COALESCE(excluded.related_user_id, webhook_events.related_user_id), processed_status = 'processed', processed_at = excluded.processed_at, error_message = NULL`).bind(webhookId, input.eventType, input.eventId, webhookDedupeKey(input.eventId), userId, JSON.stringify(input.rawEvent || input), now, now),
+  ]);
   return { persisted: true, duplicate: Boolean(existingRevoke), account: { ...account, plan: "free" as const, subscriptionStatus: "refunded" as const, creditsRemaining: preservedFreeCredits, updatedAt: now } };
 }
 
@@ -1378,11 +1337,6 @@ function eventKey(eventId: string) {
   return `billing:event:${eventId}`;
 }
 
-function grantCycleKey(userId: string, seed: string) {
-  const date = new Date();
-  const period = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
-  return `billing:grant:${userId}:${seed}:${period}`;
-}
 
 function ledgerKey(userId: string, eventId: string) {
   return `billing:ledger:${userId}:${eventId}`;
@@ -1391,17 +1345,4 @@ function ledgerKey(userId: string, eventId: string) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function refundRequestKey(userId: string, requestId: string) {
   return `billing:refund:${userId}:${requestId}`;
-}
-
-function eventRecord(input: CreditGrantInput) {
-  return {
-    eventId: input.eventId,
-    eventType: input.eventType,
-    userId: input.userId || null,
-    email: input.email || null,
-    plan: input.plan,
-    credits: input.credits,
-    subscriptionId: input.subscriptionId || null,
-    customerId: input.customerId || null,
-  };
 }
