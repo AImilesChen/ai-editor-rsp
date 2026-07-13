@@ -26,6 +26,7 @@ const SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE = 0.2;
 const BILLING_PLAN_ORDER: Record<BillingPlan, number> = { starter: 1, creator: 2, studio: 3 };
 const STRIPE_PLAN_PRICES_CENTS: Record<BillingPlan, number> = { starter: 799, creator: 1499, studio: 2999 };
 const DEFAULT_BILLING_PERIOD_DAYS = 30;
+const STALE_STRIPE_CHECKOUT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 type ProratedUpgradePreview = {
   currentPlan: BillingPlan;
@@ -264,6 +265,24 @@ export async function billingCheckoutAttemptSeed(userId: string) {
 export async function recentPendingCheckoutForUser(userId: string) {
   const db = await billingDb();
   if (!db) return null;
+  const now = Date.now();
+  const staleBefore = now - STALE_STRIPE_CHECKOUT_MAX_AGE_MS;
+  await db.prepare(`UPDATE payments
+    SET status = CASE
+      WHEN stripe_checkout_id LIKE 'cs_%' THEN 'expired'
+      ELSE 'canceled'
+    END,
+    updated_at = ?
+    WHERE user_id = ?
+      AND status = 'checkout_pending'
+      AND (
+        created_at <= ?
+        OR stripe_checkout_id IS NULL
+        OR stripe_checkout_id NOT LIKE 'cs_%'
+      )`)
+    .bind(now, userId, staleBefore)
+    .run();
+
   const row = await db.prepare(`SELECT pending.id, pending.stripe_checkout_id, pending.plan, pending.created_at
     FROM payments pending
     WHERE pending.user_id = ?
