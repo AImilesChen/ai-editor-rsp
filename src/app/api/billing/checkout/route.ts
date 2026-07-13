@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const completed = previous.paymentStatus === "paid" || previous.paymentStatus === "no_payment_required" || previous.checkoutStatus === "complete";
-    if (completed) {
+    if (completed && hasBlockingPaidPlan) {
       return NextResponse.json({
         ok: true,
         action: "already_paid",
@@ -72,7 +72,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (previous.checkoutStatus === "open" && pending.plan === plan && previous.checkoutUrl) {
+    if (completed && !hasBlockingPaidPlan) {
+      pendingToClose = { checkoutId: pending.checkoutId, status: "canceled" };
+    } else if (previous.checkoutStatus === "open" && pending.plan === plan && previous.checkoutUrl) {
       return NextResponse.json({
         ok: true,
         action: "resumed",
@@ -81,9 +83,7 @@ export async function POST(request: NextRequest) {
         plan,
         mode: stripeMode(),
       });
-    }
-
-    if (previous.checkoutStatus === "open" && pending.plan !== plan) {
+    } else if (previous.checkoutStatus === "open" && pending.plan !== plan) {
       const expired = await expireStripeCheckoutSession(pending.checkoutId);
       if (!expired.ok) {
         return NextResponse.json({

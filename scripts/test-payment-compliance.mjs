@@ -52,6 +52,8 @@ const checkoutRoute = await read("src/app/api/billing/checkout/route.ts");
 const checkoutButton = await read("src/components/CheckoutStartButton.tsx");
 assert.match(checkoutRoute, /action: "resumed"/);
 assert.match(checkoutRoute, /action: "already_paid"/);
+assert.match(checkoutRoute, /completed && hasBlockingPaidPlan/, "a historically completed Checkout must redirect to Billing only while the account still has a current paid plan");
+assert.match(checkoutRoute, /completed && !hasBlockingPaidPlan[\s\S]{0,300}pendingToClose = \{ checkoutId: pending\.checkoutId, status: "canceled" \}/, "a completed Checkout from an ended or refunded plan must be closed so the user can subscribe again");
 assert.match(checkoutRoute, /pendingToClose = \{ checkoutId: pending\.checkoutId, status: "expired" \}/);
 assert.match(checkoutRoute, /idempotencyKey/);
 assert.match(checkoutRoute, /if \(!stored\.persisted\)/);
