@@ -6,8 +6,10 @@ import {
   extractStripeEventId,
   extractStripeEventType,
   planFromStripePayload,
+  previousPlanFromStripePayload,
   verifyStripeSignature,
 } from "@/lib/backend/stripe";
+import { stripeBillingReasonFromPayload } from "@/lib/backend/stripe-plan";
 
 const BILLING_EVENTS = new Set([
   "checkout.completed",
@@ -61,7 +63,8 @@ export async function POST(request: NextRequest) {
   let persistence: unknown = { persisted: false, reason: "record_only" };
 
   try {
-    if (plan && credits > 0 && eventType === "subscription.paid" && (ids.amountCents || 0) > 0 && ids.invoiceId) {
+    if (eventType === "subscription.paid" && (ids.amountCents || 0) > 0 && ids.invoiceId) {
+    if (!plan) throw new Error("STRIPE_PAID_INVOICE_PLAN_AMBIGUOUS");
     persistence = await grantCreditsFromStripe({
       eventId,
       eventType,
@@ -76,6 +79,8 @@ export async function POST(request: NextRequest) {
       invoiceId: ids.invoiceId,
       amountCents: ids.amountCents,
       currency: ids.currency,
+      billingReason: stripeBillingReasonFromPayload(event),
+      previousPlan: previousPlanFromStripePayload(event),
       rawEvent: event,
     });
   } else if (eventType === "subscription.canceled") {

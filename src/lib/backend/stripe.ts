@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { SITE_URL } from "@/lib/site";
+import { previousStripePlanFromPayload, resolveStripePlanFromPayload } from "@/lib/backend/stripe-plan";
 
 export type BillingPlan = "starter" | "creator" | "studio";
 
@@ -428,14 +429,19 @@ function extractSubscriptionItemId(payload: unknown): string | null {
 }
 
 export function planFromStripePayload(payload: unknown): BillingPlan | null {
-  const records: Record<string, unknown>[] = [];
-  collectRecords(payload, records, 0);
-  for (const record of records) {
-    const priceId = stringValue(record.price || record.price_id || record.priceId || record.id);
-    const matched = planFromPriceId(priceId);
-    if (matched) return matched;
-  }
-  return null;
+  return resolveStripePlanFromPayload(payload, {
+    starter: stripePriceId("starter"),
+    creator: stripePriceId("creator"),
+    studio: stripePriceId("studio"),
+  });
+}
+
+export function previousPlanFromStripePayload(payload: unknown): BillingPlan | null {
+  return previousStripePlanFromPayload(payload, {
+    starter: stripePriceId("starter"),
+    creator: stripePriceId("creator"),
+    studio: stripePriceId("studio"),
+  });
 }
 
 function planFromPriceId(priceId: string | null) {
@@ -514,17 +520,6 @@ function hashString(value: string) {
   let hash = 5381;
   for (let i = 0; i < value.length; i += 1) hash = ((hash << 5) + hash) ^ value.charCodeAt(i);
   return (hash >>> 0).toString(16);
-}
-
-function collectRecords(value: unknown, output: Record<string, unknown>[], depth: number) {
-  if (!value || typeof value !== "object" || depth > 7) return;
-  if (Array.isArray(value)) {
-    for (const item of value) collectRecords(item, output, depth + 1);
-    return;
-  }
-  const record = value as Record<string, unknown>;
-  output.push(record);
-  for (const nested of Object.values(record)) collectRecords(nested, output, depth + 1);
 }
 
 function stringValue(value: unknown) {

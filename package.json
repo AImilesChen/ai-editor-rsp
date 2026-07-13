@@ -8,6 +8,7 @@
     "start": "next start",
     "test:stripe-refund": "node --experimental-strip-types scripts/test-stripe-refund-integrity.mjs",
     "test:stripe-p0": "node scripts/test-stripe-p0-regressions.mjs",
+    "test:stripe-upgrade": "node --experimental-strip-types scripts/test-stripe-upgrade-credits.mjs",
     "test:payment-compliance": "node scripts/test-payment-compliance.mjs",
     "lint": "eslint src/ --ext .ts,.tsx",
     "preview": "opennextjs-cloudflare build && node scripts/patch-open-next-worker.mjs && opennextjs-cloudflare preview",

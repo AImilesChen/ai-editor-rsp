@@ -20,6 +20,7 @@ assert.doesNotMatch(billing, /submitRefundRequestForUser[\s\S]{0,1600}refundRequ
 assert.doesNotMatch(billing, /upgradeSubscriptionForUser[\s\S]{0,2500}subscription_upgrade_credit_delta/, "upgrade endpoint must not grant credits before invoice.paid");
 assert.match(billing, /credit_buckets/);
 assert.match(billing, /db\.batch\(\[/);
+assert.match(billing, /UPDATE credit_buckets SET remaining = 0[\s\S]{0,300}NOT EXISTS \(SELECT 1 FROM credit_ledger WHERE id = \?\)/, "concurrent duplicate grants must not clear the winning invoice bucket");
 assert.match(billing, /latestPaymentAt/);
 assert.match(billing, /periodStart/);
 assert.match(migration, /CREATE TABLE IF NOT EXISTS credit_buckets/);

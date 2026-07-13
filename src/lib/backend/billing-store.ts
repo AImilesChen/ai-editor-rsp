@@ -3,6 +3,7 @@ import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/stripe";
 import { cancelStripeSubscription, stripePriceId, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
+import { calculateStripeCreditReplacement, inferStripePriorPaidRemaining, stripeCreditGrantSourceId } from "@/lib/backend/stripe-plan";
 
 export type BillingAccount = {
   userId: string;
@@ -120,6 +121,8 @@ export type CreditGrantInput = {
   invoiceId?: string | null;
   amountCents?: number | null;
   currency?: string | null;
+  billingReason?: string | null;
+  previousPlan?: BillingPlan | null;
   rawEvent?: unknown;
 };
 
@@ -807,25 +810,53 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
   }
 
   const before = current?.creditsRemaining ?? DEFAULT_LIFETIME_CREDITS;
-  const activeBuckets = await db.prepare("SELECT COALESCE(SUM(remaining), 0) AS remaining FROM credit_buckets WHERE user_id = ? AND expires_at > ?")
+  const activeBuckets = await db.prepare("SELECT COALESCE(SUM(remaining), 0) AS remaining, COUNT(*) AS bucket_count FROM credit_buckets WHERE user_id = ? AND expires_at > ?")
     .bind(userId, now)
-    .first<{ remaining: number | null }>();
-  const priorPaidRemaining = Number(activeBuckets?.remaining || 0);
+    .first<{ remaining: number | null; bucket_count: number }>();
+  const bucketPaidRemaining = Number(activeBuckets?.remaining || 0);
+  const priorBucket = await db.prepare("SELECT plan, period_start, expires_at FROM credit_buckets WHERE user_id = ? AND expires_at > ? ORDER BY updated_at DESC, created_at DESC LIMIT 1")
+    .bind(userId, now)
+    .first<{ plan: string; period_start: number; expires_at: number }>();
+  const subscriptionPeriod = await db.prepare("SELECT current_period_start, current_period_end FROM subscriptions WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1")
+    .bind(userId)
+    .first<{ current_period_start: number | null; current_period_end: number | null }>();
+  const bucketPlan = priorBucket && (priorBucket.plan === "starter" || priorBucket.plan === "creator" || priorBucket.plan === "studio")
+    ? priorBucket.plan as BillingPlan
+    : null;
+  const priorPlan = input.previousPlan || bucketPlan;
+  const inferredUpgrade = Boolean(priorPlan && BILLING_PLAN_ORDER[input.plan] > BILLING_PLAN_ORDER[priorPlan]);
+  const isUpgrade = inferredUpgrade && (input.billingReason === "subscription_update" || Boolean(input.previousPlan));
+  if (input.billingReason === "subscription_update" && !isUpgrade) {
+    throw new Error("STRIPE_UPGRADE_PREVIOUS_PLAN_AMBIGUOUS");
+  }
+  const priorPlanCredits = priorPlan ? STRIPE_PLAN_CREDITS[priorPlan] : 0;
+  const priorPaidRemaining = inferStripePriorPaidRemaining({
+    before,
+    bucketRemaining: bucketPaidRemaining,
+    priorPlanCredits,
+    hasActiveBucket: Number(activeBuckets?.bucket_count || 0) > 0,
+  });
   // Paid credits expire at renewal. Preserve legacy/free balance, but replace
-  // (never roll over) the previous paid-period remainder.
-  const after = Math.max(0, before - priorPaidRemaining) + input.credits;
-  const periodStart = now;
-  const periodEnd = now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
+  // (never roll over) the previous paid-period remainder. A prorated upgrade
+  // preserves the unused current-period balance and adds only the plan delta.
+  const { after, ledgerDelta } = calculateStripeCreditReplacement({ before, priorPaidRemaining, priorPlanCredits, targetCredits: input.credits, isUpgrade });
+  const bucketRemaining = isUpgrade ? priorPaidRemaining + ledgerDelta : input.credits;
+  const periodStart = isUpgrade
+    ? priorBucket?.period_start || Number(subscriptionPeriod?.current_period_start || 0) || now
+    : now;
+  const periodEnd = isUpgrade
+    ? priorBucket?.expires_at || Number(subscriptionPeriod?.current_period_end || 0) || now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000
+    : now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
   const bucketId = `bucket_${input.invoiceId || cycleSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   const ledgerId = `stripe_credit_grant_${cycleSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   await db.batch([
-    db.prepare("UPDATE credit_buckets SET remaining = 0, expires_at = MIN(expires_at, ?), updated_at = ? WHERE user_id = ? AND expires_at > ?").bind(now, now, userId, now),
+    db.prepare("UPDATE credit_buckets SET remaining = 0, expires_at = MIN(expires_at, ?), updated_at = ? WHERE user_id = ? AND expires_at > ? AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE id = ?)").bind(now, now, userId, now, ledgerId),
     db.prepare("INSERT OR IGNORE INTO credit_buckets (id, user_id, payment_id, subscription_id, plan, granted, remaining, period_start, expires_at, stripe_invoice_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(bucketId, userId, null, input.subscriptionId || null, input.plan, input.credits, input.credits, periodStart, periodEnd, input.invoiceId, now, now),
+      .bind(bucketId, userId, null, input.subscriptionId || null, input.plan, input.credits, bucketRemaining, periodStart, periodEnd, input.invoiceId, now, now),
     db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ? AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE id = ?)")
       .bind(input.plan, after, input.customerId || null, now, userId, ledgerId),
     db.prepare("INSERT OR IGNORE INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at) VALUES (?, ?, 'stripe_credit_grant', ?, ?, ?, ?, ?, ?)")
-      .bind(ledgerId, userId, cycleSourceId, input.credits, after, input.eventType, JSON.stringify({ eventId: input.eventId, invoiceId: input.invoiceId, periodStart, periodEnd }), now),
+      .bind(ledgerId, userId, cycleSourceId, ledgerDelta, after, input.eventType, JSON.stringify({ eventId: input.eventId, invoiceId: input.invoiceId, billingReason: input.billingReason || null, isUpgrade, priorPlan, periodStart, periodEnd, targetCredits: input.credits, priorPaidRemaining }), now),
   ]);
   await upsertSubscription(db, userId, input.plan, "active", input.subscriptionId, input.customerId, now, periodStart, periodEnd);
   if (hasStripePaymentReference(input)) await upsertPayment(db, userId, input, now);
@@ -1162,6 +1193,7 @@ async function upsertUpgradePayment(db: D1Database, userId: string, subscription
     VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       status = 'paid',
+      plan = excluded.plan,
       subscription_id = COALESCE(excluded.subscription_id, payments.subscription_id),
       stripe_checkout_id = COALESCE(excluded.stripe_checkout_id, payments.stripe_checkout_id),
       stripe_transaction_id = COALESCE(excluded.stripe_transaction_id, payments.stripe_transaction_id),
@@ -1269,6 +1301,7 @@ async function upsertPayment(db: D1Database, userId: string, input: CreditGrantI
     VALUES (?, ?, ?, ?, ?, ?, ?, 'paid', ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       status = 'paid',
+      plan = excluded.plan,
       subscription_id = COALESCE(excluded.subscription_id, payments.subscription_id),
       stripe_checkout_id = COALESCE(excluded.stripe_checkout_id, payments.stripe_checkout_id),
       stripe_transaction_id = COALESCE(excluded.stripe_transaction_id, payments.stripe_transaction_id),
@@ -1300,9 +1333,7 @@ async function recordWebhookEvent(db: D1Database, eventId: string, eventType: st
 }
 
 function grantCycleSourceId(input: CreditGrantInput) {
-  const date = new Date();
-  const period = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
-  return `${input.subscriptionId || input.customerId || input.userId || input.email || input.plan}:${input.plan}:${period}`;
+  return stripeCreditGrantSourceId(input);
 }
 
 function webhookDedupeKey(eventId: string) {
