@@ -70,6 +70,72 @@ export function calculateStripeCreditReplacement(input: CreditReplacementInput) 
   return { after, ledgerDelta: after - before };
 }
 
+export function calculateExpiredPaidCreditRemoval(input: { before: number; expiredPaidRemaining: number }) {
+  const before = Math.max(0, Math.round(input.before));
+  const removed = Math.min(before, Math.max(0, Math.round(input.expiredPaidRemaining)));
+  return { after: before - removed, ledgerDelta: -removed };
+}
+
+export function stripeBillingPeriodFromPayload(
+  payload: unknown,
+  priceIds: StripePriceIds,
+  targetPlan: StripeBillingPlan,
+): { periodStart: number; periodEnd: number } | null {
+  const targetPriceId = priceIds[targetPlan]?.trim();
+  if (!targetPriceId) return null;
+  const records: Record<string, unknown>[] = [];
+  collectRecords(payload, records, 0);
+  const linePeriods = new Map<string, { periodStart: number; periodEnd: number }>();
+  for (const record of records) {
+    if (directPriceId(record) !== targetPriceId) continue;
+    const amount = numericValue(record.amount);
+    if (amount === null || amount <= 0) continue;
+    const period = objectValue(record.period);
+    const parsed = validStripePeriod(period?.start, period?.end);
+    if (parsed) linePeriods.set(`${parsed.periodStart}:${parsed.periodEnd}`, parsed);
+  }
+  if (linePeriods.size === 1) return [...linePeriods.values()][0];
+  if (linePeriods.size > 1) return null;
+
+  const invoicePeriods = new Map<string, { periodStart: number; periodEnd: number }>();
+  for (const record of records) {
+    if (record.object !== "invoice") continue;
+    const parsed = validStripePeriod(record.period_start, record.period_end);
+    if (parsed) invoicePeriods.set(`${parsed.periodStart}:${parsed.periodEnd}`, parsed);
+  }
+  return invoicePeriods.size === 1 ? [...invoicePeriods.values()][0] : null;
+}
+
+export function stripeEventMatchesConfiguredMode(event: unknown, mode: "test" | "live") {
+  if (!event || typeof event !== "object") return false;
+  const livemode = (event as Record<string, unknown>).livemode;
+  return typeof livemode === "boolean" && livemode === (mode === "live");
+}
+
+export function stripeBillingPeriodDecision(input: {
+  incomingPeriodStart: number;
+  incomingPeriodEnd: number;
+  currentPeriodStart?: number | null;
+  currentPeriodEnd?: number | null;
+  hasActivePaidBucket: boolean;
+  isUpgrade: boolean;
+}): "accept" | "stale" | "duplicate_period" {
+  const currentEnd = Math.max(0, Number(input.currentPeriodEnd || 0));
+  if (!currentEnd) return "accept";
+  if (input.incomingPeriodEnd < currentEnd) return "stale";
+  if (input.incomingPeriodEnd === currentEnd && input.hasActivePaidBucket && !input.isUpgrade) return "duplicate_period";
+  return "accept";
+}
+
+function validStripePeriod(startValue: unknown, endValue: unknown) {
+  const start = numericValue(startValue);
+  const end = numericValue(endValue);
+  if (start === null || end === null || start <= 0 || end <= start) return null;
+  const periodStart = Math.round(start < 10_000_000_000 ? start * 1000 : start);
+  const periodEnd = Math.round(end < 10_000_000_000 ? end * 1000 : end);
+  return periodEnd > periodStart ? { periodStart, periodEnd } : null;
+}
+
 export function stripeBillingReasonFromPayload(payload: unknown) {
   const records: Record<string, unknown>[] = [];
   collectRecords(payload, records, 0);

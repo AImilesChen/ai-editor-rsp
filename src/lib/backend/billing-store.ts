@@ -3,7 +3,7 @@ import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/stripe";
 import { cancelStripeSubscription, stripePriceId, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
-import { calculateStripeCreditReplacement, inferStripePriorPaidRemaining, stripeCreditGrantSourceId } from "@/lib/backend/stripe-plan";
+import { calculateExpiredPaidCreditRemoval, calculateStripeCreditReplacement, inferStripePriorPaidRemaining, stripeBillingPeriodDecision, stripeCreditGrantSourceId } from "@/lib/backend/stripe-plan";
 
 export type BillingAccount = {
   userId: string;
@@ -124,6 +124,8 @@ export type CreditGrantInput = {
   currency?: string | null;
   billingReason?: string | null;
   previousPlan?: BillingPlan | null;
+  periodStart?: number | null;
+  periodEnd?: number | null;
   rawEvent?: unknown;
 };
 
@@ -146,11 +148,6 @@ type RefundStateInput = Omit<SubscriptionStateInput, "status"> & {
   refundId?: string | null;
   amountCents?: number | null;
   currency?: string | null;
-};
-
-type KV = {
-  get(key: string): Promise<string | null>;
-  put(key: string, value: string, options?: { expirationTtl?: number; metadata?: unknown }): Promise<void>;
 };
 
 type UserRow = {
@@ -186,32 +183,7 @@ export async function billingStoreStatus() {
 
 export async function ensureBillingAccount(user: AuthUser): Promise<BillingAccount | null> {
   const db = await billingDb();
-  if (db) return ensureD1BillingAccount(db, user);
-
-  const kv = await billingKv();
-  if (!kv) return null;
-  const existing = await readAccountByUserId(user.id, kv);
-  if (existing) {
-    if (existing.email !== user.email) {
-      const updated = { ...existing, email: user.email, updatedAt: Date.now() };
-      await writeAccount(updated, kv);
-      await kv.put(emailKey(user.email), user.id);
-      return updated;
-    }
-    return existing;
-  }
-  const created: BillingAccount = {
-    userId: user.id,
-    email: user.email,
-    plan: user.plan || "free",
-    creditsRemaining: typeof user.creditsRemaining === "number" ? user.creditsRemaining : DEFAULT_LIFETIME_CREDITS,
-    subscriptionStatus: "none",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-  await writeAccount(created, kv);
-  await kv.put(emailKey(user.email), user.id);
-  return created;
+  return db ? ensureD1BillingAccount(db, user) : null;
 }
 
 export async function accountForPublicUser(user: AuthUser) {
@@ -418,31 +390,7 @@ export async function recordStripeWebhookEvent(input: { eventId: string; eventTy
 export async function debitCreditForUser(user: AuthUser, amount = 1, sourceId?: string) {
   const db = await billingDb();
   if (db) return debitCreditForUserD1(db, user, amount, sourceId);
-
-  const kv = await billingKv();
-  if (!kv) return { persisted: false, creditsRemaining: user.creditsRemaining, insufficient: user.creditsRemaining < amount };
-  const account = (await ensureBillingAccount(user)) || null;
-  if (account && creditLockedStatuses.has(account.subscriptionStatus)) {
-    return { persisted: true, creditsRemaining: 0, insufficient: true, code: "CREDITS_LOCKED_FOR_REFUND" };
-  }
-  const currentCredits = account?.creditsRemaining ?? user.creditsRemaining;
-  if (currentCredits < amount) return { persisted: true, creditsRemaining: currentCredits, insufficient: true };
-  const now = Date.now();
-  const next: BillingAccount = {
-    userId: user.id,
-    email: account?.email || user.email,
-    plan: account?.plan || user.plan || "free",
-    creditsRemaining: currentCredits - amount,
-    subscriptionStatus: account?.subscriptionStatus || "none",
-    subscriptionId: account?.subscriptionId,
-    customerId: account?.customerId,
-    lastStripeEventId: account?.lastStripeEventId,
-    createdAt: account?.createdAt || now,
-    updatedAt: now,
-  };
-  await writeAccount(next, kv);
-  await kv.put(ledgerKey(user.id, sourceId || `debit_${crypto.randomUUID()}`), JSON.stringify({ type: "credit_debit", userId: user.id, amount, balanceAfter: next.creditsRemaining, at: now }));
-  return { persisted: true, creditsRemaining: next.creditsRemaining, insufficient: false };
+  return { persisted: false, creditsRemaining: user.creditsRemaining, insufficient: true, reason: "D1 billing database is required for credit debits" };
 }
 
 export async function refundCreditForUser(user: AuthUser, amount = 1, sourceId?: string) {
@@ -476,26 +424,7 @@ export async function refundCreditForUser(user: AuthUser, amount = 1, sourceId?:
       return { persisted: Boolean(existing), creditsRemaining: fresh?.creditsRemaining ?? account.creditsRemaining, duplicate: Boolean(existing), reason: existing ? undefined : "Refund transaction failed" };
     }
   }
-
-  const kv = await billingKv();
-  if (!kv) return { persisted: false, creditsRemaining: user.creditsRemaining + amount };
-  const account = (await ensureBillingAccount(user)) || null;
-  const now = Date.now();
-  const next: BillingAccount = {
-    userId: user.id,
-    email: account?.email || user.email,
-    plan: account?.plan || user.plan || "free",
-    creditsRemaining: (account?.creditsRemaining ?? user.creditsRemaining) + amount,
-    subscriptionStatus: account?.subscriptionStatus || "none",
-    subscriptionId: account?.subscriptionId,
-    customerId: account?.customerId,
-    lastStripeEventId: account?.lastStripeEventId,
-    createdAt: account?.createdAt || now,
-    updatedAt: now,
-  };
-  await writeAccount(next, kv);
-  await kv.put(ledgerKey(user.id, sourceId || `refund_${crypto.randomUUID()}`), JSON.stringify({ type: "generation_refund", userId: user.id, amount, balanceAfter: next.creditsRemaining, at: now }));
-  return { persisted: true, creditsRemaining: next.creditsRemaining };
+  return { persisted: false, creditsRemaining: user.creditsRemaining, reason: "D1 billing database is required for generation refunds" };
 }
 
 export async function updateSubscriptionState(input: {
@@ -511,32 +440,7 @@ export async function updateSubscriptionState(input: {
 }) {
   const db = await billingDb();
   if (db) return updateSubscriptionStateD1(db, input);
-
-  const kv = await billingKv();
-  if (!kv) return { persisted: false, reason: "No D1 DB or BILLING_KV binding" };
-  const userId = input.userId || (input.email ? await kv.get(emailKey(input.email)) : null);
-  if (!userId) {
-    await kv.put(eventKey(input.eventId), JSON.stringify({ ...input, persisted: false, reason: "Missing user_id/email mapping" }));
-    return { persisted: false, reason: "Missing user_id/email mapping" };
-  }
-  const current = await readAccountByUserId(userId, kv);
-  const now = Date.now();
-  const account: BillingAccount = {
-    userId,
-    email: input.email || current?.email,
-    plan: input.plan || current?.plan || "free",
-    creditsRemaining: current?.creditsRemaining ?? DEFAULT_LIFETIME_CREDITS,
-    subscriptionStatus: input.status,
-    subscriptionId: input.subscriptionId || current?.subscriptionId,
-    customerId: input.customerId || current?.customerId,
-    lastStripeEventId: input.eventId,
-    createdAt: current?.createdAt || now,
-    updatedAt: now,
-  };
-  await writeAccount(account, kv);
-  if (account.email) await kv.put(emailKey(account.email), userId);
-  await kv.put(eventKey(input.eventId), JSON.stringify({ ...input, persisted: true, accountUserId: userId, at: now }));
-  return { persisted: true, account };
+  return { persisted: false, reason: "D1 billing database is required for subscription state updates" };
 }
 
 export async function selfServiceRefundStatusForUser(user: AuthUser): Promise<PublicSelfServiceRefundStatus | null> {
@@ -593,8 +497,9 @@ export async function submitRefundRequestForUser(user: AuthUser, reason?: string
 }
 
 export async function submitSubscriptionCancellationForUser(user: AuthUser) {
-  const account = await ensureBillingAccount(user);
-  if (!account) return { ok: false, reason: "Account not found" };
+  const db = await billingDb();
+  if (!db) return { ok: false, reason: "D1 billing database is required before changing a Stripe subscription" };
+  const account = await ensureD1BillingAccount(db, user);
   if (account.plan === "free") return { ok: false, reason: "No paid subscription on this account" };
   if (account.subscriptionStatus === "canceled" || account.subscriptionStatus === "scheduled_cancel") return { ok: true, duplicate: true, account };
   if (!account.subscriptionId) return { ok: false, reason: "Stripe subscription ID is not available for this account" };
@@ -604,19 +509,18 @@ export async function submitSubscriptionCancellationForUser(user: AuthUser) {
 
   const now = Date.now();
   const updated: BillingAccount = { ...account, subscriptionStatus: "scheduled_cancel", updatedAt: now };
-  const db = await billingDb();
-  if (db) {
-    await upsertUserFromAccount(db, updated);
-    await upsertSubscription(db, updated.userId, updated.plan === "free" ? "starter" : updated.plan, "scheduled_cancel", updated.subscriptionId, updated.customerId, now);
-    await insertCreditLedger(db, updated.userId, "subscription_cancel", `cancel_${now}`, 0, updated.creditsRemaining, "subscription_cancel", { stripe: stripeResult.payload, cancelAtPeriodEnd: true });
-  } else {
-    const kv = await billingKv();
-    if (!kv) return { ok: false, reason: "No D1 DB or BILLING_KV binding" };
-    await writeAccount(updated, kv);
-    if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
-    const cancellationId = `cancel_${now}_${crypto.randomUUID()}`;
-    await kv.put(ledgerKey(updated.userId, cancellationId), JSON.stringify({ type: "subscription_cancel", userId: updated.userId, email: updated.email, subscriptionId: updated.subscriptionId, stripe: stripeResult.payload, at: now }));
-  }
+  const cancellationSourceId = account.subscriptionId;
+  const cancellationLedgerId = `subscription_cancel_${cancellationSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  await db.batch([
+    db.prepare("UPDATE users SET email = COALESCE(?, email), plan = ?, status = ?, credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
+      .bind(updated.email || null, updated.plan, updated.subscriptionStatus, updated.creditsRemaining, updated.customerId || null, now, updated.userId),
+    db.prepare(`INSERT INTO subscriptions (id, user_id, stripe_subscription_id, stripe_customer_id, plan, status, current_period_start, current_period_end, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, 'scheduled_cancel', NULL, NULL, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET status = 'scheduled_cancel', plan = excluded.plan, stripe_customer_id = COALESCE(excluded.stripe_customer_id, subscriptions.stripe_customer_id), updated_at = excluded.updated_at`)
+      .bind(account.subscriptionId, updated.userId, account.subscriptionId, updated.customerId || null, updated.plan, now, now),
+    db.prepare("INSERT OR IGNORE INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at) VALUES (?, ?, 'subscription_cancel', ?, 0, ?, 'subscription_cancel', ?, ?)")
+      .bind(cancellationLedgerId, updated.userId, cancellationSourceId, updated.creditsRemaining, JSON.stringify({ stripe: stripeResult.payload, cancelAtPeriodEnd: true }), now),
+  ]);
   return { ok: true, duplicate: false, account: updated, stripe: stripeResult.payload };
 }
 
@@ -660,17 +564,7 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
 
 export async function markRefundedAccount(input: RefundStateInput) {
   const db = await billingDb();
-  if (db) return markRefundedAccountD1(db, input);
-
-  const result = await updateSubscriptionState({ ...input, status: "refunded" });
-  if (!result.persisted || !result.account) return result;
-  const kv = await billingKv();
-  if (!kv) return result;
-  const preservedFreeCredits = Math.max(0, Math.min(DEFAULT_LIFETIME_CREDITS, result.account.creditsRemaining));
-  const account: BillingAccount = { ...result.account, creditsRemaining: preservedFreeCredits, updatedAt: Date.now() };
-  await writeAccount(account, kv);
-  await kv.put(ledgerKey(account.userId, `${input.eventId}_credit_revoke`), JSON.stringify({ type: "refund_paid_credit_revoke", eventId: input.eventId, eventType: input.eventType, userId: account.userId, preservedFreeCredits, balanceAfter: preservedFreeCredits, at: account.updatedAt }));
-  return { ...result, account };
+  return db ? markRefundedAccountD1(db, input) : { persisted: false, reason: "D1 billing database is required for refund state updates" };
 }
 
 function isUpgradeableAccountPlan(plan: BillingAccount["plan"]): plan is BillingPlan {
@@ -731,6 +625,53 @@ async function readCurrentSubscriptionPeriod(userId: string, subscriptionId?: st
   return row;
 }
 
+async function reconcileExpiredPaidCreditBucketsD1(db: D1Database, userId: string, now = Date.now()) {
+  const buckets = await db.prepare(`SELECT id
+    FROM credit_buckets
+    WHERE user_id = ? AND remaining > 0 AND expires_at <= ?
+    ORDER BY expires_at ASC, created_at ASC, id ASC`)
+    .bind(userId, now)
+    .all<{ id: string }>();
+
+  for (const bucket of buckets.results || []) {
+    const row = await db.prepare(`SELECT b.id, b.remaining, u.credits_remaining
+      FROM credit_buckets b
+      JOIN users u ON u.id = b.user_id
+      WHERE b.id = ? AND b.user_id = ? AND b.remaining > 0 AND b.expires_at <= ?`)
+      .bind(bucket.id, userId, now)
+      .first<{ id: string; remaining: number; credits_remaining: number }>();
+    if (!row) continue;
+    const before = Math.max(0, Number(row.credits_remaining || 0));
+    const expiredPaidRemaining = Math.max(0, Number(row.remaining || 0));
+    const { after, ledgerDelta } = calculateExpiredPaidCreditRemoval({ before, expiredPaidRemaining });
+    const ledgerId = `stripe_credit_expiry_${row.id}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+    const expiryClaim = crypto.randomUUID();
+    const results = await db.batch([
+      db.prepare(`UPDATE credit_buckets SET remaining = 0, expiry_claim = ?, updated_at = ?
+        WHERE id = ? AND user_id = ? AND remaining = ? AND expires_at <= ? AND expiry_claim IS NULL
+          AND EXISTS (SELECT 1 FROM users WHERE id = ? AND credits_remaining = ?)`)
+        .bind(expiryClaim, now, row.id, userId, expiredPaidRemaining, now, userId, before),
+      db.prepare(`INSERT OR IGNORE INTO credit_ledger
+        (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at)
+        SELECT ?, ?, 'stripe_credit_expiry', ?, ?, ?, 'Paid credits expired at the end of their Stripe billing period', ?, ?
+        FROM credit_buckets
+        WHERE id = ? AND user_id = ? AND remaining = 0 AND expiry_claim = ?`)
+        .bind(ledgerId, userId, row.id, ledgerDelta, after, JSON.stringify({ bucketId: row.id, expiredPaidRemaining }), now, row.id, userId, expiryClaim),
+      db.prepare(`UPDATE users SET credits_remaining = ?, updated_at = ?
+        WHERE id = ? AND credits_remaining = ?
+          AND EXISTS (SELECT 1 FROM credit_buckets WHERE id = ? AND user_id = ? AND remaining = 0 AND expiry_claim = ?)
+          AND EXISTS (SELECT 1 FROM credit_ledger WHERE id = ? AND user_id = ?)`)
+        .bind(after, now, userId, before, row.id, userId, expiryClaim, ledgerId, userId),
+    ]);
+    if (!results[0]?.meta?.changes) {
+      const unresolved = await db.prepare("SELECT id FROM credit_buckets WHERE id = ? AND user_id = ? AND remaining > 0 AND expires_at <= ?")
+        .bind(row.id, userId, now)
+        .first<{ id: string }>();
+      if (unresolved) throw new Error("STRIPE_CREDIT_EXPIRY_RECONCILIATION_RETRY");
+    }
+  }
+}
+
 async function ensureD1BillingAccount(db: D1Database, user: AuthUser): Promise<BillingAccount> {
   const now = Date.now();
   const email = user.email.trim().toLowerCase();
@@ -747,9 +688,11 @@ async function ensureD1BillingAccount(db: D1Database, user: AuthUser): Promise<B
     await db.prepare("UPDATE users SET id = ?, email = ?, updated_at = ? WHERE id = ?")
       .bind(user.id, email, now, existing.userId)
       .run();
-    return { ...existing, userId: user.id, email, updatedAt: now };
+    await reconcileExpiredPaidCreditBucketsD1(db, user.id, now);
+    return (await readD1Account(db, user.id, email)) || { ...existing, userId: user.id, email, updatedAt: now };
   }
-  return existing;
+  await reconcileExpiredPaidCreditBucketsD1(db, existing.userId, now);
+  return (await readD1Account(db, existing.userId, email)) || existing;
 }
 
 async function readD1Account(db: D1Database, userId?: string | null, email?: string | null): Promise<BillingAccount | null> {
@@ -802,6 +745,8 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
     return { persisted: false, duplicate: false, reason: "Missing user_id/email/customer mapping" };
   }
 
+  const now = Date.now();
+  await reconcileExpiredPaidCreditBucketsD1(db, userId, now);
   const current = await readD1Account(db, userId);
   const sameLockedSubscription = Boolean(current?.subscriptionId && input.subscriptionId && current.subscriptionId === input.subscriptionId);
   if (current?.subscriptionStatus === "refund_requested" || current?.subscriptionStatus === "disputed" || (current?.subscriptionStatus === "refunded" && (!input.subscriptionId || sameLockedSubscription))) {
@@ -809,7 +754,6 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
     return { persisted: true, duplicate: true, account: current };
   }
   const email = input.email?.trim().toLowerCase() || current?.email || `${userId}@unknown.local`;
-  const now = Date.now();
   if (!current) {
     await db.prepare("INSERT INTO users (id, email, plan, status, credits_remaining, stripe_customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
       .bind(userId, email, input.plan, "active", DEFAULT_LIFETIME_CREDITS, input.customerId || null, now, now)
@@ -848,6 +792,24 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
   if (input.billingReason === "subscription_update" && !isUpgrade) {
     throw new Error("STRIPE_UPGRADE_PREVIOUS_PLAN_AMBIGUOUS");
   }
+  const eventPeriodStart = Number(input.periodStart || 0);
+  const eventPeriodEnd = Number(input.periodEnd || 0);
+  if (!Number.isFinite(eventPeriodStart) || !Number.isFinite(eventPeriodEnd) || eventPeriodStart <= 0 || eventPeriodEnd <= eventPeriodStart) {
+    throw new Error("STRIPE_BILLING_PERIOD_REQUIRED");
+  }
+  const periodDecision = stripeBillingPeriodDecision({
+    incomingPeriodStart: eventPeriodStart,
+    incomingPeriodEnd: eventPeriodEnd,
+    currentPeriodStart: Number(subscriptionPeriod?.current_period_start || priorBucket?.period_start || 0),
+    currentPeriodEnd: Math.max(Number(subscriptionPeriod?.current_period_end || 0), Number(priorBucket?.expires_at || 0)),
+    hasActivePaidBucket: Number(activeBuckets?.bucket_count || 0) > 0,
+    isUpgrade,
+  });
+  if (periodDecision !== "accept") {
+    if (hasStripePaymentReference(input)) await upsertPayment(db, userId, input, now);
+    await recordWebhookEvent(db, input.eventId, input.eventType, { ignored: periodDecision, raw: input.rawEvent || input }, userId, "processed", null, true);
+    return { persisted: true, duplicate: true, account: await readD1Account(db, userId) };
+  }
   const priorPlanCredits = priorPlan ? STRIPE_PLAN_CREDITS[priorPlan] : 0;
   const priorPaidRemaining = inferStripePriorPaidRemaining({
     before,
@@ -861,11 +823,11 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
   const { after, ledgerDelta } = calculateStripeCreditReplacement({ before, priorPaidRemaining, priorPlanCredits, targetCredits: input.credits, isUpgrade });
   const bucketRemaining = isUpgrade ? priorPaidRemaining + ledgerDelta : input.credits;
   const periodStart = isUpgrade
-    ? priorBucket?.period_start || Number(subscriptionPeriod?.current_period_start || 0) || now
-    : now;
+    ? priorBucket?.period_start || Number(subscriptionPeriod?.current_period_start || 0) || eventPeriodStart
+    : eventPeriodStart;
   const periodEnd = isUpgrade
-    ? priorBucket?.expires_at || Number(subscriptionPeriod?.current_period_end || 0) || now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000
-    : now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
+    ? priorBucket?.expires_at || Number(subscriptionPeriod?.current_period_end || 0) || eventPeriodEnd
+    : eventPeriodEnd;
   const bucketId = `bucket_${input.invoiceId || cycleSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   const ledgerId = `stripe_credit_grant_${cycleSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   await db.batch([
@@ -1185,12 +1147,6 @@ async function resolveD1UserId(db: D1Database, input: {
   return null;
 }
 
-async function upsertUserFromAccount(db: D1Database, account: BillingAccount) {
-  await db.prepare("UPDATE users SET email = COALESCE(?, email), plan = ?, status = ?, credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
-    .bind(account.email || null, account.plan, account.subscriptionStatus, account.creditsRemaining, account.customerId || null, account.updatedAt, account.userId)
-    .run();
-}
-
 async function upsertSubscription(db: D1Database, userId: string, plan: BillingPlan, status: BillingAccount["subscriptionStatus"], subscriptionId?: string | null, customerId?: string | null, now = Date.now(), periodStart?: number | null, periodEnd?: number | null) {
   if (!subscriptionId && !customerId) return;
   const id = subscriptionId || `sub_${userId}_${customerId}`;
@@ -1357,42 +1313,4 @@ function grantCycleSourceId(input: CreditGrantInput) {
 
 function webhookDedupeKey(eventId: string) {
   return `stripe:${eventId}`;
-}
-
-async function readAccountByUserId(userId: string, kv: KV): Promise<BillingAccount | null> {
-  const raw = await kv.get(accountKey(userId));
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as BillingAccount;
-    if (!parsed.userId || typeof parsed.creditsRemaining !== "number") return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-async function writeAccount(account: BillingAccount, kv: KV) {
-  await kv.put(accountKey(account.userId), JSON.stringify(account));
-}
-
-function accountKey(userId: string) {
-  return `billing:account:${userId}`;
-}
-
-function emailKey(email: string) {
-  return `billing:email:${email.trim().toLowerCase()}`;
-}
-
-function eventKey(eventId: string) {
-  return `billing:event:${eventId}`;
-}
-
-
-function ledgerKey(userId: string, eventId: string) {
-  return `billing:ledger:${userId}:${eventId}`;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function refundRequestKey(userId: string, requestId: string) {
-  return `billing:refund:${userId}:${requestId}`;
 }

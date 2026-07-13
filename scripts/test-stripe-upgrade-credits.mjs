@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import {
+  calculateExpiredPaidCreditRemoval,
   calculateStripeCreditReplacement,
   inferStripePriorPaidRemaining,
   previousStripePlanFromPayload,
   resolveStripePlanFromPayload,
+  stripeBillingPeriodDecision,
+  stripeBillingPeriodFromPayload,
   stripeBillingReasonFromPayload,
   stripeCreditGrantSourceId,
+  stripeEventMatchesConfiguredMode,
 } from "../src/lib/backend/stripe-plan.ts";
 
 const priceIds = {
@@ -106,5 +110,49 @@ assert.equal(
   "invoice:in_upgrade",
   "invoice id must be the primary idempotency authority",
 );
+
+assert.deepEqual(
+  stripeBillingPeriodFromPayload({
+    object: "invoice",
+    period_start: 1_720_000_000,
+    period_end: 1_722_592_000,
+    lines: { data: [{
+      amount: 2_999,
+      pricing: { price_details: { price: priceIds.studio } },
+      period: { start: 1_720_000_123, end: 1_722_678_923 },
+    }] },
+  }, priceIds, "studio"),
+  { periodStart: 1_720_000_123_000, periodEnd: 1_722_678_923_000 },
+  "credit buckets must use the positively charged target invoice line's real Stripe period",
+);
+
+assert.equal(
+  stripeBillingPeriodFromPayload({ object: "invoice", lines: { data: [{ amount: 2_999, pricing: { price_details: { price: priceIds.studio } } }] } }, priceIds, "studio"),
+  null,
+  "a paid invoice without an authoritative billing period must fail closed instead of fabricating 30 days",
+);
+
+assert.deepEqual(
+  calculateExpiredPaidCreditRemoval({ before: 503, expiredPaidRemaining: 500 }),
+  { after: 3, ledgerDelta: -500 },
+  "expired paid credits must be removed from the aggregate user balance",
+);
+
+assert.deepEqual(
+  calculateExpiredPaidCreditRemoval({ before: 100, expiredPaidRemaining: 500 }),
+  { after: 0, ledgerDelta: -100 },
+  "expiry reconciliation must never create a negative user balance",
+);
+
+assert.equal(stripeEventMatchesConfiguredMode({ livemode: true }, "live"), true, "live mode must accept live events");
+assert.equal(stripeEventMatchesConfiguredMode({ livemode: false }, "test"), true, "test mode must accept test events");
+assert.equal(stripeEventMatchesConfiguredMode({ livemode: false }, "live"), false, "live mode must reject test events");
+assert.equal(stripeEventMatchesConfiguredMode({ livemode: true }, "test"), false, "test mode must reject live events");
+assert.equal(stripeEventMatchesConfiguredMode({}, "live"), false, "events missing livemode must fail closed");
+
+assert.equal(stripeBillingPeriodDecision({ incomingPeriodStart: 300, incomingPeriodEnd: 400, currentPeriodStart: 200, currentPeriodEnd: 500, hasActivePaidBucket: true, isUpgrade: false }), "stale");
+assert.equal(stripeBillingPeriodDecision({ incomingPeriodStart: 300, incomingPeriodEnd: 500, currentPeriodStart: 200, currentPeriodEnd: 500, hasActivePaidBucket: true, isUpgrade: false }), "duplicate_period");
+assert.equal(stripeBillingPeriodDecision({ incomingPeriodStart: 300, incomingPeriodEnd: 500, currentPeriodStart: 200, currentPeriodEnd: 500, hasActivePaidBucket: true, isUpgrade: true }), "accept");
+assert.equal(stripeBillingPeriodDecision({ incomingPeriodStart: 500, incomingPeriodEnd: 800, currentPeriodStart: 200, currentPeriodEnd: 500, hasActivePaidBucket: true, isUpgrade: false }), "accept");
 
 console.log("Stripe upgrade credit behavior: PASS");

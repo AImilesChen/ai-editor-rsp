@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { SITE_URL } from "@/lib/site";
-import { previousStripePlanFromPayload, resolveStripePlanFromPayload } from "@/lib/backend/stripe-plan";
+import { previousStripePlanFromPayload, resolveStripePlanFromPayload, stripeBillingPeriodFromPayload } from "@/lib/backend/stripe-plan";
 
 export type BillingPlan = "starter" | "creator" | "studio";
 
@@ -39,7 +39,7 @@ export function stripeApiBase() {
 
 export function stripeMode() {
   const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || "";
-  return key.startsWith("sk_live_") ? "live" : "test";
+  return key.startsWith("sk_live_") || key.startsWith("rk_live_") ? "live" : "test";
 }
 
 export function stripeSecretKey() {
@@ -442,6 +442,14 @@ export function previousPlanFromStripePayload(payload: unknown): BillingPlan | n
     creator: stripePriceId("creator"),
     studio: stripePriceId("studio"),
   });
+}
+
+export function billingPeriodFromStripePayload(payload: unknown, plan: BillingPlan) {
+  return stripeBillingPeriodFromPayload(payload, {
+    starter: stripePriceId("starter"),
+    creator: stripePriceId("creator"),
+    studio: stripePriceId("studio"),
+  }, plan);
 }
 
 function planFromPriceId(priceId: string | null) {

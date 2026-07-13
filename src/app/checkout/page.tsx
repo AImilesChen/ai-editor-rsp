@@ -70,7 +70,8 @@ export default async function CheckoutPage({ searchParams }: { searchParams?: Pr
                   <p className="mt-3 font-semibold text-rsp-secondary">{plan.quota}</p>
                 </div>
                 <CheckoutStartButton plan={plan.name.toLowerCase()} />
-                <p className="mt-5 text-sm leading-6 text-rsp-muted">Complete payment on the secure checkout page. After payment succeeds, credits are added to your account automatically. This may take a short moment.</p>
+                <p className="mt-5 text-sm leading-6 text-rsp-muted">Complete payment on Stripe&apos;s secure checkout page. This monthly subscription renews automatically until canceled. Prices include applicable taxes, and paid credits are valid for the current billing period only and do not roll over.</p>
+                <p className="mt-3 text-xs leading-5 text-rsp-muted">By continuing, you agree to the <Link href="/terms" className="text-rsp-secondary no-underline">Terms</Link>, <Link href="/privacy" className="text-rsp-secondary no-underline">Privacy Policy</Link>, and <Link href="/refund-policy" className="text-rsp-secondary no-underline">Refund Policy</Link>. Credits are added after Stripe confirms payment.</p>
               </section>
               <aside className="rsp-card p-6">
                 <h2 className="font-heading text-2xl font-normal text-rsp-text">Checkout status</h2>

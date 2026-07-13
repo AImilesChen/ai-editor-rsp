@@ -3,13 +3,15 @@ import { grantCreditsFromStripe, markRefundedAccount, recordStripeWebhookEvent, 
 import { extractBillingIds as extractStripeBillingIds } from "@/lib/backend/stripe-webhook-fields";
 import {
   STRIPE_PLAN_CREDITS,
+  billingPeriodFromStripePayload,
   extractStripeEventId,
   extractStripeEventType,
   planFromStripePayload,
   previousPlanFromStripePayload,
+  stripeMode,
   verifyStripeSignature,
 } from "@/lib/backend/stripe";
-import { stripeBillingReasonFromPayload } from "@/lib/backend/stripe-plan";
+import { stripeBillingReasonFromPayload, stripeEventMatchesConfiguredMode } from "@/lib/backend/stripe-plan";
 
 const BILLING_EVENTS = new Set([
   "checkout.completed",
@@ -56,6 +58,9 @@ export async function POST(request: NextRequest) {
 
   const eventId = extractStripeEventId(event, rawBody);
   const eventType = extractStripeEventType(event);
+  if (!stripeEventMatchesConfiguredMode(event, stripeMode())) {
+    return NextResponse.json({ ok: false, code: "STRIPE_EVENT_MODE_MISMATCH", eventId, eventType }, { status: 400 });
+  }
   const plan = planFromStripePayload(event);
   const credits = plan ? STRIPE_PLAN_CREDITS[plan] : 0;
   const identity = extractIdentity(event);
@@ -65,6 +70,8 @@ export async function POST(request: NextRequest) {
   try {
     if (eventType === "subscription.paid" && (ids.amountCents || 0) > 0 && ids.invoiceId) {
     if (!plan) throw new Error("STRIPE_PAID_INVOICE_PLAN_AMBIGUOUS");
+    const billingPeriod = billingPeriodFromStripePayload(event, plan);
+    if (!billingPeriod) throw new Error("STRIPE_BILLING_PERIOD_REQUIRED");
     persistence = await grantCreditsFromStripe({
       eventId,
       eventType,
@@ -81,6 +88,8 @@ export async function POST(request: NextRequest) {
       currency: ids.currency,
       billingReason: stripeBillingReasonFromPayload(event),
       previousPlan: previousPlanFromStripePayload(event),
+      periodStart: billingPeriod.periodStart,
+      periodEnd: billingPeriod.periodEnd,
       rawEvent: event,
     });
   } else if (eventType === "subscription.canceled") {
