@@ -597,37 +597,12 @@ export async function selfServiceRefundStatusForUser(user: AuthUser): Promise<Pu
 
 export async function submitRefundRequestForUser(user: AuthUser, reason?: string) {
   const db = await billingDb();
-  if (db) return submitRefundRequestD1(db, user, reason);
-
-  const kv = await billingKv();
-  if (!kv) return { ok: false, reason: "No D1 DB or BILLING_KV binding" };
-  const account = await ensureBillingAccount(user);
-  if (!account) return { ok: false, reason: "Account not found" };
-  if (account.plan === "free") return { ok: false, reason: "No paid plan on this account" };
-  if (account.subscriptionStatus === "refund_requested" && account.lastRefundRequestId) {
-    return { ok: true, duplicate: true, requestId: account.lastRefundRequestId, account };
+  if (!db) {
+    // Refund eligibility depends on payment-scoped ledger history. KV cannot
+    // prove the 7-day/20% rule, so policy must fail closed rather than bypass it.
+    return { ok: false, code: "BILLING_DB_REQUIRED_FOR_REFUND", reason: "Refund review is temporarily unavailable because the billing database cannot verify eligibility." };
   }
-  const now = Date.now();
-  const requestId = `refund_${now}_${crypto.randomUUID()}`;
-  const request: RefundRequest = {
-    requestId,
-    userId: account.userId,
-    email: account.email || user.email,
-    plan: account.plan,
-    subscriptionStatus: account.subscriptionStatus,
-    creditsRemaining: account.creditsRemaining,
-    subscriptionId: account.subscriptionId,
-    customerId: account.customerId,
-    reason: reason?.trim().slice(0, 1000) || undefined,
-    status: "submitted",
-    createdAt: now,
-  };
-  const updated: BillingAccount = { ...account, subscriptionStatus: "refund_requested", lastRefundRequestId: requestId, updatedAt: now };
-  await writeAccount(updated, kv);
-  if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
-  await kv.put(refundRequestKey(updated.userId, requestId), JSON.stringify(request));
-  await kv.put(ledgerKey(updated.userId, requestId), JSON.stringify({ type: "refund_request", ...request, at: now }));
-  return { ok: true, duplicate: false, requestId, account: updated };
+  return submitRefundRequestD1(db, user, reason);
 }
 
 export async function submitSubscriptionCancellationForUser(user: AuthUser) {
@@ -683,38 +658,17 @@ export async function upgradeSubscriptionForUser(user: AuthUser, targetPlan: Bil
     return { ok: false as const, code: "STRIPE_UPGRADE_FAILED", message: stripeResult.message || "Stripe subscription upgrade failed.", status: stripeResult.status };
   }
 
-  const db = await billingDb();
-  const now = Date.now();
-  const sourceId = `upgrade_${account.subscriptionId}_${account.plan}_to_${targetPlan}_${Math.floor(now / (1000 * 60 * 60))}`;
-  const updated: BillingAccount = {
-    ...account,
-    plan: targetPlan,
-    creditsRemaining: preview.nextCreditsBalance,
-    subscriptionStatus: "active",
-    updatedAt: now,
+  // Stripe's successful invoice payment webhook is the sole credit authority.
+  // Do not mutate plan, payment rows, or credits from this request: the
+  // subscription update can succeed while its invoice payment later fails.
+  return {
+    ok: true as const,
+    duplicate: false,
+    pendingPayment: true,
+    account,
+    preview,
+    stripe: stripeResult.payload,
   };
-
-  if (db) {
-    const existing = await db.prepare("SELECT id FROM credit_ledger WHERE user_id = ? AND source_type = 'subscription_upgrade_proration_credit' AND source_id = ?")
-      .bind(account.userId, sourceId)
-      .first<{ id: string }>();
-    if (existing) return { ok: true as const, duplicate: true, account: await readD1Account(db, account.userId), preview, stripe: stripeResult.payload };
-
-    await db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, updated_at = ? WHERE id = ?")
-      .bind(targetPlan, updated.creditsRemaining, now, account.userId)
-      .run();
-    await upsertSubscription(db, account.userId, targetPlan, "active", account.subscriptionId, account.customerId, now, preview.periodStart, preview.periodEnd);
-    await upsertUpgradePayment(db, account.userId, account.subscriptionId || null, targetPlan, sourceId, preview, stripeResult.payload, now);
-    await insertCreditLedger(db, account.userId, "subscription_upgrade_credit_delta", sourceId, preview.creditsToGrant, updated.creditsRemaining, "Credits added after subscription upgrade", { ...preview, stripe: stripeResult.payload });
-    return { ok: true as const, duplicate: false, account: await readD1Account(db, account.userId), preview, stripe: stripeResult.payload };
-  }
-
-  const kv = await billingKv();
-  if (!kv) return { ok: false as const, code: "BILLING_STORE_UNAVAILABLE", message: "No D1 DB or BILLING_KV binding." };
-  await writeAccount(updated, kv);
-  if (updated.email) await kv.put(emailKey(updated.email), updated.userId);
-  await kv.put(ledgerKey(updated.userId, sourceId), JSON.stringify({ type: "subscription_upgrade_credit_delta", userId: updated.userId, fromPlan: account.plan, targetPlan, credits: preview.creditsToGrant, balanceAfter: updated.creditsRemaining, stripe: stripeResult.payload, at: now }));
-  return { ok: true as const, duplicate: false, account: updated, preview, stripe: stripeResult.payload };
 }
 
 export async function markRefundedAccount(input: RefundStateInput) {
@@ -880,18 +834,36 @@ async function grantCreditsFromStripeD1(db: D1Database, input: CreditGrantInput)
     .bind(userId, cycleSourceId)
     .first<{ id: string }>();
   if (cycleGrant) {
+    const retryNow = Date.now();
+    await upsertSubscription(db, userId, input.plan, "active", input.subscriptionId, input.customerId, retryNow);
+    if (hasStripePaymentReference(input)) await upsertPayment(db, userId, input, retryNow);
     await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "processed", null, true);
     return { persisted: true, duplicate: true, account: await readD1Account(db, userId) };
   }
 
   const before = current?.creditsRemaining ?? DEFAULT_LIFETIME_CREDITS;
-  const after = before + input.credits;
-  await db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ?")
-    .bind(input.plan, after, input.customerId || null, now, userId)
-    .run();
-  await upsertSubscription(db, userId, input.plan, "active", input.subscriptionId, input.customerId, now);
+  const activeBuckets = await db.prepare("SELECT COALESCE(SUM(remaining), 0) AS remaining FROM credit_buckets WHERE user_id = ? AND expires_at > ?")
+    .bind(userId, now)
+    .first<{ remaining: number | null }>();
+  const priorPaidRemaining = Number(activeBuckets?.remaining || 0);
+  // Paid credits expire at renewal. Preserve legacy/free balance, but replace
+  // (never roll over) the previous paid-period remainder.
+  const after = Math.max(0, before - priorPaidRemaining) + input.credits;
+  const periodStart = now;
+  const periodEnd = now + DEFAULT_BILLING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
+  const bucketId = `bucket_${input.invoiceId || cycleSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  const ledgerId = `stripe_credit_grant_${cycleSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
+  await db.batch([
+    db.prepare("UPDATE credit_buckets SET remaining = 0, expires_at = MIN(expires_at, ?), updated_at = ? WHERE user_id = ? AND expires_at > ?").bind(now, now, userId, now),
+    db.prepare("INSERT OR IGNORE INTO credit_buckets (id, user_id, payment_id, subscription_id, plan, granted, remaining, period_start, expires_at, stripe_invoice_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(bucketId, userId, null, input.subscriptionId || null, input.plan, input.credits, input.credits, periodStart, periodEnd, input.invoiceId, now, now),
+    db.prepare("UPDATE users SET plan = ?, status = 'active', credits_remaining = ?, stripe_customer_id = COALESCE(?, stripe_customer_id), updated_at = ? WHERE id = ? AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE id = ?)")
+      .bind(input.plan, after, input.customerId || null, now, userId, ledgerId),
+    db.prepare("INSERT OR IGNORE INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at) VALUES (?, ?, 'stripe_credit_grant', ?, ?, ?, ?, ?, ?)")
+      .bind(ledgerId, userId, cycleSourceId, input.credits, after, input.eventType, JSON.stringify({ eventId: input.eventId, invoiceId: input.invoiceId, periodStart, periodEnd }), now),
+  ]);
+  await upsertSubscription(db, userId, input.plan, "active", input.subscriptionId, input.customerId, now, periodStart, periodEnd);
   if (hasStripePaymentReference(input)) await upsertPayment(db, userId, input, now);
-  await insertCreditLedger(db, userId, "stripe_credit_grant", cycleSourceId, input.credits, after, input.eventType, { eventId: input.eventId, plan: input.plan, subscriptionId: input.subscriptionId, customerId: input.customerId });
   await recordWebhookEvent(db, input.eventId, input.eventType, input.rawEvent || input, userId, "processed", null, true);
   return { persisted: true, duplicate: false, account: await readD1Account(db, userId) };
 }
@@ -907,15 +879,28 @@ async function debitCreditForUserD1(db: D1Database, user: AuthUser, amount: numb
   const actualSourceId = sourceId || `generation_${crypto.randomUUID()}`;
   const ledgerId = `generation_debit_${actualSourceId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   try {
+    const buckets = await db.prepare("SELECT id, remaining FROM credit_buckets WHERE user_id = ? AND remaining > 0 AND expires_at > ? ORDER BY expires_at ASC, created_at ASC, id ASC")
+      .bind(user.id, now)
+      .all<{ id: string; remaining: number }>();
+    let paidToDebit = Math.min(amount, (buckets.results || []).reduce((sum, bucket) => sum + Number(bucket.remaining || 0), 0));
+    const bucketDebits: D1PreparedStatement[] = [];
+    for (const bucket of buckets.results || []) {
+      if (paidToDebit <= 0) break;
+      const debit = Math.min(paidToDebit, Number(bucket.remaining || 0));
+      paidToDebit -= debit;
+      bucketDebits.push(db.prepare("UPDATE credit_buckets SET remaining = remaining - ?, updated_at = ? WHERE id = ? AND remaining >= ? AND EXISTS (SELECT 1 FROM users WHERE id = ? AND credits_remaining >= ?) AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND source_id = ?)")
+        .bind(debit, now, bucket.id, debit, user.id, amount, user.id, actualSourceId));
+    }
     const results = await db.batch([
       db.prepare("UPDATE users SET credits_remaining = credits_remaining - ?, updated_at = ? WHERE id = ? AND credits_remaining >= ? AND NOT EXISTS (SELECT 1 FROM credit_ledger WHERE user_id = ? AND source_type = 'generation_debit' AND source_id = ?)")
         .bind(amount, now, user.id, amount, user.id, actualSourceId),
+      ...bucketDebits,
       db.prepare(`INSERT INTO credit_ledger (id, user_id, source_type, source_id, delta, balance_after, reason, metadata_json, created_at)
         SELECT ?, id, 'generation_debit', ?, ?, credits_remaining, 'AI image generation', ?, ? FROM users WHERE id = ? AND updated_at = ?`)
         .bind(ledgerId, actualSourceId, -amount, JSON.stringify({ amount }), now, user.id, now),
     ]);
     const fresh = await readD1Account(db, user.id);
-    if (!results[0]?.meta?.changes || !results[1]?.meta?.changes) {
+    if (!results[0]?.meta?.changes || !results[results.length - 1]?.meta?.changes) {
       return { persisted: true, creditsRemaining: fresh?.creditsRemaining ?? 0, insufficient: true };
     }
     return { persisted: true, creditsRemaining: fresh?.creditsRemaining ?? nextBalance, insufficient: false };
@@ -1040,15 +1025,31 @@ function stringRecordValue(value: unknown) {
 }
 
 async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Promise<RefundEligibility> {
-  const balance = await calculateFreeCreditRefundBalanceD1(db, userId);
-  const payment = await db.prepare("SELECT id, amount_cents, currency, paid_at, created_at FROM payments WHERE user_id = ? AND status = 'paid' ORDER BY COALESCE(paid_at, created_at) DESC LIMIT 1")
+  const payment = await db.prepare("SELECT id, stripe_invoice_id, amount_cents, currency, paid_at, created_at FROM payments WHERE user_id = ? AND status = 'paid' ORDER BY COALESCE(paid_at, created_at) DESC LIMIT 1")
     .bind(userId)
-    .first<{ id: string; amount_cents: number; currency: string; paid_at: number | null; created_at: number }>();
+    .first<{ id: string; stripe_invoice_id: string | null; amount_cents: number; currency: string; paid_at: number | null; created_at: number }>();
+  const paymentAt = payment ? Number(payment.paid_at || payment.created_at) : 0;
+  const bucket = payment ? await db.prepare(`SELECT granted, remaining, period_start, expires_at FROM credit_buckets
+      WHERE user_id = ? AND (payment_id = ? OR stripe_invoice_id = ?) AND period_start <= ?
+      ORDER BY period_start DESC LIMIT 1`)
+    .bind(userId, payment.id, payment.stripe_invoice_id, Date.now())
+    .first<{ granted: number; remaining: number; period_start: number; expires_at: number }>() : null;
+  // Compatibility for subscriptions paid before bucket migration is scoped to
+  // this target payment/current period, never the account's lifetime ledger.
+  const legacy = !bucket && payment ? await db.prepare(`SELECT
+      COALESCE(SUM(CASE WHEN source_type = 'stripe_credit_grant' AND delta > 0 THEN delta ELSE 0 END), 0) AS granted,
+      COALESCE(SUM(CASE WHEN source_type = 'generation_debit' AND delta < 0 THEN -delta WHEN source_type = 'generation_refund' AND delta > 0 THEN delta ELSE 0 END), 0) AS used
+      FROM credit_ledger WHERE user_id = ? AND created_at >= ?`)
+    .bind(userId, paymentAt)
+    .first<{ granted: number | null; used: number | null }>() : null;
+  const paidGranted = bucket ? Number(bucket.granted) : Number(legacy?.granted || 0);
+  const paidCreditsConsumed = bucket ? Math.max(0, Number(bucket.granted) - Number(bucket.remaining)) : Math.max(0, Number(legacy?.used || 0));
+  const periodStart = bucket ? Number(bucket.period_start) : paymentAt;
   const base: RefundEligibility = {
     eligible: false,
-    paidGranted: balance.paidGranted,
-    paidCreditsConsumed: balance.paidCreditsConsumedFirst,
-    paidCreditsUsagePercent: balance.paidGranted > 0 ? Math.round((balance.paidCreditsConsumedFirst / balance.paidGranted) * 10000) / 100 : 0,
+    paidGranted,
+    paidCreditsConsumed,
+    paidCreditsUsagePercent: paidGranted > 0 ? Math.round((paidCreditsConsumed / paidGranted) * 10000) / 100 : 0,
     latestPaymentId: payment?.id,
     latestPaymentAt: payment ? Number(payment.paid_at || payment.created_at) : undefined,
     amountCents: payment ? Number(payment.amount_cents || 0) : undefined,
@@ -1056,11 +1057,10 @@ async function evaluateRefundEligibilityD1(db: D1Database, userId: string): Prom
   };
   if (!payment) return { ...base, code: "NO_PAID_PAYMENT", message: "No paid payment record was found for this account." };
   if (!payment.amount_cents || Number(payment.amount_cents) <= 0) return { ...base, code: "PAYMENT_AMOUNT_UNVERIFIED", message: "Payment amount is not verified yet. Please contact support for manual review." };
-  const paymentAt = Number(payment.paid_at || payment.created_at || 0);
-  const ageDays = paymentAt > 0 ? (Date.now() - paymentAt) / (1000 * 60 * 60 * 24) : Number.POSITIVE_INFINITY;
+  const ageDays = paymentAt > 0 ? (Date.now() - Math.max(paymentAt, periodStart)) / (1000 * 60 * 60 * 24) : Number.POSITIVE_INFINITY;
   if (ageDays > SELF_SERVICE_REFUND_WINDOW_DAYS) return { ...base, code: "REFUND_WINDOW_EXPIRED", message: "Refund requests are available within 7 days of payment." };
-  if (balance.paidGranted <= 0) return { ...base, code: "NO_PAID_CREDITS", message: "No paid credits were found for this billing period." };
-  if (balance.paidCreditsConsumedFirst > balance.paidGranted * SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE) {
+  if (paidGranted <= 0) return { ...base, code: "NO_PAID_CREDITS", message: "No paid credits were found for this billing period." };
+  if (paidCreditsConsumed > paidGranted * SELF_SERVICE_REFUND_MAX_PAID_CREDIT_USAGE) {
     return { ...base, code: "PAID_CREDITS_OVER_20_PERCENT_USED", message: "Refund requests are available only when no more than 20% of paid credits have been used." };
   }
   return { ...base, eligible: true };
@@ -1192,6 +1192,9 @@ async function upsertSubscription(db: D1Database, userId: string, plan: BillingP
     .run();
 }
 
+// Retained for compatibility with existing persisted upgrade payload parsing.
+// Credits are no longer granted by the upgrade endpoint.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function upsertUpgradePayment(db: D1Database, userId: string, subscriptionId: string | null, plan: BillingPlan, sourceId: string, preview: ProratedUpgradePreview, stripePayload: unknown, now = Date.now()) {
   const payment = extractStripeUpgradePayment(stripePayload);
   const paymentId = payment.transactionId || payment.invoiceId || `subscription_upgrade_${sourceId}`;
@@ -1385,6 +1388,7 @@ function ledgerKey(userId: string, eventId: string) {
   return `billing:ledger:${userId}:${eventId}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function refundRequestKey(userId: string, requestId: string) {
   return `billing:refund:${userId}:${requestId}`;
 }

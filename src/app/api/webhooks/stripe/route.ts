@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
   const ids = extractBillingIds(event);
   let persistence: unknown = { persisted: false, reason: "record_only" };
 
-  if (plan && credits > 0 && eventType === "subscription.paid" && (ids.amountCents || 0) > 0 && ids.invoiceId) {
+  try {
+    if (plan && credits > 0 && eventType === "subscription.paid" && (ids.amountCents || 0) > 0 && ids.invoiceId) {
     persistence = await grantCreditsFromStripe({
       eventId,
       eventType,
@@ -109,6 +110,14 @@ export async function POST(request: NextRequest) {
     });
   } else if (eventType === "dispute.created") {
     persistence = await updateSubscriptionState({ eventId, eventType, userId: identity.userId, email: identity.email, status: "disputed", plan, subscriptionId: ids.subscriptionId, customerId: ids.customerId });
+  }
+  } catch (error) {
+    return NextResponse.json({ ok: false, code: "WEBHOOK_PERSISTENCE_FAILED", retryable: true, eventId, eventType, error: error instanceof Error ? error.message : "Billing persistence failed." }, { status: 503 });
+  }
+
+  const persistenceResult = persistence && typeof persistence === "object" ? persistence as { persisted?: boolean; reason?: string } : null;
+  if (BILLING_EVENTS.has(eventType) && persistenceResult?.persisted !== true) {
+    return NextResponse.json({ ok: false, code: "WEBHOOK_PERSISTENCE_FAILED", retryable: true, eventId, eventType, reason: persistenceResult?.reason || "Billing event was not durably persisted." }, { status: 503 });
   }
 
   return NextResponse.json({

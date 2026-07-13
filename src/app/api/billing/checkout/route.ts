@@ -62,19 +62,20 @@ export async function POST(request: NextRequest) {
     }
 
     const completed = previous.paymentStatus === "paid" || previous.paymentStatus === "no_payment_required" || previous.checkoutStatus === "complete";
-    if (completed && hasBlockingPaidPlan) {
+    if (completed) {
+      // Stripe is authoritative here. A delayed webhook must never allow a paid
+      // Checkout to be replaced by a second order; Billing performs reconciliation.
+      await markPendingCheckoutStatus(pending.checkoutId, "paid");
       return NextResponse.json({
         ok: true,
         action: "already_paid",
-        redirectUrl: "/account/billing?payment=confirmed",
+        redirectUrl: "/account/billing?payment=confirmed&reconcile=1",
         plan: pending.plan,
         mode: stripeMode(),
       });
     }
 
-    if (completed && !hasBlockingPaidPlan) {
-      pendingToClose = { checkoutId: pending.checkoutId, status: "canceled" };
-    } else if (previous.checkoutStatus === "open" && pending.plan === plan && previous.checkoutUrl) {
+    if (previous.checkoutStatus === "open" && pending.plan === plan && previous.checkoutUrl) {
       return NextResponse.json({
         ok: true,
         action: "resumed",

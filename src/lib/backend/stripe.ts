@@ -160,6 +160,24 @@ export function missingStripeConfig() {
   return missing;
 }
 
+export async function validateStripePrice(plan: BillingPlan) {
+  // Keep test mode network-free; live checkout fails closed on catalog drift.
+  if (stripeMode() !== "live") return { ok: true as const, skipped: true as const };
+  const priceId = stripePriceId(plan);
+  if (!priceId) return { ok: false as const, message: "Stripe Price is not configured." };
+  const response = await stripeGetRequest(`/prices/${encodeURIComponent(priceId)}?expand[]=product`);
+  if (!response.ok) return { ok: false as const, message: response.message || "Stripe Price validation failed." };
+  const price = response.payload && typeof response.payload === "object" ? response.payload as Record<string, unknown> : {};
+  const recurring = price.recurring && typeof price.recurring === "object" ? price.recurring as Record<string, unknown> : {};
+  const valid = price.active === true
+    && Number(price.unit_amount) === STRIPE_PLAN_PRICES_CENTS[plan]
+    && String(price.currency || "").toLowerCase() === "usd"
+    && recurring.interval === "month"
+    && Number(recurring.interval_count || 1) === 1
+    && price.tax_behavior === "inclusive";
+  return valid ? { ok: true as const, skipped: false as const } : { ok: false as const, message: "Live Stripe Price must be active, USD, monthly, tax-inclusive, and match the configured plan amount." };
+}
+
 export async function createStripeCheckoutSession(input: {
   plan: BillingPlan;
   userId: string;
@@ -170,6 +188,8 @@ export async function createStripeCheckoutSession(input: {
 }) {
   const priceId = stripePriceId(input.plan);
   if (!priceId) return { ok: false as const, status: 503, message: "Selected Stripe price is not configured." };
+  const validation = await validateStripePrice(input.plan);
+  if (!validation.ok) return { ok: false as const, status: 503, message: validation.message };
   const form = new URLSearchParams();
   form.set("mode", "subscription");
   form.set("line_items[0][price]", priceId);
