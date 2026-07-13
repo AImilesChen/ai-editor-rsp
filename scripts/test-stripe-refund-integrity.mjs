@@ -32,8 +32,13 @@ assert.equal(extractBillingIds({ type: "charge.refunded", data: { object: { obje
 
 const billingStore = await readFile(new URL("../src/lib/backend/billing-store.ts", import.meta.url), "utf8");
 const webhookRoute = await readFile(new URL("../src/app/api/webhooks/stripe/route.ts", import.meta.url), "utf8");
+const refundedBucketMigration = await readFile(new URL("../migrations/0008_reconcile_refunded_credit_buckets.sql", import.meta.url), "utf8").catch(() => "");
+const refundFunction = billingStore.slice(billingStore.indexOf("async function markRefundedAccountD1"), billingStore.indexOf("async function calculateFreeCreditRefundBalanceD1"));
 assert.match(billingStore, /'refund_paid_credit_revoke', \?,/, "refund ledger write must retain the revoke source type and canonical source ID binding");
 assert.match(billingStore, /markRefundedAccountD1[\s\S]*?await db\.batch\(\[/, "all refund state writes must use one atomic D1 batch");
+assert.match(refundFunction, /UPDATE credit_buckets SET remaining = 0/, "refund confirmation must clear every paid bucket atomically");
+assert.match(refundedBucketMigration, /users\.status = 'refunded'/, "migration must target refunded accounts only");
+assert.match(refundedBucketMigration, /WHERE remaining > 0/, "migration must touch stale nonzero paid buckets only");
 assert.match(billingStore, /D1 billing database is required for atomic Stripe credit grants/);
 const grantFunction = billingStore.slice(billingStore.indexOf("export async function grantCreditsFromStripe"), billingStore.indexOf("export async function recordStripeWebhookEvent"));
 assert.doesNotMatch(grantFunction, /billingKv\(/, "Stripe grants must never fall back to non-atomic KV");

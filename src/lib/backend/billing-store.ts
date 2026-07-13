@@ -1072,6 +1072,7 @@ async function markRefundedAccountD1(db: D1Database, input: RefundStateInput) {
   const webhookId = `wh_${input.eventId}`.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 180);
   await db.batch([
     db.prepare("UPDATE users SET plan = 'free', status = 'refunded', credits_remaining = ?, updated_at = ? WHERE id = ?").bind(preservedFreeCredits, now, userId),
+    db.prepare("UPDATE credit_buckets SET remaining = 0, expires_at = MIN(expires_at, ?), updated_at = ? WHERE user_id = ? AND remaining > 0").bind(now, now, userId),
     ...(refundRequest?.payment_id ? [db.prepare("UPDATE payments SET status = 'refunded', updated_at = ? WHERE id = ? AND user_id = ?").bind(now, refundRequest.payment_id, userId)] : []),
     ...(refundRequest?.id ? [db.prepare("UPDATE refund_requests SET status = 'refunded', stripe_refund_id = ?, amount_cents = COALESCE(?, amount_cents), currency = COALESCE(?, currency), resolved_at = ?, metadata_json = json_patch(COALESCE(metadata_json, '{}'), ?) WHERE id = ?").bind(input.refundId, input.amountCents ?? null, input.currency || null, now, JSON.stringify({ stripeRefundEventId: input.eventId, stripeRefundId: input.refundId, actualRefundAmountCents: input.amountCents ?? null }), refundRequest.id)] : []),
     db.prepare("UPDATE subscriptions SET status = 'refunded', canceled_at = COALESCE(canceled_at, ?), updated_at = ? WHERE user_id = ? AND status IN ('active', 'trialing', 'past_due', 'paused', 'scheduled_cancel', 'refund_requested')").bind(now, now, userId),
