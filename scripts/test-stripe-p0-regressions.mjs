@@ -57,7 +57,14 @@ assert.match(checkoutModeMigration, /status = 'checkout_pending'/, "cutover migr
 assert.match(checkoutModeMigration, /stripe_checkout_id LIKE 'cs_test_%'/, "cutover migration must target historical Test sessions only");
 assert.match(checkoutModeMigration, /created_at <= 1783938000000/, "cutover migration must not cancel future Test sessions in non-production environments");
 assert.match(stripe, /validateStripePrice/);
-assert.match(stripe, /tax_behavior/);
-assert.match(stripe, /recurring\.interval/);
+const validateStripePriceSource = stripe.match(/export async function validateStripePrice[\s\S]*?\n}\n\nexport async function createStripeCheckoutSession/)?.[0] || "";
+assert.notEqual(validateStripePriceSource, "", "price validation regression test must locate the implementation");
+assert.doesNotMatch(validateStripePriceSource, /tax_behavior/, "fixed-price checkout must not require Stripe Tax or an inclusive tax behavior");
+assert.doesNotMatch(validateStripePriceSource, /tax-inclusive/, "price validation errors must not tell customers to configure Stripe Tax");
+assert.match(validateStripePriceSource, /price\.active === true/, "live checkout must reject inactive prices");
+assert.match(validateStripePriceSource, /Number\(price\.unit_amount\) === STRIPE_PLAN_PRICES_CENTS\[plan\]/, "live checkout must reject mismatched amounts");
+assert.match(validateStripePriceSource, /String\(price\.currency \|\| ""\)\.toLowerCase\(\) === "usd"/, "live checkout must reject non-USD prices");
+assert.match(validateStripePriceSource, /recurring\.interval === "month"/, "live checkout must reject non-monthly prices");
+assert.match(validateStripePriceSource, /Number\(recurring\.interval_count \|\| 1\) === 1/, "live checkout must reject multi-month intervals");
 assert.match(pkg, /test:stripe-p0/);
 console.log("Stripe P0 regression checks: PASS");

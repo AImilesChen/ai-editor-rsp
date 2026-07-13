@@ -174,9 +174,8 @@ export async function validateStripePrice(plan: BillingPlan) {
     && Number(price.unit_amount) === STRIPE_PLAN_PRICES_CENTS[plan]
     && String(price.currency || "").toLowerCase() === "usd"
     && recurring.interval === "month"
-    && Number(recurring.interval_count || 1) === 1
-    && price.tax_behavior === "inclusive";
-  return valid ? { ok: true as const, skipped: false as const } : { ok: false as const, message: "Live Stripe Price must be active, USD, monthly, tax-inclusive, and match the configured plan amount." };
+    && Number(recurring.interval_count || 1) === 1;
+  return valid ? { ok: true as const, skipped: false as const } : { ok: false as const, message: "Live Stripe Price must be active, USD, monthly, and match the configured plan amount." };
 }
 
 export async function createStripeCheckoutSession(input: {
