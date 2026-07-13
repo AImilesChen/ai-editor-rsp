@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-const [checkout, webhook, billing, stripe, migration, reconciliationMigration, expiryClaimMigration, pkg] = await Promise.all([
+const [checkout, webhook, billing, stripe, migration, reconciliationMigration, expiryClaimMigration, checkoutModeMigration, pkg] = await Promise.all([
   read("src/app/api/billing/checkout/route.ts"),
   read("src/app/api/webhooks/stripe/route.ts"),
   read("src/lib/backend/billing-store.ts"),
@@ -10,11 +10,15 @@ const [checkout, webhook, billing, stripe, migration, reconciliationMigration, e
   read("migrations/0005_stripe_p0_credit_buckets.sql").catch(() => ""),
   read("migrations/0006_reconcile_stripe_p1_audit.sql").catch(() => ""),
   read("migrations/0007_credit_bucket_expiry_claim.sql").catch(() => ""),
+  read("migrations/0009_reconcile_pre_live_test_checkouts.sql").catch(() => ""),
   read("package.json"),
 ]);
 
 assert.match(checkout, /if \(completed\)[\s\S]{0,450}action: "already_paid"/, "paid/complete checkout must never create another session");
 assert.doesNotMatch(checkout, /completed && !hasBlockingPaidPlan[\s\S]{0,250}pendingToClose/, "local webhook lag must not turn a paid checkout into a second order");
+assert.match(checkout, /currentMode === "live" && pendingMode === "test"[\s\S]{0,520}pendingToClose = \{ checkoutId: pending\.checkoutId, status: "canceled" \}/, "only a pre-cutover Test checkout may be retired without provider lookup");
+assert.doesNotMatch(checkout, /pendingMode && pendingMode !== currentMode/, "Live-to-Test switching must fail closed instead of replacing a potentially payable Live checkout");
+assert.match(checkout, /else \{[\s\S]{0,220}retrieveStripeCheckoutSession\(pending\.checkoutId\)/, "only same-mode or unknown checkout IDs may be retrieved from Stripe");
 assert.match(webhook, /WEBHOOK_PERSISTENCE_FAILED/);
 assert.match(webhook, /eventType === "refund\.charge_summary"[\s\S]{0,220}recordStripeWebhookEvent/, "charge summary events without canonical refund IDs must be recorded without mutating refund state");
 assert.match(webhook, /status: 503/);
@@ -49,6 +53,9 @@ assert.match(reconciliationMigration, /refund\.charge_summary/);
 assert.match(reconciliationMigration, /json_extract\(canonical\.payload_json, '\$\.data\.object\.charge'\)/);
 assert.match(reconciliationMigration, /checkout_pending/);
 assert.match(reconciliationMigration, /24 \* 60 \* 60 \* 1000/);
+assert.match(checkoutModeMigration, /status = 'checkout_pending'/, "cutover migration must target pending checkout rows only");
+assert.match(checkoutModeMigration, /stripe_checkout_id LIKE 'cs_test_%'/, "cutover migration must target historical Test sessions only");
+assert.match(checkoutModeMigration, /created_at <= 1783938000000/, "cutover migration must not cancel future Test sessions in non-production environments");
 assert.match(stripe, /validateStripePrice/);
 assert.match(stripe, /tax_behavior/);
 assert.match(stripe, /recurring\.interval/);

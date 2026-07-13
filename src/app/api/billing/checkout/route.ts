@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/backend/auth";
 import { accountForPublicUser, billingCheckoutAttemptSeed, markPendingCheckoutStatus, recentPendingCheckoutForUser, recordPendingCheckoutForUser } from "@/lib/backend/billing-store";
+import { stripeCheckoutSessionMode } from "@/lib/backend/stripe-plan";
 import {
   createStripeCheckoutSession,
   expireStripeCheckoutSession,
@@ -50,8 +51,17 @@ export async function POST(request: NextRequest) {
   let pendingToClose: { checkoutId: string; status: "expired" | "canceled" } | null = null;
   const pending = await recentPendingCheckoutForUser(user.id);
   if (pending) {
-    const previous = await retrieveStripeCheckoutSession(pending.checkoutId);
-    if (!previous.ok) {
+    const currentMode = stripeMode();
+    const pendingMode = stripeCheckoutSessionMode(pending.checkoutId);
+    if (currentMode === "live" && pendingMode === "test") {
+      // Checkout Session IDs are isolated by Stripe mode. A pre-cutover Test
+      // Session can never be retrieved with the current Live key, so retire it
+      // locally only after the replacement Live Session is safely persisted below.
+      // The reverse Live-to-Test case intentionally falls through and fails closed.
+      pendingToClose = { checkoutId: pending.checkoutId, status: "canceled" };
+    } else {
+      const previous = await retrieveStripeCheckoutSession(pending.checkoutId);
+      if (!previous.ok) {
       return NextResponse.json({
         ok: false,
         code: "CHECKOUT_STATUS_UNAVAILABLE",
@@ -108,6 +118,7 @@ export async function POST(request: NextRequest) {
         retryable: true,
         billingUrl: "/account/billing",
       }, { status: 503 });
+    }
     }
   }
 

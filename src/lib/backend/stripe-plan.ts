@@ -2,6 +2,12 @@ export type StripeBillingPlan = "starter" | "creator" | "studio";
 
 type StripePriceIds = Partial<Record<StripeBillingPlan, string | undefined>>;
 
+export function stripeCheckoutSessionMode(checkoutId: string): "live" | "test" | null {
+  if (checkoutId.startsWith("cs_live_")) return "live";
+  if (checkoutId.startsWith("cs_test_")) return "test";
+  return null;
+}
+
 type CreditReplacementInput = {
   before: number;
   priorPaidRemaining: number;

@@ -8,6 +8,7 @@ import {
   stripeBillingPeriodDecision,
   stripeBillingPeriodFromPayload,
   stripeBillingReasonFromPayload,
+  stripeCheckoutSessionMode,
   stripeCreditGrantSourceId,
   stripeEventMatchesConfiguredMode,
 } from "../src/lib/backend/stripe-plan.ts";
@@ -17,6 +18,10 @@ const priceIds = {
   creator: "price_creator",
   studio: "price_studio",
 };
+
+assert.equal(stripeCheckoutSessionMode("cs_live_example"), "live", "Live Checkout IDs must be identified before provider lookup");
+assert.equal(stripeCheckoutSessionMode("cs_test_example"), "test", "Test Checkout IDs must be identified before provider lookup");
+assert.equal(stripeCheckoutSessionMode("cs_unknown"), null, "unknown Checkout ID shapes must fail closed to normal provider validation");
 
 const upgradeInvoice = {
   object: "invoice",
