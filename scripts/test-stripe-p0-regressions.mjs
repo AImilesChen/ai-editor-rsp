@@ -25,6 +25,11 @@ assert.match(webhook, /status: 503/);
 assert.match(billing, /STALE_STRIPE_CHECKOUT_MAX_AGE_MS/);
 assert.match(billing, /status = CASE[\s\S]{0,500}checkout_pending/, "stale and invalid pending checkouts must be reconciled before selecting a resumable session");
 assert.match(billing, /BILLING_DB_REQUIRED_FOR_REFUND/);
+assert.match(
+  billing,
+  /export async function reconcileAllPendingStripeRefunds[\s\S]{0,180}!stripeSecretKey\(\)/,
+  "refund reconciliation must accept the deployed STRIPE_SECRET_KEY binding",
+);
 assert.doesNotMatch(billing, /submitRefundRequestForUser[\s\S]{0,1600}refundRequestKey\(/, "refund policy must not fall back to KV");
 assert.doesNotMatch(billing, /upgradeSubscriptionForUser[\s\S]{0,2500}subscription_upgrade_credit_delta/, "upgrade endpoint must not grant credits before invoice.paid");
 assert.match(billing, /credit_buckets/);

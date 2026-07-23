@@ -1,7 +1,7 @@
 import type { AuthUser } from "@/lib/backend/auth";
 import { DEFAULT_LIFETIME_CREDITS } from "@/lib/backend/session";
 import type { BillingPlan } from "@/lib/backend/stripe";
-import { cancelStripeSubscription, stripePriceId, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
+import { cancelStripeSubscription, stripePriceId, stripeSecretKey, STRIPE_PLAN_CREDITS, lookupStripeRefundStatus, upgradeStripeSubscription } from "@/lib/backend/stripe";
 import { billingDb, billingKv } from "@/lib/backend/cloudflare";
 import { calculateExpiredPaidCreditRemoval, calculateStripeCreditReplacement, inferStripePriorPaidRemaining, stripeBillingPeriodDecision, stripeCreditGrantSourceId } from "@/lib/backend/stripe-plan";
 
@@ -350,7 +350,9 @@ export async function reconcilePendingStripeRefund(userId: string) {
 
 export async function reconcileAllPendingStripeRefunds(limit = 20) {
   const db = await billingDb();
-  if (!db || !process.env.STRIPE_API_KEY) return { ok: false, reason: "missing_db_or_stripe_api_key", checked: 0, reconciled: 0 };
+  if (!db || !stripeSecretKey()) {
+    return { ok: false, reason: "missing_db_or_stripe_key", checked: 0, reconciled: 0 };
+  }
   const rows = await db.prepare(`SELECT DISTINCT user_id
     FROM refund_requests
     WHERE status IN ('submitted', 'pending', 'refund_requested')
