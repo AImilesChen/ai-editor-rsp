@@ -7,9 +7,16 @@ import ReferenceEditExplainer from "@/components/ReferenceEditExplainer";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Reference Image Editor — AI Editor RSP",
+  title: { absolute: "Reference Image Editor — AI Editor RSP" },
   description: "Upload a reference image, describe what should change, and compare the AI edited result with the original using a before and after slider.",
   alternates: { canonical: `${SITE_URL}/reference-edit` },
+  openGraph: {
+    title: "Reference Image Editor — AI Editor RSP",
+    description: "Upload a reference image, describe what should change, and compare the AI edited result with the original using a before and after slider.",
+    url: `${SITE_URL}/reference-edit`,
+    type: "website",
+    images: [`${SITE_URL}/images/generated/lofi-girl-vibes.webp`],
+  },
 };
 
 const benefits = [

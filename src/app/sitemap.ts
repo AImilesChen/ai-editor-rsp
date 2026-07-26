@@ -23,8 +23,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/tiktok-effects`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.75 },
     { url: `${BASE_URL}/instagram-reels-effects`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.75 },
     { url: `${BASE_URL}/youtube-shorts-effects`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.75 },
-    { url: `${BASE_URL}/suggest-prompt`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.7 },
-    { url: `${BASE_URL}/waitlist`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/about-rsp-editing`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/faq`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "weekly" as const, priority: 0.7 },
     { url: `${BASE_URL}/ai-policy`, lastModified: CONTENT_LAST_MODIFIED, changeFrequency: "monthly" as const, priority: 0.55 },

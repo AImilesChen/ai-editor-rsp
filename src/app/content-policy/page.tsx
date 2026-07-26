@@ -4,9 +4,16 @@ import Footer from "@/components/Footer";
 import { SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Content Policy — AI Editor RSP",
+  title: { absolute: "Content Policy — AI Editor RSP" },
   description: "Content safety rules and reporting contact for AI Editor RSP.",
   alternates: { canonical: `${SITE_URL}/content-policy` },
+  openGraph: {
+    title: "Content Policy — AI Editor RSP",
+    description: "Content safety rules and reporting contact for AI Editor RSP.",
+    url: `${SITE_URL}/content-policy`,
+    type: "website",
+    images: [`${SITE_URL}/og-image.png`],
+  },
 };
 
 export default function ContentPolicyPage() {

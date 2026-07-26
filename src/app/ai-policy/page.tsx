@@ -5,9 +5,16 @@ import { aiModelDisclosureText } from "@/lib/ai-models";
 import { legalDisclaimer, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "AI Policy — AI Editor RSP",
+  title: { absolute: "AI Policy — AI Editor RSP" },
   description: "AI model provider, generated image limitations, content safety, and review status for AI Editor RSP.",
   alternates: { canonical: `${SITE_URL}/ai-policy` },
+  openGraph: {
+    title: "AI Policy — AI Editor RSP",
+    description: "AI model provider, generated image limitations, content safety, and review status for AI Editor RSP.",
+    url: `${SITE_URL}/ai-policy`,
+    type: "website",
+    images: [`${SITE_URL}/og-image.png`],
+  },
 };
 
 export default function AiPolicyPage() {

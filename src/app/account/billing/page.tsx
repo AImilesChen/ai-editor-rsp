@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Billing — AI Editor RSP",
+  title: { absolute: "Billing — AI Editor RSP" },
   description: "Manage AI Editor RSP billing status, credits, plan actions, and refund requests.",
   alternates: { canonical: `${SITE_URL}/account/billing` },
   robots: { index: false, follow: true },

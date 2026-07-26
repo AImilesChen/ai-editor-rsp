@@ -6,7 +6,7 @@ import CheckoutStartButton from "@/components/CheckoutStartButton";
 import { pricingPlans, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Checkout — AI Editor RSP",
+  title: { absolute: "Checkout — AI Editor RSP" },
   description: "Secure checkout entry for AI Editor RSP credits plans.",
   alternates: { canonical: `${SITE_URL}/checkout` },
   robots: { index: false, follow: true },

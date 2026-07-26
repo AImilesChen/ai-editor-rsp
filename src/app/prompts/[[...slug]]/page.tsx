@@ -64,6 +64,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
       description: `Browse all ${activePrompts.length} original AI image prompts, plus ${promptPages.length} prompt style guides for AI Editor RSP.`,
       url: `${site.url}/prompts`,
       type: "website",
+      images: [`${site.url}/og-image.png`],
     },
   };
 }

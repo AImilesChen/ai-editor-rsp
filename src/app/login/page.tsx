@@ -5,7 +5,7 @@ import LoginPanel from "@/components/LoginPanel";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Log In — AI Editor RSP",
+  title: { absolute: "Log In — AI Editor RSP" },
   description: "Log in with Google or email magic link to manage credits and image generation history.",
   alternates: { canonical: `${SITE_URL}/login` },
   robots: { index: false, follow: true },

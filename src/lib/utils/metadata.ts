@@ -20,14 +20,14 @@ export function createMetadata({
   const canonical = `${SITE_URL}${path}`;
 
   return {
-    title: fullTitle,
+    title: { absolute: fullTitle },
     description,
     metadataBase: new URL(SITE_URL),
     alternates: {
       canonical,
     },
     robots: noindex
-      ? { index: false, follow: false }
+      ? { index: false, follow: true }
       : { index: true, follow: true },
     openGraph: {
       title: fullTitle,

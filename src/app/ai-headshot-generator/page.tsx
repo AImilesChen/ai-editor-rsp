@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     description: "Create a business-ready AI headshot from your photo for resumes, company bios, and professional profiles.",
     url: `${SITE_URL}/ai-headshot-generator`,
     type: "website",
+    images: [`${SITE_URL}/images/headshot-examples/corporate-executive-headshot.webp`],
   },
 };
 

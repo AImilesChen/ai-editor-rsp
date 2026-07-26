@@ -10,6 +10,7 @@ export const metadata: Metadata = createMetadata({
   description:
     "Join the AI Editor RSP waitlist and be the first to know when we add new prompts, templates, and features. No spam, opt out anytime.",
   path: "/waitlist",
+  noindex: true,
 });
 
 export default function WaitlistPage() {

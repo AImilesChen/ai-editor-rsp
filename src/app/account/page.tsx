@@ -6,7 +6,7 @@ import AccountOverview from "@/components/AccountOverview";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "My Account — AI Editor RSP",
+  title: { absolute: "My Account — AI Editor RSP" },
   description: "Account overview, credits balance, generation history, and billing state for AI Editor RSP.",
   alternates: { canonical: `${SITE_URL}/account` },
   robots: { index: false, follow: true },

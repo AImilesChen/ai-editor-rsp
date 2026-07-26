@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Refund Review — AI Editor RSP",
+  title: { absolute: "Refund Review — AI Editor RSP" },
   description: "Internal refund eligibility review for AI Editor RSP customer support.",
   alternates: { canonical: `${SITE_URL}/admin/refund-review` },
   robots: { index: false, follow: false },

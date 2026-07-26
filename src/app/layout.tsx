@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   alternates: { canonical: site.url },
   robots: { index: true, follow: true },
-  openGraph: { title: "AI Editor RSP — AI Image Generator & Prompt Library", description: site.description, url: site.url, siteName: site.name, type: "website" },
-  twitter: { card: "summary_large_image", title: "AI Editor RSP", description: site.description },
+  openGraph: { title: "AI Editor RSP — AI Image Generator & Prompt Library", description: site.description, url: site.url, siteName: site.name, type: "website", images: [`${site.url}/og-image.png`] },
+  twitter: { card: "summary_large_image", title: "AI Editor RSP", description: site.description, images: [`${site.url}/og-image.png`] },
   icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
 };
 

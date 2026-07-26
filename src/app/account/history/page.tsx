@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Generation History — AI Editor RSP",
+  title: { absolute: "Generation History — AI Editor RSP" },
   alternates: { canonical: `${SITE_URL}/account/history` },
   robots: { index: false, follow: true },
 };

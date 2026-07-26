@@ -1,0 +1,33 @@
+# AI Editor RSP
+
+> AI Editor RSP is a browser-based AI image generator and editor for text-to-image creation, edits to user-owned photos, professional headshots, and reusable prompt workflows.
+
+## Core tools
+
+- [AI Image Generator](https://aieditorrspediting.org/): Create AI images from text prompts and ready-made prompt ideas.
+- [Generate Console](https://aieditorrspediting.org/generate): Open the text-to-image generation workflow.
+- [AI Image Editor](https://aieditorrspediting.org/image-editor): Remove people, objects, text marks, and background clutter from images you own or have permission to edit.
+- [Reference Image Editor](https://aieditorrspediting.org/reference-edit): Upload a source image, describe a controlled change, and compare before and after.
+- [AI Headshot Generator](https://aieditorrspediting.org/ai-headshot-generator): Create professional headshot variations from an uploaded photo.
+- [Prompt Library](https://aieditorrspediting.org/prompts): Browse reusable AI image prompts and style guides.
+- [Pricing](https://aieditorrspediting.org/pricing): Review free credits, paid plans, usage rules, billing, cancellation, and refund eligibility.
+
+## Product information
+
+- [FAQ](https://aieditorrspediting.org/faq)
+- [AI Policy](https://aieditorrspediting.org/ai-policy)
+- [Content Policy](https://aieditorrspediting.org/content-policy)
+- [AI Models Used](https://aieditorrspediting.org/ai-models)
+
+## Legal and support
+
+- [Privacy Policy](https://aieditorrspediting.org/privacy)
+- [Terms of Service](https://aieditorrspediting.org/terms)
+- [Cookie Policy](https://aieditorrspediting.org/cookie-policy)
+- [Refund Policy](https://aieditorrspediting.org/refund-policy)
+- Support: support@aieditorrspediting.org
+
+## Crawling
+
+- [Sitemap](https://aieditorrspediting.org/sitemap.xml)
+- [Robots](https://aieditorrspediting.org/robots.txt)

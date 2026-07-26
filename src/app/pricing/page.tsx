@@ -8,9 +8,16 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "AI Image Generator Pricing & Monthly Credits — AI Editor RSP",
+  title: { absolute: "AI Image Generator Pricing & Monthly Credits — AI Editor RSP" },
   description: "Compare AI image generator pricing for monthly credits, uploaded-image edits, AI headshots, prompt workflows, secure checkout, cancellation, and refund rules.",
   alternates: { canonical: `${SITE_URL}/pricing` },
+  openGraph: {
+    title: "AI Image Generator Pricing & Monthly Credits — AI Editor RSP",
+    description: "Compare AI image generator pricing for monthly credits, uploaded-image edits, AI headshots, prompt workflows, secure checkout, cancellation, and refund rules.",
+    url: `${SITE_URL}/pricing`,
+    type: "website",
+    images: [`${SITE_URL}/og-image.png`],
+  },
 };
 
 const pricingFaq = [

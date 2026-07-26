@@ -7,9 +7,16 @@ import { SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "AI Models Used — AI Editor RSP",
+  title: { absolute: "AI Models Used — AI Editor RSP" },
   description: "Current AI model providers and model routes used for AI Editor RSP image generation and editing.",
   alternates: { canonical: `${SITE_URL}/ai-models` },
+  openGraph: {
+    title: "AI Models Used — AI Editor RSP",
+    description: "Current AI model providers and model routes used for AI Editor RSP image generation and editing.",
+    url: `${SITE_URL}/ai-models`,
+    type: "website",
+    images: [`${SITE_URL}/og-image.png`],
+  },
 };
 
 export default function AiModelsPage() {

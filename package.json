@@ -10,6 +10,7 @@
     "test:stripe-p0": "node scripts/test-stripe-p0-regressions.mjs",
     "test:stripe-upgrade": "node --experimental-strip-types scripts/test-stripe-upgrade-credits.mjs",
     "test:payment-compliance": "node scripts/test-payment-compliance.mjs",
+    "test:seo": "node scripts/test-seo-metadata.mjs",
     "lint": "eslint src/ --ext .ts,.tsx",
     "preview": "opennextjs-cloudflare build && node scripts/patch-open-next-worker.mjs && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && node scripts/patch-open-next-worker.mjs && opennextjs-cloudflare deploy",

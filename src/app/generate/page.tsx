@@ -5,9 +5,16 @@ import GenerateConsole from "@/components/GenerateConsole";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Generate Console — AI Editor RSP",
+  title: { absolute: "Generate Console — AI Editor RSP" },
   description: "AI image editor workflow with upload, edit-area selection, prompt input, generation, preview, and download.",
   alternates: { canonical: `${SITE_URL}/generate` },
+  openGraph: {
+    title: "Generate Console — AI Editor RSP",
+    description: "AI image editor workflow with upload, edit-area selection, prompt input, generation, preview, and download.",
+    url: `${SITE_URL}/generate`,
+    type: "website",
+    images: [`${SITE_URL}/og-image.png`],
+  },
 };
 
 export default function GeneratePage() {

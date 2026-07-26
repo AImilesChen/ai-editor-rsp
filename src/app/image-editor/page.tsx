@@ -25,6 +25,7 @@ export const metadata: Metadata = {
       "Brush unwanted areas in your own photos and use AI to remove people, objects, text marks, and background distractions while preserving the rest of the image.",
     url: `${SITE_URL}/image-editor`,
     type: "website",
+    images: [`${SITE_URL}/images/image-editor-cases/image2-travel-people-removal-after.webp`],
   },
 };
 

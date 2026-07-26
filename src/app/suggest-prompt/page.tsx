@@ -10,6 +10,7 @@ export const metadata: Metadata = createMetadata({
   description:
     "Tell us what photo you want to edit and see which RSP-style prompts match. Join the waitlist to be notified when this feature opens.",
   path: "/suggest-prompt",
+  noindex: true,
 });
 
 export default function SuggestPromptPage() {
